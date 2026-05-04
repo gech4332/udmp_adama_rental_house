@@ -50,6 +50,10 @@ if(isset($_POST['register'])){
         border: none;
          cursor: pointer; 
         }
+        h2{
+           justify-content: center;  
+           margin-Left:60px;
+        }
     </style>
 </head>
 <body>

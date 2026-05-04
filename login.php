@@ -53,6 +53,10 @@ if(isset($_POST['login'])){
               color: white; border: none;
                cursor: pointer; 
             }
+            h2{
+           justify-content: center;  
+           margin-Left:60px;
+        }
     </style>
 </head>
 <body>

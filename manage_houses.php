@@ -18,7 +18,7 @@ $current_user = $_SESSION['user_id'];
     <title>Landlord Dashboard - Manage My Posts</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .header { background: #333; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 30px; }
+        .header { background: #4b7b8a;; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; border: 1px solid #ddd; }
         .card img { width: 100%; height: 200px; object-fit: cover; }
@@ -59,6 +59,17 @@ $current_user = $_SESSION['user_id'];
         .btn:hover {
              opacity: 0.8;
              }
+                   .category-labelph {
+            display: inline-block;
+            background: #e9ecef;
+            color: #4b7b8a;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +104,8 @@ $current_user = $_SESSION['user_id'];
             <img src="uploads/<?php echo $row['image']; ?>" alt="House Image">
             
             <div class="card-info">
+                                    <span class="category-labelph"><?p echo htmlspecialchars($row['category']); ?></span>
+
                 <h3 style="margin-top:0;">Kebele <?php echo htmlspecialchars($row['kebele']); ?></h3>
                 <p>Price: <strong><?php echo number_format($row['amount']); ?> ETB</strong></p>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
@@ -125,4 +138,5 @@ $current_user = $_SESSION['user_id'];
 </div>
 
 </body>
+<?php include('footer.php'); ?>
 </html>
