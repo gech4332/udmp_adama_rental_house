@@ -2,10 +2,17 @@
 session_start();
 include('db.php');
 
-$my_level = $_SESSION['is_admin'];
+// Ensure caller is logged in and an admin
+if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+    die("Access Denied");
+}
 
-// Security: Must be at least Rank 1 to be here[cite: 5]
-if($my_level < 1) { die("Access Denied"); }
+$my_level = (int)$_SESSION['is_admin'];
+
+// Enforce: Only Super Admin (level 2) may change user permissions
+if($my_level !== 2){
+    die("Only Super Admins may change permissions.");
+}
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $target_id = (int)$_POST['user_id'];

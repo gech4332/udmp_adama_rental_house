@@ -33,7 +33,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .nav-link.active { background: var(--primary); }
 
         /* Consistent Content Area */
-        .main-content { margin-left: 260px; padding: 40px; width: 100%; }
+        .main-content, .main { margin-left: 260px; padding: 40px; width: 100%; }
         
         /* Professional Tables */
         .data-card { background: var(--white); border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: hidden; }
@@ -52,13 +52,63 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .badge-green { background: #dcfce7; color: #166534; }
         .badge-orange { background: #fef3c7; color: #92400e; }
+
+        /* Sidebar footer */
+        .sidebar { position: fixed; }
+        .sidebar-footer { position: absolute; bottom: 20px; left: 20px; right: 20px; }
+        .logout-btn { display:block; text-align:center; background:#fff; color:#ef4444; padding:10px 12px; border-radius:8px; font-weight:700; text-decoration:none; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="admin_panel.php" class="brand">ADAMA RENT</a>
-        <a href="admin_panel.php" class="nav-link <?= ($current_page == 'admin_panel.php') ? 'active' : '' ?>"><i class="fas fa-chart-pie"></i> Dashboard</a>
-        <a href="admin_manage_users.php" class="nav-link <?= ($current_page == 'admin_manage_users.php') ? 'active' : '' ?>"><i class="fas fa-user-shield"></i> User Control</a>
-        <a href="admin_manage_houses.php" class="nav-link <?= ($current_page == 'admin_manage_houses.php') ? 'active' : '' ?>"><i class="fas fa-home"></i> House Inventory</a>
-        <a href="logout.php" class="nav-link" style="margin-top: 50px; color: #f87171;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-    </div>
+    <button onclick="history.back()" style="position:fixed; top:16px; right:16px; z-index:9999; background:#ffffff; border:1px solid #e2e8f0; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
+    <?php include(__DIR__ . '/sidebar.php'); ?>
+
+<script>
+// Intercept sidebar nav-link clicks and load content via AJAX into the page container
+(function(){
+    function findMain(doc){
+        return doc.querySelector('.main-content') || doc.querySelector('.main') || doc.querySelector('.content') || doc.querySelector('main');
+    }
+
+    document.addEventListener('click', function(e){
+        var a = e.target.closest('.nav-link');
+        if(!a) return;
+        var href = a.getAttribute('href');
+        if(!href) return;
+        if(a.dataset && a.dataset.noAjax) return; // allow no-ajax links (logout)
+        // Only handle internal links (no protocol)
+        if(href.indexOf('http') === 0 || href.indexOf('//') === 0) return;
+
+        e.preventDefault();
+        fetch(href, {credentials: 'same-origin'})
+            .then(function(res){ return res.text(); })
+            .then(function(html){
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var newMain = findMain(doc);
+                var curMain = findMain(document);
+                if(newMain && curMain){
+                    curMain.innerHTML = newMain.innerHTML;
+                    // update URL
+                    history.pushState({ajax:true}, '', href);
+                } else {
+                    // fallback to full navigation
+                    window.location = href;
+                }
+            }).catch(function(){ window.location = href; });
+    });
+
+    window.addEventListener('popstate', function(){
+        var href = location.pathname + location.search;
+        fetch(href, {credentials: 'same-origin'})
+            .then(function(res){ return res.text(); })
+            .then(function(html){
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var newMain = findMain(doc);
+                var curMain = findMain(document);
+                if(newMain && curMain) curMain.innerHTML = newMain.innerHTML;
+            });
+    });
+})();
+</script>

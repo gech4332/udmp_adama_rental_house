@@ -55,6 +55,6 @@
     <hr style="border: 0; border-top: 1px solid #333; margin: 40px 0 20px 0;">
 
     <div style="text-align: center; font-size: 12px; color: white;">
-        <p>&copy <?php echo date("M/Y"); ?> Adama House Rental System </p>
+        <p>&copy <?php echo date("Y"); ?> Adama House Rental System.All rights reserved</p>
     </div>
 </footer>

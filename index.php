@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 // This MUST be the very first line of the file!
 session_start();
 include('db.php'); 
@@ -16,57 +16,135 @@ header("Expires: 0");
     <title>Find Rent - Adama</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f4f4f4; }
-        
+        :root {
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+        html { min-height: 100%; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        body > .page-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+        }
+
         /* Consistent Top Navigation */
-        .top-nav { 
-            background: #4b7b8a; 
-            padding: 12px 40px; 
-            display: flex; 
-            justify-content: space-between; 
+        .top-nav {
+            background: #4b7b8a;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .top-nav a { 
-            color: white; 
-            text-decoration: none; 
-            font-size: 14px; 
-            font-weight: bold; 
+        .top-nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
             transition: 0.3s;
         }
         .top-nav a:hover { color: #ffc107; }
         .top-nav i { font-size: 18px; }
-        
+
         /* Page Header Title */
         .page-title {
-            padding: 20px;
+            padding: 18px 24px;
             text-align: center;
             border-bottom: 1px solid #ddd;
-            background: #4b7b8a; 
+            background: #4b7b8a;
         }
         .page-title h1 { margin: 0; color: white; font-size: 24px; }
 
-        .search-area { background: white; padding: 20px; margin: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .search-area form { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
-        .search-area input, .search-area select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .search-area button { padding: 10px 20px; background: #ffc107; color: black; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .search-area {
+            background: white;
+            padding: 18px;
+            margin: 18px auto 0;
+            max-width: 1240px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-area form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
+        .search-area input,
+        .search-area select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 180px;
+            flex: 1 1 180px;
+        }
+        .search-area button {
+            padding: 12px 22px;
+            background: #ffc107;
+            color: black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
         .search-area button:hover { background: #e0a800; }
-        
-        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 1240px;
+            flex: 1;
+        }
+
         /* Card Styles */
-        .card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; }
-        .card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 100%;
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #eee;
+        }
+
         .badge {
-            position: absolute; top: 15px; left: 15px;
-            padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            color: white; z-index: 10; text-transform: capitalize;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            z-index: 10;
+            text-transform: capitalize;
         }
         .available { background-color: #28a745; }
         .rented { background-color: #dc3545; }
 
-        /* New Category Badge Style */
         .category-label {
             display: inline-block;
             background: #e9ecef;
@@ -79,43 +157,65 @@ header("Expires: 0");
             margin-bottom: 8px;
         }
 
-        .card-content { padding: 15px; flex-grow: 1; }
+        .card-content { padding: 18px; flex-grow: 1; }
         .price { color: #28a745; font-size: 20px; font-weight: bold; }
-        
+
         .phone-hidden {
-            display: inline-block; width: 93%; padding: 10px; background-color: #f8f9fa; 
-            color: #6c757d; border: 1px dashed #ced4da; border-radius: 6px;
-            text-align: center; font-size: 14px; font-weight: 500; margin-top: 5px;
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px dashed #ced4da;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
         }
         .phone-hidden::before { content: "🔒 "; font-size: 12px; }
 
-        .video-wrapper { position: relative; cursor: pointer; width: 100%; height: 200px; background: #000; }
+        .video-wrapper {
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            height: 200px;
+            background: #000;
+        }
         .play-btn {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(75, 123, 138, 0.9); color: white; padding: 10px 20px;
-            border-radius: 30px; font-weight: bold; pointer-events: none; z-index: 5;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(75, 123, 138, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 5;
         }
     </style>
 </head>
 <body>
+    <div class="page-wrapper">
+        <nav class="top-nav">
+            <a href="Home.php" title="Home">
+                <i class="fa-solid fa-home"></i>
+            </a>
+            <div class="nav-right">
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <a href="manage_houses.php" style="margin-right: 15px;">Manage Posts</a>
+                    <a href="logout.php" style="color:#ffc107;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <?php else: ?>
+                    <a href="login.php"><i class="fas fa-user-circle"></i> Landlord Login</a>
+                <?php endif; ?>
+            </div>
+        </nav>
 
-    <nav class="top-nav">
-        <a href="Home.php" title="Home">
-            <i class="fas fa-home"></i>
-        </a>
-        <div class="nav-right">
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <a href="manage_houses.php" style="margin-right: 15px;">Manage Posts</a>
-                <a href="logout.php" style="color:#ffc107;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-            <?php else: ?>
-                <a href="login.php"><i class="fas fa-user-circle"></i> Landlord Login</a>
-            <?php endif; ?>
+        <div class="page-title">
+            <h1>Adama House Rental Search</h1>
         </div>
-    </nav>
-
-    <div class="page-title">
-        <h1>Adama House Rental Search</h1>
-    </div>
 
     <div class="search-area">
         <form method="GET" action="index.php">
@@ -148,13 +248,10 @@ header("Expires: 0");
 
     <div class="container">
         <?php
-        // WRONG (shows everything): SELECT * FROM houses WHERE status = 'Available'
-// CORRECT (only shows approved):
-$query = "SELECT * FROM houses WHERE status = 'Available' AND is_approved = 1 ORDER BY id DESC";
-        // Start the query
+        // Show approved listings, including those marked as rented by the landlord.
         $sql = "SELECT houses.*, users.full_name FROM houses 
                 LEFT JOIN users ON houses.user_id = users.id 
-                WHERE 1=1";
+                WHERE houses.status IN ('Available', 'Rented') AND houses.is_approved = 1";
 
         // 1. Filter by Specific Category
         if(!empty($_GET['cat'])) {
@@ -248,6 +345,7 @@ $query = "SELECT * FROM houses WHERE status = 'Available' AND is_approved = 1 OR
     }
     </script>
 
+    </div>
     <?php include('footer.php'); ?>
 </body>
 </html>

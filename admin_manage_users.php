@@ -56,16 +56,10 @@ $result = mysqli_query($conn, $query);
 </head>
 <body>
 
-<div class="sidebar">
-    <h3><?php echo ($my_rank == 2) ? "Super Admin" : "Admin"; ?></h3>
-    <hr style="border: 0.5px solid #34495e;">
-    <a href="admin_panel.php" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
-    <a href="admin_manage_houses.php" class="nav-item"><i class="fas fa-home"></i> Manage Listings</a>
-    <a href="admin_manage_users.php" class="nav-item active"><i class="fas fa-users"></i> Manage Users</a>
-    <a href="logout.php" style="color: #e74c3c; padding: 15px; display:block; text-decoration:none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-</div>
+<?php include(__DIR__ . '/sidebar.php'); ?>
 
 <div class="main">
+    <button onclick="history.back()" style="background:#fff;border:1px solid #e2e8f0;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
     <h1><?php echo $page_title; ?></h1>
     <table>
         <thead>

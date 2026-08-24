@@ -15,15 +15,15 @@ $landlords = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_
 // Count Admins (Rank 1 and Rank 2 combined)
 $admins    = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_admin >= 1"));
 
-// Total Houses in the system
-$total_h   = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM houses"));
+// Total Houses in the system (exclude pending/unapproved)
+$total_h   = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM houses WHERE NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)"));
 
-// Count Available (Active)
-$res_active = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE status = '0' OR status = 'Available'");
+// Count Available (Active) — exclude pending/unapproved
+$res_active = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '0' OR status = 'Available') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
 $active_listings = mysqli_fetch_assoc($res_active)['total'];
 
-// Count Rented (Occupied)
-$res_rented = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE status = '1' OR status = 'Rented'");
+// Count Rented (Occupied) — exclude pending/unapproved
+$res_rented = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '1' OR status = 'Rented') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
 $occupied_units = mysqli_fetch_assoc($res_rented)['total'];
 
 
@@ -89,21 +89,10 @@ $pending_req = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM requests WHER
 </head>
 <body>
 
-    <aside class="sidebar">
-        <h2>ADAMA RENT</h2>
-        <nav>
-            <a href="admin_panel.php" class="nav-link active"><i class="fas fa-chart-line"></i> Dashboard</a>
-            <a href="admin_manage_users.php" class="nav-link"><i class="fas fa-user-shield"></i> Manage Users</a>
-            <a href="admin_manage_houses.php" class="nav-link"><i class="fas fa-building"></i> Manage Houses</a>
-            <a href="admin_manage_requests.php" class="nav-link"><i class="fas fa-envelope-open-text"></i> Property Requests</a>
-            
-            <div style="margin-top: 50px;">
-                <a href="logout.php" class="nav-link" style="color: #f87171;"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-            </div>
-        </nav>
-    </aside>
+    <?php include(__DIR__ . '/sidebar.php'); ?>
 
     <main class="content">
+        <button onclick="history.back()" style="background:#fff;border:1px solid #e2e8f0;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
         <header class="header">
             <h1>Executive Summary</h1>
             <p>Welcome back:<strong><?php echo $_SESSION['full_name']; ?></strong> <?php echo ($_SESSION['is_admin'] == 2) ? 'Super Admin' : 'Staff'; ?></p>
