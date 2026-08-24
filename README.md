@@ -33,7 +33,7 @@ Follow these steps to get the application up and running on your local machine.
 - Click **Go** to import the data
 #### 5️⃣ View Your Site
 - Open your browser and navigate to:  
-  **http://localhost/rental_project/**
+  **http://localhost:/rental_project/**
 - You should now see the application running!
 ---
 ### 🔧 Quick Troubleshooting
@@ -59,5 +59,4 @@ After completing all steps:
 - ✅ The rental application loads without errors at `http://localhost/rental_project/`
 ---
 **Need help?** Check the Apache or MySQL error logs via the XAMPP Control Panel (click "Logs" button).
----
-Let me know if you want me to adjust this for a different environment (Mac, Linux, Docker, etc.) or add more specific details about your rental project! 🚀
+
