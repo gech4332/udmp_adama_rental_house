@@ -10,7 +10,7 @@ if(!isset($_SESSION['user_id'])){
 
 if(isset($_POST['delete_btn'])){
     $id = (int)$_POST['id']; // Cast to integer for security
-    $input_key = mysqli_real_escape_string($conn, $_POST['key']);
+    $input_key = isset($_POST['key']) ? mysqli_real_escape_string($conn, $_POST['key']) : null;
     $current_user = $_SESSION['user_id'];
 
     // 2. Find the record AND ensure it belongs to the logged-in user
@@ -19,11 +19,21 @@ if(isset($_POST['delete_btn'])){
     if(mysqli_num_rows($query) > 0){
         $data = mysqli_fetch_assoc($query);
 
-        // 3. Verify the secret key
-        if($data['delete_key'] === $input_key){
+        // If a key was submitted, verify it; otherwise allow owner deletion
+        $allow_delete = false;
+        if($input_key !== null && $input_key !== ''){
+            if($data['delete_key'] === $input_key){
+                $allow_delete = true;
+            }
+        } else {
+            // No key submitted — allow owner deletion (since ownership was checked in query)
+            $allow_delete = true;
+        }
+
+        if($allow_delete){
             // Delete the physical image file
-            if(file_exists("uploads/" . $data['image'])){
-                unlink("uploads/" . $data['image']); //
+            if(!empty($data['image']) && file_exists("uploads/" . $data['image'])){
+                unlink("uploads/" . $data['image']);
             }
             
             // Delete from database

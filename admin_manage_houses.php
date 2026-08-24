@@ -9,17 +9,17 @@ if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1) {
 // Catch the 'status' from the URL (sent by dashboard)
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 
-// Base SQL
-$sql = "SELECT houses.*, users.full_name FROM houses JOIN users ON houses.user_id = users.id";
+// Base SQL — exclude Pending/unapproved from this view
+$sql = "SELECT houses.*, users.full_name FROM houses JOIN users ON houses.user_id = users.id WHERE NOT (houses.status = 'Pending' OR houses.is_approved = 0 OR houses.is_approved IS NULL)";
 
 if($status_filter == 'Available') {
     $page_title = "Active Listings (Available)";
     // This checks for both numeric 0 and the word 'Available'
-    $sql .= " WHERE (houses.status = '0' OR houses.status = 'Available')";
+    $sql .= " AND (houses.status = '0' OR houses.status = 'Available')";
 } elseif($status_filter == 'Rented') {
     $page_title = "Occupied Units (Rented)";
     // This checks for both numeric 1 and the word 'Rented'
-    $sql .= " WHERE (houses.status = '1' OR houses.status = 'Rented')";
+    $sql .= " AND (houses.status = '1' OR houses.status = 'Rented')";
 } else {
     $page_title = "All Property Management";
 }
@@ -42,6 +42,8 @@ $result = mysqli_query($conn, $sql);
         th { background: #4b7b8a; color: white; }
         .txt-available { color: #27ae60; font-weight: bold; background: #eafaf1; padding: 4px 8px; border-radius: 4px; }
         .txt-rented { color: #e67e22; font-weight: bold; background: #fef5e7; padding: 4px 8px; border-radius: 4px; }
+        .txt-pending { color: #92400e; font-weight: bold; background: #fff4e6; padding: 4px 8px; border-radius: 4px; }
+        .txt-unknown { color: #64748b; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; }
         .btn { padding: 8px 12px; border-radius: 4px; color: white; cursor:pointer; border:none; display: inline-block; text-decoration: none; font-size: 12px; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 5% auto; padding: 20px; width: 35%; max-width: 500px; border-radius: 12px; position: relative; }
@@ -51,17 +53,10 @@ $result = mysqli_query($conn, $sql);
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>Master Admin</h2>
-    <hr>
-    <a href="admin_panel.php" style="color:white; display:block; padding:15px 0; text-decoration:none;"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="admin_manage_users.php" style="color:white; display:block; padding:15px 0; text-decoration:none;"><i class="fas fa-users"></i> Manage Users</a>
-    <a href="admin_manage_houses.php" style="color:white; display:block; padding:15px 0; text-decoration:none;"><i class="fas fa-home"></i> Manage Houses</a>
-    <a href="admin_manage_requests.php" style="color:white; display:block; padding:15px 0; text-decoration:none;"><i class="fas fa-envelope-open-text"></i> Property Requests</a>
-
-</div>
+<?php include(__DIR__ . '/sidebar.php'); ?>
 
 <div class="main">
+    <button onclick="history.back()" style="background:#fff;border:1px solid #e2e8f0;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
     <h1><i class="fas fa-list"></i> <?php echo $page_title; ?></h1>
     
     <table>
@@ -69,26 +64,33 @@ $result = mysqli_query($conn, $sql);
             <tr>
                 <th>ID</th>
                 <th>Landlord</th>
+                <th>Category</th>
                 <th>Location</th>
                 <th>Price</th>
                 <th>Status</th>
                 <th>Actions</th>
-            </tr>
+            </tr>  
         </thead>
         <tbody>
             <?php while($row = mysqli_fetch_assoc($result)): ?>
             <tr>
                 <td>#<?php echo $row['id']; ?></td>
                 <td><?php echo htmlspecialchars($row['full_name']); ?></td>
+                <td><?php echo htmlspecialchars($row['category'] ?? 'N/A'); ?></td>
                 <td>Kebele <?php echo $row['kebele']; ?></td>
                 <td><?php echo number_format($row['amount']); ?> ETB</td>
                 <td>
                     <?php 
-                    // Visual Status logic
-                    if($row['status'] == '0' || $row['status'] == 'Available') {
+                    // Visual Status logic (explicit handling)
+                    $status_val = $row['status'] ?? '';
+                    if($status_val === '0' || strcasecmp($status_val, 'Available') === 0) {
                         echo '<span class="txt-available">Available</span>';
-                    } else {
+                    } elseif($status_val === '1' || strcasecmp($status_val, 'Rented') === 0) {
                         echo '<span class="txt-rented">Rented</span>';
+                    } elseif(strcasecmp($status_val, 'Pending') === 0 || (isset($row['is_approved']) && $row['is_approved'] == 0)) {
+                        echo '<span class="txt-pending">Pending</span>';
+                    } else {
+                        echo '<span class="txt-unknown">Unknown</span>';
                     }
                     ?>
                 </td>

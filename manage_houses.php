@@ -28,6 +28,7 @@ $current_user = $_SESSION['user_id'];
         .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 15px; }
         .available { background: #28a745; color: white; }
         .rented { background: #dc3545; color: white; }
+        .pending { background: #f59e0b; color: white; }
 
         /* Buttons */
         .btn {
@@ -97,14 +98,19 @@ $current_user = $_SESSION['user_id'];
             $status = $row['status'] ?? 'Available';
     ?>
         <div class="card">
-            <span class="badge <?php echo ($status == 'Rented') ? 'rented' : 'available'; ?>">
-                <?php echo $status; ?>
+            <span class="badge <?php 
+                $badge_class = 'available';
+                if(strcasecmp($status, 'Rented') === 0) $badge_class = 'rented';
+                elseif(strcasecmp($status, 'Pending') === 0) $badge_class = 'pending';
+                echo $badge_class;
+            ?>">
+                <?php echo htmlspecialchars($status); ?>
             </span>
 
             <img src="uploads/<?php echo $row['image']; ?>" alt="House Image">
             
             <div class="card-info">
-                                    <span class="category-labelph"><?p echo htmlspecialchars($row['category']); ?></span>
+                                    <span class="category-labelph"><?php echo htmlspecialchars($row['category']); ?></span>
 
                 <h3 style="margin-top:0;">Kebele <?php echo htmlspecialchars($row['kebele']); ?></h3>
                 <p>Price: <strong><?php echo number_format($row['amount']); ?> ETB</strong></p>
@@ -120,8 +126,6 @@ $current_user = $_SESSION['user_id'];
 
                 <form action="delete.php" method="POST" onsubmit="return confirm('WARNING: This will permanently delete this listing. Continue?')">
                     <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                    <input type="password" name="key" placeholder="Enter Secret Key" required 
-                           style="width: 100%; padding: 8px; margin-bottom: 5px; border: 1px solid #ccc; box-sizing: border-box;">
                     <button type="submit" name="delete_btn" class="btn btn-delete">Delete Forever</button>
                 </form>
             </div>

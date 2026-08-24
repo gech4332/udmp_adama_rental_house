@@ -2,8 +2,8 @@
 include('db.php');
 if(isset($_POST['approve'])) {
     $id = $_POST['house_id'];
-    // Move from Pending (0) to Available (1)
-    mysqli_query($conn, "UPDATE houses SET status = '1' WHERE id = '$id'");
+    // Approve the house: set status to 'Available' and is_approved to 1
+    mysqli_query($conn, "UPDATE houses SET status = 'Available', is_approved = 1 WHERE id = '$id'");
     header("Location: admin_manage_houses.php?msg=Approved");
 }
 
