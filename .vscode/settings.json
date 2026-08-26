@@ -1,0 +1,26 @@
+{
+  "php.validate.executablePath": "/opt/lampp/bin/php",
+  "php.executablePath": "/opt/lampp/bin/php",
+  "intelephense.environment.phpVersion": "8.2.12",
+  "files.associations": {
+    "*.php": "php"
+  },
+  "liveServer.settings.root": "/opt/lampp/htdocs/udmp_adama_rental_house/",
+  "liveServer.settings.port": 5500,
+  "liveServer.settings.ignoreFiles": [
+    ".vscode/**",
+    "**/*.sql"
+  ],
+  "editor.formatOnSave": true,
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+  "mysql.connections": {
+    "localhost": {
+      "host": "localhost",
+      "user": "root",
+      "password": "",
+      "port": 3306
+    }
+  }
+}

@@ -1,18 +1,21 @@
-`<?php 
-include('db.php'); 
+<?php
+include('db.php');
 
 if(isset($_POST['register'])){
     $name = mysqli_real_escape_string($conn, $_POST['full_name']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT); // Secure hashing
+    $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     $check_email = mysqli_query($conn, "SELECT id FROM users WHERE email='$email'");
-    if(mysqli_num_rows($check_email) > 0){
+    if($check_email && mysqli_num_rows($check_email) > 0){
         echo "<script>alert('Email already exists!');</script>";
     } else {
         $sql = "INSERT INTO users (full_name, email, password) VALUES ('$name', '$email', '$pass')";
         if(mysqli_query($conn, $sql)){
-            echo "<script>alert('Registration successful!'); window.location='login.php';</script>";
+            header("Location: login.php");
+            exit();
+        } else {
+            echo "<script>alert('Registration failed. Please try again.');</script>";
         }
     }
 }

@@ -7,11 +7,12 @@ if(isset($_POST['login'])){
     $pass = $_POST['password'];
 
     $res = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
-    if($user = mysqli_fetch_assoc($res)){
+    if($res && ($user = mysqli_fetch_assoc($res))){
         if(password_verify($pass, $user['password'])){
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
             header("Location: manage_houses.php");
+            exit();
         } else {
             echo "<script>alert('Wrong password!');</script>";
         }
