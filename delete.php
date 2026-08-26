@@ -1,5 +1,6 @@
 <?php
 include('db.php');
+include('session_config.php');
 session_start(); //
 
 // 1. Check if the user is logged in

@@ -1,5 +1,5 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+if (session_status() !== PHP_SESSION_ACTIVE) { include('session_config.php'); @session_start(); }
 if(!isset($current_page)) $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <style>
@@ -43,6 +43,6 @@ if(!isset($current_page)) $current_page = basename($_SERVER['PHP_SELF']);
     </a>
 
     <div class="sidebar-footer">
-        <a href="Home.php" data-no-ajax="1"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        <a href="logout.php" data-no-ajax="1"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
     </div>
 </div>

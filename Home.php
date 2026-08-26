@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿<?php include('session_config.php'); session_start(); ?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -24,6 +25,20 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .nav-links a:hover{color:#fff;background:rgba(255,255,255,.1)}
 .nav-links .btn-nav{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;padding:10px 22px;border-radius:10px;font-weight:600}
 .nav-links .btn-nav:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(13,148,136,.4)}
+.user-avatar-wrap{position:relative}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
+.user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#1e293b;border-radius:12px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;z-index:1001}
+.user-avatar-wrap:hover .user-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.user-dropdown-header{padding:16px;display:flex;align-items:center;gap:10px}
+.user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.user-dropdown-name{color:#f1f5f9;font-size:13px;font-weight:600}
+.user-dropdown-role{color:#94a3b8;font-size:11px}
+.user-dropdown-divider{height:1px;background:rgba(255,255,255,.08)}
+.user-dropdown a{display:flex;align-items:center;gap:8px;padding:10px 16px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;transition:all .15s}
+.user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
+.user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
+.user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
 
 /* HERO */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0f172a}
@@ -112,8 +127,24 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
     </a>
     <div class="nav-links">
         <a href="index.php">Browse</a>
-        <a href="login.php">Landlord Login</a>
-        <a href="admin_login.php" class="btn-nav"><i class="fas fa-shield-halved"></i> Admin</a>
+        <?php if(isset($_SESSION['user_id'])): ?>
+            <a href="manage_houses.php">Dashboard</a>
+            <div class="user-avatar-wrap">
+                <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <div class="user-avatar-sm"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
+                        <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
+                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?></div></div>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
+                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <a href="login.php" class="btn-nav"><i class="fas fa-right-to-bracket"></i> Login</a>
+        <?php endif; ?>
     </div>
 </nav>
 
@@ -206,7 +237,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
             <h4>Quick Links</h4>
             <a href="index.php">Browse Properties</a>
             <a href="register.php">List Your Property</a>
-            <a href="login.php">Landlord Login</a>
+            <a href="login.php">Sign In</a>
         </div>
         <div class="footer-col">
             <h4>Categories</h4>
