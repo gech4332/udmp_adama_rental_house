@@ -16,7 +16,7 @@
             <h4 style="color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Quick Links</h4>
             <a href="index.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">Browse Properties</a>
             <a href="register.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">List Your Property</a>
-            <a href="login.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">Landlord Login</a>
+            <a href="login.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">Sign In</a>
         </div>
         <div>
             <h4 style="color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Categories</h4>

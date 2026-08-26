@@ -1,9 +1,10 @@
 <?php
+include('session_config.php');
 session_start();
 include('db.php');
 
 if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
-    header('Location: admin_login.php');
+    header('Location: login.php');
     exit();
 }
 

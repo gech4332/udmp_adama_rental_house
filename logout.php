@@ -1,4 +1,5 @@
 <?php
+include('session_config.php');
 session_start();
 
 // 1. Clear all session variables
@@ -17,6 +18,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // 4. Force a hard redirect to the home page
-header("Location: index.php");
+header("Location: Home.php");
 exit();
 ?>

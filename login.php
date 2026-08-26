@@ -1,4 +1,5 @@
 <?php 
+include('session_config.php');
 session_start();
 include('db.php');
 
@@ -11,7 +12,13 @@ if(isset($_POST['login'])){
         if(password_verify($pass, $user['password'])){
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
-            header("Location: manage_houses.php");
+            
+            if($user['is_admin'] >= 1){
+                $_SESSION['is_admin'] = (int)$user['is_admin'];
+                header("Location: admin_panel.php");
+            } else {
+                header("Location: manage_houses.php");
+            }
             exit();
         } else {
             $error = "Invalid password. Please try again.";
@@ -26,7 +33,7 @@ if(isset($_POST['login'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landlord Login - AdamaRent</title>
+    <title>Login - AdamaRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -76,12 +83,12 @@ if(isset($_POST['login'])){
     <div class="auth-left">
         <div class="auth-left-content">
             <div class="logo">AR</div>
-            <h2>Welcome Back</h2>
-            <p>Sign in to manage your property listings and connect with potential tenants.</p>
+            <h2>Welcome to AdamaRent</h2>
+            <p>Sign in to manage your properties, track listings, and access your dashboard.</p>
             <ul class="features">
-                <li><i class="fas fa-check-circle"></i> Manage your house listings</li>
+                <li><i class="fas fa-check-circle"></i> Manage house listings</li>
                 <li><i class="fas fa-check-circle"></i> Track views and inquiries</li>
-                <li><i class="fas fa-check-circle"></i> Update property status</li>
+                <li><i class="fas fa-check-circle"></i> Admin & landlord access</li>
             </ul>
         </div>
     </div>
@@ -92,8 +99,8 @@ if(isset($_POST['login'])){
                 <h3>AdamaRent</h3>
             </div>
             <a href="Home.php" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
-            <h1>Landlord Login</h1>
-            <p class="subtitle">Enter your credentials to access your dashboard</p>
+            <h1>Sign In</h1>
+            <p class="subtitle">Enter your credentials to access your account</p>
 
             <?php if(isset($error)): ?>
                 <div class="error-msg"><i class="fas fa-circle-exclamation"></i> <?php echo $error; ?></div>
