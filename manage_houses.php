@@ -1,146 +1,194 @@
 <?php 
 session_start();
-include('db.php'); //
+include('db.php');
 
-// 1. Security: Only allow logged-in landlords
 if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
     exit();
 }
 
 $current_user = $_SESSION['user_id'];
-?>
 
+$stats = mysqli_fetch_assoc(mysqli_query($conn, "SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) as available,
+    SUM(CASE WHEN status='Rented' THEN 1 ELSE 0 END) as rented,
+    SUM(CASE WHEN status='Pending' THEN 1 ELSE 0 END) as pending
+    FROM houses WHERE user_id = $current_user"));
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Landlord Dashboard - Manage My Posts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AdamaRent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .header { background: #4b7b8a;; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; border: 1px solid #ddd; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .card-info { padding: 20px; }
-        
-        /* Status Badges */
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 15px; }
-        .available { background: #28a745; color: white; }
-        .rented { background: #dc3545; color: white; }
-        .pending { background: #f59e0b; color: white; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
 
-        /* Buttons */
-        .btn {
-             display: block; 
-             text-align: center; 
-             text-decoration: none;
-             padding: 10px;
-             border-radius: 6px;
-             margin-bottom: 8px; 
-             font-weight: bold; 
-             font-size: 14px; 
-             transition: 0.3s;
-             border: none; 
-             width: 100%; 
-             cursor: pointer;
-         }
-        .btn-status {
-             background: #6c757d; 
-             color: white;
-             }
-        .btn-edit { 
-            background: #ffc107; 
-            color: #333;
-         }
-        .btn-delete {
-             background: #fee;
-              color: #d93025;
-               border: 1px solid #d93025; }
-        .btn:hover {
-             opacity: 0.8;
-             }
-                   .category-labelph {
-            display: inline-block;
-            background: #e9ecef;
-            color: #4b7b8a;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 8px;
+        /* NAVBAR */
+        .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 20px rgba(0,0,0,.15)}
+        .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}
+        .nav-brand-text{color:#fff;font-size:18px;font-weight:800}
+        .nav-brand-text span{color:#2dd4bf}
+        .nav-right{display:flex;align-items:center;gap:6px}
+        .nav-right a{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .2s}
+        .nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
+        .nav-right .btn-post{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
+        .nav-right .btn-post:hover{box-shadow:0 4px 15px rgba(13,148,136,.4)}
+
+        .dashboard{max-width:1200px;margin:0 auto;padding:32px}
+
+        /* STATS */
+        .welcome{margin-bottom:28px}
+        .welcome h1{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px}
+        .welcome p{color:#64748b;font-size:14px;margin-top:4px}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+        .stat-box{background:#fff;border-radius:12px;padding:20px;border:1px solid #f1f5f9;transition:all .3s}
+        .stat-box:hover{border-color:#e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+        .stat-box .stat-label{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+        .stat-box .stat-number{font-size:28px;font-weight:800}
+        .stat-box:nth-child(1) .stat-number{color:#0f172a}
+        .stat-box:nth-child(2) .stat-number{color:#0d9488}
+        .stat-box:nth-child(3) .stat-number{color:#ef4444}
+        .stat-box:nth-child(4) .stat-number{color:#f59e0b}
+
+        /* CARDS */
+        .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .section-title h2{font-size:18px;font-weight:700;color:#0f172a}
+        .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+        .card{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #f1f5f9;transition:all .3s}
+        .card:hover{border-color:#e2e8f0;box-shadow:0 8px 25px rgba(0,0,0,.06)}
+        .card-img{position:relative;height:200px;overflow:hidden}
+        .card-img img{width:100%;height:100%;object-fit:cover;background:#f1f5f9}
+        .card-badge{position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase}
+        .badge-available{background:rgba(16,185,129,.9);color:#fff}
+        .badge-rented{background:rgba(239,68,68,.9);color:#fff}
+        .badge-pending{background:rgba(245,158,11,.9);color:#fff}
+        .card-body{padding:18px}
+        .card-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .card-category{background:#f1f5f9;color:#475569;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase}
+        .card-price{font-size:20px;font-weight:800;color:#0d9488}
+        .card-location{font-size:13px;color:#64748b;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+        .card-location i{color:#0d9488;font-size:12px}
+        .card-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+        .card-actions a,.card-actions button{padding:10px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all .2s;text-align:center;font-family:inherit}
+        .btn-toggle{background:#f1f5f9;color:#475569}
+        .btn-toggle:hover{background:#e2e8f0}
+        .btn-edit{background:rgba(245,158,11,.1);color:#d97706}
+        .btn-edit:hover{background:#f59e0b;color:#fff}
+        .btn-delete{background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.2)}
+        .btn-delete:hover{background:#ef4444;color:#fff}
+
+        .empty-state{text-align:center;padding:80px 20px;background:#fff;border-radius:14px;border:1px solid #f1f5f9;grid-column:1/-1}
+        .empty-state i{font-size:48px;color:#d1d5db;margin-bottom:16px}
+        .empty-state h3{font-size:18px;font-weight:700;color:#374151;margin-bottom:8px}
+        .empty-state p{color:#64748b;font-size:14px;margin-bottom:20px}
+        .empty-state a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;transition:all .3s}
+        .empty-state a:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,148,136,.4)}
+
+        @media(max-width:768px){
+            .dashboard{padding:16px}
+            .stats-row{grid-template-columns:repeat(2,1fr)}
+            .card-grid{grid-template-columns:1fr}
+            .card-actions{grid-template-columns:1fr}
         }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <div>
-        <h2 style="margin:0;">Wellcome: <?php echo htmlspecialchars($_SESSION['user_name']); ?></h2>
-    </div>
-    <nav>
-        <a href="index.php" style="color: white; text-decoration: none; margin-right: 20px;">Public Site</a>
-        <a href="post_house.php" style="background: #28a745; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">+ Post New House</a>
-        <a href="logout.php" style="color: #ffc107; text-decoration: none; margin-left: 15px;">Logout</a>
+    <nav class="navbar">
+        <a href="Home.php" class="nav-brand">
+            <div class="nav-brand-icon">AR</div>
+            <div class="nav-brand-text">Adama<span>Rent</span></div>
+        </a>
+        <div class="nav-right">
+            <a href="index.php"><i class="fas fa-globe"></i> Public Site</a>
+            <a href="post_house.php" class="btn-post"><i class="fas fa-plus"></i> New Listing</a>
+            <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
     </nav>
-</div>
 
-<div class="grid">
-    <?php
-    // Fetch only houses belonging to this user
-    $query = "SELECT * FROM houses WHERE user_id = '$current_user' ORDER BY id DESC";
-    $result = mysqli_query($conn, $query);
+    <div class="dashboard">
+        <div class="welcome">
+            <h1>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></h1>
+            <p>Manage your property listings from your personal dashboard</p>
+        </div>
 
-    if(mysqli_num_rows($result) > 0) {
-        while($row = mysqli_fetch_assoc($result)) {
-            // Ensure status has a default value if NULL
-            $status = $row['status'] ?? 'Available';
-    ?>
-        <div class="card">
-            <span class="badge <?php 
-                $badge_class = 'available';
-                if(strcasecmp($status, 'Rented') === 0) $badge_class = 'rented';
-                elseif(strcasecmp($status, 'Pending') === 0) $badge_class = 'pending';
-                echo $badge_class;
-            ?>">
-                <?php echo htmlspecialchars($status); ?>
-            </span>
-
-            <img src="uploads/<?php echo $row['image']; ?>" alt="House Image">
-            
-            <div class="card-info">
-                                    <span class="category-labelph"><?php echo htmlspecialchars($row['category']); ?></span>
-
-                <h3 style="margin-top:0;">Kebele <?php echo htmlspecialchars($row['kebele']); ?></h3>
-                <p>Price: <strong><?php echo number_format($row['amount']); ?> ETB</strong></p>
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-
-                <a href="toggle_status.php?id=<?php echo $row['id']; ?>" class="btn btn-status">
-                    Mark as <?php echo ($status == 'Available') ? 'Rented' : 'Available'; ?>
-                </a>
-
-                <a href="edit_house.php?id=<?php echo $row['id']; ?>" class="btn btn-edit">
-                    Edit Details
-                </a>
-
-                <form action="delete.php" method="POST" onsubmit="return confirm('WARNING: This will permanently delete this listing. Continue?')">
-                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                    <button type="submit" name="delete_btn" class="btn btn-delete">Delete Forever</button>
-                </form>
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">Total Listings</div>
+                <div class="stat-number"><?php echo $stats['total'] ?? 0; ?></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Available</div>
+                <div class="stat-number"><?php echo $stats['available'] ?? 0; ?></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Rented</div>
+                <div class="stat-number"><?php echo $stats['rented'] ?? 0; ?></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Pending</div>
+                <div class="stat-number"><?php echo $stats['pending'] ?? 0; ?></div>
             </div>
         </div>
-    <?php 
-        }
-    } else {
-        echo "<div style='grid-column: 1/-1; text-align:center; padding: 50px; background: white; border-radius: 8px;'>
-                <h3>You haven't posted any listings yet.</h3>
-                <a href='post_house.php' style='color: #007bff;'>Post your first house now!</a>
-              </div>";
-    }
-    ?>
-</div>
 
+        <div class="section-title">
+            <h2>Your Listings</h2>
+        </div>
+
+        <div class="card-grid">
+            <?php
+            $query = "SELECT * FROM houses WHERE user_id = $current_user ORDER BY id DESC";
+            $result = mysqli_query($conn, $query);
+
+            if($result && mysqli_num_rows($result) > 0) {
+                while($row = mysqli_fetch_assoc($result)) {
+                    $status = $row['status'] ?? 'Available';
+                    $badgeClass = 'badge-available';
+                    if(strcasecmp($status,'Rented')===0) $badgeClass = 'badge-rented';
+                    elseif(strcasecmp($status,'Pending')===0) $badgeClass = 'badge-pending';
+            ?>
+                <div class="card">
+                    <div class="card-img">
+                        <img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Property" loading="lazy">
+                        <span class="card-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($status); ?></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-info">
+                            <span class="card-category"><?php echo htmlspecialchars($row['category']); ?></span>
+                            <div class="card-price"><?php echo number_format($row['amount']); ?> ETB</div>
+                        </div>
+                        <div class="card-location">
+                            <i class="fas fa-location-dot"></i>
+                            Kebele <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
+                        </div>
+                        <div class="card-actions">
+                            <a href="toggle_status.php?id=<?php echo $row['id']; ?>" class="btn-toggle">
+                                <i class="fas fa-sync-alt"></i> <?php echo ($status=='Available') ? 'Mark Rented' : 'Mark Available'; ?>
+                            </a>
+                            <a href="edit_house.php?id=<?php echo $row['id']; ?>" class="btn-edit">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form action="delete.php" method="POST" onsubmit="return confirm('Permanently delete this listing?')" style="display:contents">
+                                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" name="delete_btn" class="btn-delete"><i class="fas fa-trash"></i> Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php 
+                }
+            } else {
+                echo '<div class="empty-state"><i class="fas fa-home"></i><h3>No listings yet</h3><p>Start listing your properties and reach potential tenants.</p><a href="post_house.php"><i class="fas fa-plus"></i> Post Your First House</a></div>';
+            }
+            ?>
+        </div>
+    </div>
+
+    <?php include('footer.php'); ?>
 </body>
-<?php include('footer.php'); ?>
 </html>

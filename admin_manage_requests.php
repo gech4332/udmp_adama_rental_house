@@ -2,141 +2,125 @@
 session_start();
 include('db.php');
 
-// Temporarily enable error display for debugging this page
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
     header('Location: admin_login.php');
     exit();
 }
 
-// Select ONLY pending requests (status 0)
 $requests = mysqli_query($conn, "SELECT * FROM requests WHERE status = 0 ORDER BY created_at DESC");
-
-if ($requests === false) {
-    echo '<h3>Error loading requests</h3>';
-    echo '<pre>' . htmlspecialchars(mysqli_error($conn)) . '</pre>';
-    exit();
-}
-
-
-
-// We'll fetch related user and house rows per request to avoid complex JOIN errors
-
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
- <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Admin Console | Adama Rent</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
-<title>Pending Approvals</title></head>
-<body style="font-family: sans-serif; padding: 40px; background: #f8fafc;">
-    
-    <main class="main-content">
-    <button onclick="history.back()" style="background:#fff;border:1px solid #e2e8f0;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
-    <h2>Pending Requests Queue</h2>
-    <?php if(mysqli_num_rows($requests) == 0): ?>
-        <p>No pending requests.</p>
-    <?php else: ?>
+    <title>Pending Approvals - AdamaRent Admin</title>
+    <?php include(__DIR__ . '/header.php'); ?>
+    <style>
+        .content{margin-left:260px;padding:40px;width:calc(100% - 260px)}
+        .content h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+        .content h1 i{color:#ef4444}
+        .request-card{background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:20px;margin-bottom:16px;display:flex;gap:20px;transition:all .3s}
+        .request-card:hover{border-color:#e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+        .req-img{flex:0 0 200px}
+        .req-img img{width:200px;height:140px;object-fit:cover;border-radius:10px}
+        .req-img .no-img{width:200px;height:140px;background:#f1f5f9;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px}
+        .req-body{flex:1}
+        .req-body h3{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:6px}
+        .req-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#64748b;margin-bottom:10px}
+        .req-meta strong{color:#374151}
+        .req-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:center;min-width:120px}
+        .btn-approve{padding:10px 20px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;transition:all .2s}
+        .btn-approve:hover{box-shadow:0 4px 12px rgba(5,150,105,.4);transform:translateY(-1px)}
+        .btn-reject{padding:10px 20px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;transition:all .2s}
+        .btn-reject:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+        .empty-state{text-align:center;padding:60px 20px;background:#fff;border-radius:14px;border:1px solid #f1f5f9}
+        .empty-state i{font-size:48px;color:#d1d5db;margin-bottom:16px}
+        .empty-state h3{font-size:18px;font-weight:700;color:#374151;margin-bottom:8px}
+        .empty-state p{color:#64748b;font-size:14px}
+        .section-title{font-size:16px;font-weight:700;color:#0f172a;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+        .section-title i{color:#0d9488}
+    </style>
+</head>
+<body>
+<div class="content">
+    <h1><i class="fas fa-inbox"></i> Pending Approvals</h1>
+
+    <?php if($requests && mysqli_num_rows($requests) > 0): ?>
         <?php while($req = mysqli_fetch_assoc($requests)): 
-                // Fetch user and house rows safely
-                $user_res = mysqli_query($conn, "SELECT full_name FROM users WHERE id = " . (int)$req['user_id']);
-                $user = ($user_res) ? mysqli_fetch_assoc($user_res) : null;
-                $house_res = mysqli_query($conn, "SELECT * FROM houses WHERE id = " . (int)$req['house_id']);
-                $house = ($house_res) ? mysqli_fetch_assoc($house_res) : null;
-                
-                // Build a safe array with defaults
-                $r = [
-                    'req_id' => $req['id'],
-                    'req_created' => $req['created_at'],
-                    'full_name' => $user['full_name'] ?? 'Unknown',
-                    'user_phone' => $user['phone'] ?? '',
-                    'image' => $house['image'] ?? '',
-                    'kebele' => $house['kebele'] ?? '',
-                    'street' => $house['street'] ?? '',
-                    'house_number' => $house['house_number'] ?? '',
-                    'category' => $house['category'] ?? '',
-                    'video_file' => $house['video_file'] ?? '',
-                    'map_link' => $house['map_link'] ?? '',
-                    'house_desc' => $house['description'] ?? '',
-                    'price' => $house['amount'] ?? 0,
-                    'phone' => $house['phone'] ?? '',
-                    // 'delete_key' intentionally removed for privacy
-                    // 'delete_key' => $house['delete_key'] ?? '',
-                    'house_id' => $house['id'] ?? 0
-                ];
+            $user_res = mysqli_query($conn, "SELECT full_name FROM users WHERE id = " . (int)$req['user_id']);
+            $user = $user_res ? mysqli_fetch_assoc($user_res) : null;
+            $house_res = mysqli_query($conn, "SELECT * FROM houses WHERE id = " . (int)$req['house_id']);
+            $house = $house_res ? mysqli_fetch_assoc($house_res) : null;
         ?>
-            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; gap: 20px;">
-                <div style="flex:0 0 220px;">
-                    <?php if(!empty($r['image'])): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($r['image']); ?>" style="width: 220px; height:140px; object-fit:cover; border-radius:6px;">
+            <div class="request-card">
+                <div class="req-img">
+                    <?php if(!empty($house['image'])): ?>
+                        <img src="uploads/<?php echo htmlspecialchars($house['image']); ?>" alt="Property">
                     <?php else: ?>
-                        <div style="width:220px;height:140px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#777;">No Image</div>
-                    <?php endif; ?>
-                    <?php if(!empty($r['video_file'])): ?>
-                        <div style="margin-top:8px;text-align:center;"><a href="uploads/<?php echo htmlspecialchars($r['video_file']); ?>" target="_blank" style="text-decoration:none; color:#4b7b8a;">▶ View Video</a></div>
+                        <div class="no-img"><i class="fas fa-image"></i> No Image</div>
                     <?php endif; ?>
                 </div>
-                <div style="flex:1;">
-                    <h3 style="margin:0 0 6px;"><?php echo htmlspecialchars($r['house_desc'] ?: 'No title'); ?></h3>
-                    <p style="margin:0 0 6px; color:#555;"><strong>Category:</strong> <?php echo htmlspecialchars($r['category']); ?>
-                       &nbsp;|&nbsp; <strong>Price:</strong> <?php echo number_format($r['price']); ?> ETB</p>
-                    <p style="margin:6px 0; color:#444;"><strong>Location:</strong> Kebele <?php echo htmlspecialchars($r['kebele']); ?>, <?php echo htmlspecialchars($r['street']); ?> <?php echo htmlspecialchars($r['house_number']); ?></p>
-
-                    <p style="margin:6px 0; color:#333;"><strong>Contact Phone:</strong> <?php echo htmlspecialchars($r['phone'] ?: 'Not provided'); ?>
-                    &nbsp;|&nbsp; <strong>Posted By:</strong> <?php echo htmlspecialchars($r['full_name']); ?> (<?php echo htmlspecialchars($r['user_phone']); ?>)</p>
-
-                        <p><a href="<?php echo htmlspecialchars($r['map_link']); ?>" target="_blank">View on Map</a></p>
-                       <p style="font-size:12px;color:#888;margin-top:8px;">Posted on: <?php echo date('M d, Y H:i', strtotime($r['req_created'])); ?></p>
+                <div class="req-body">
+                    <h3><?php echo htmlspecialchars($house['description'] ?: $house['category'] ?? 'New Listing'); ?></h3>
+                    <div class="req-meta">
+                        <span><strong>Category:</strong> <?php echo htmlspecialchars($house['category'] ?? ''); ?></span>
+                        <span><strong>Price:</strong> <?php echo number_format($house['amount'] ?? 0); ?> ETB</span>
+                        <span><strong>Location:</strong> Kebele <?php echo htmlspecialchars($house['kebele'] ?? ''); ?>, <?php echo htmlspecialchars($house['street'] ?? ''); ?></span>
+                    </div>
+                    <div class="req-meta">
+                        <span><strong>Posted by:</strong> <?php echo htmlspecialchars($user['full_name'] ?? 'Unknown'); ?></span>
+                        <span><strong>Phone:</strong> <?php echo htmlspecialchars($house['phone'] ?? 'N/A'); ?></span>
+                        <span><strong>Date:</strong> <?php echo date('M d, Y', strtotime($req['created_at'])); ?></span>
+                    </div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:140px;">
-                    <a href="admin_actions.php?action=approve&id=<?php echo $r['req_id']; ?>" style="background:#10b981;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Approve</a>
-                    <a href="admin_actions.php?action=reject&id=<?php echo $r['req_id']; ?>" style="background:#dc3545;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Reject</a>
+                <div class="req-actions">
+                    <a href="admin_actions.php?action=approve&id=<?php echo $req['id']; ?>" class="btn-approve"><i class="fas fa-check"></i> Approve</a>
+                    <a href="admin_actions.php?action=reject&id=<?php echo $req['id']; ?>" class="btn-reject"><i class="fas fa-times"></i> Reject</a>
                 </div>
             </div>
         <?php endwhile; ?>
+    <?php else: ?>
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h3>All caught up!</h3>
+            <p>No pending requests to review at this time.</p>
+        </div>
     <?php endif; ?>
 
     <?php
-    // Also show houses with status 'Pending' that don't have a request row
     $pending_houses_q = "SELECT h.*, u.full_name FROM houses h LEFT JOIN requests r ON r.house_id = h.id LEFT JOIN users u ON h.user_id = u.id WHERE (h.status = 'Pending' OR h.is_approved = 0 OR h.is_approved IS NULL) AND r.id IS NULL ORDER BY h.created_at DESC";
     $pending_res = mysqli_query($conn, $pending_houses_q);
-    $pending_count = ($pending_res) ? mysqli_num_rows($pending_res) : 0;
-    if ($pending_res && mysqli_num_rows($pending_res) > 0): ?>
-        <h3 style="margin-top:20px;">Pending Listings (no request record)</h3>
+    if($pending_res && mysqli_num_rows($pending_res) > 0): ?>
+        <div class="section-title"><i class="fas fa-clock"></i> Pending Listings (without request record)</div>
         <?php while($house = mysqli_fetch_assoc($pending_res)): ?>
-            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; gap: 20px;">
-                <div style="flex:0 0 180px;">
+            <div class="request-card">
+                <div class="req-img">
                     <?php if(!empty($house['image'])): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($house['image']); ?>" style="width: 180px; height:120px; object-fit:cover; border-radius:6px;">
+                        <img src="uploads/<?php echo htmlspecialchars($house['image']); ?>" alt="Property">
                     <?php else: ?>
-                        <div style="width:180px;height:120px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#777;">No Image</div>
+                        <div class="no-img"><i class="fas fa-image"></i> No Image</div>
                     <?php endif; ?>
                 </div>
-                <div style="flex:1;">
-                    <h3 style="margin:0 0 6px;"><?php echo htmlspecialchars($house['description'] ?? 'No description'); ?></h3>
-                    <p style="margin:0; color:#555;"><strong>Category:</strong> <?php echo htmlspecialchars($house['category']); ?> | <strong>Price:</strong> <?php echo number_format($house['amount']); ?> ETB</p>
-                    <p style="margin:6px 0; color:#444;"><strong>Location:</strong> Kebele <?php echo htmlspecialchars($house['kebele']); ?>, <?php echo htmlspecialchars($house['street']); ?> <?php echo htmlspecialchars($house['house_number']); ?></p>
-                    <p style="margin:6px 0; color:#333;"><strong>Contact Phone:</strong> <?php echo htmlspecialchars($house['phone'] ?? 'Not provided'); ?></p>
-                    <?php if(!empty($house['map_link'])): ?>
-                        <p><a href="<?php echo htmlspecialchars($house['map_link']); ?>" target="_blank">View on Map</a></p>
-                    <?php endif; ?>
-                    <p style="font-size:12px;color:#888;margin-top:8px;">Posted by <?php echo htmlspecialchars($house['full_name'] ?? 'Unknown'); ?> on <?php echo date('M d, Y H:i', strtotime($house['created_at'] ?? date('Y-m-d H:i'))); ?></p>
+                <div class="req-body">
+                    <h3><?php echo htmlspecialchars($house['description'] ?: 'New Listing'); ?></h3>
+                    <div class="req-meta">
+                        <span><strong>Category:</strong> <?php echo htmlspecialchars($house['category']); ?></span>
+                        <span><strong>Price:</strong> <?php echo number_format($house['amount']); ?> ETB</span>
+                        <span><strong>Location:</strong> Kebele <?php echo htmlspecialchars($house['kebele']); ?>, <?php echo htmlspecialchars($house['street']); ?></span>
+                    </div>
+                    <div class="req-meta">
+                        <span><strong>Posted by:</strong> <?php echo htmlspecialchars($house['full_name'] ?? 'Unknown'); ?></span>
+                        <span><strong>Date:</strong> <?php echo date('M d, Y', strtotime($house['created_at'])); ?></span>
+                    </div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-                    <a href="admin_actions.php?action=approve_house&id=<?php echo $house['id']; ?>" style="background:#10b981;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Approve</a>
-                    <a href="admin_actions.php?action=reject_house&id=<?php echo $house['id']; ?>" style="background:#dc3545;color:white;padding:8px 12px;border-radius:6px;text-decoration:none;">Reject</a>
+                <div class="req-actions">
+                    <a href="admin_actions.php?action=approve_house&id=<?php echo $house['id']; ?>" class="btn-approve"><i class="fas fa-check"></i> Approve</a>
+                    <a href="admin_actions.php?action=reject_house&id=<?php echo $house['id']; ?>" class="btn-reject"><i class="fas fa-times"></i> Reject</a>
                 </div>
             </div>
         <?php endwhile; ?>
     <?php endif; ?>
-
-</main>
+</div>
 </body>
 </html>
