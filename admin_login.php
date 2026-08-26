@@ -10,11 +10,11 @@ if(isset($_POST['login'])){
     $sql = "SELECT * FROM users WHERE email='$email' AND is_admin >= 1 LIMIT 1";
     $res = mysqli_query($conn, $sql);
 
-    if(mysqli_num_rows($res) == 1){
+    if($res && mysqli_num_rows($res) == 1){
         $user = mysqli_fetch_assoc($res);
         if(password_verify($password, $user['password'])){
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['user_name'] = $user['full_name'];
             // FIX: Save the actual rank (2) into the session[cite: 1]
             $_SESSION['is_admin'] = (int)$user['is_admin']; 
             header("Location: admin_panel.php");
