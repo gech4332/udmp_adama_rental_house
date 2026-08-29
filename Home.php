@@ -156,7 +156,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <p>The trusted digital marketplace connecting landlords and tenants across Adama City. Search, compare, and secure your next property.</p>
         <div class="hero-actions">
             <a href="index.php" class="btn-hero btn-hero-primary"><i class="fas fa-search"></i> Search Properties</a>
-            <a href="register.php" class="btn-hero btn-hero-secondary"><i class="fas fa-plus-circle"></i> List Your Property</a>
+            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>" class="btn-hero btn-hero-secondary"><i class="fas fa-plus-circle"></i> List Your Property</a>
         </div>
     </div>
 </header>
@@ -234,7 +234,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="footer-col">
             <h4>Quick Links</h4>
             <a href="index.php">Browse Properties</a>
-            <a href="register.php">List Your Property</a>
+            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>">List Your Property</a>
             <a href="login.php">Sign In</a>
         </div>
         <div class="footer-col">
