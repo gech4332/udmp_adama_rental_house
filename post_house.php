@@ -94,8 +94,6 @@ if(!isset($_SESSION['user_id'])){
             <div class="nav-brand-text">Adama<span>Rent</span></div>
         </a>
         <div class="nav-right">
-            <a href="index.php"><i class="fas fa-search"></i> Browse</a>
-            <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
             <div class="user-avatar-wrap">
                 <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
                 <div class="user-dropdown">
@@ -116,7 +114,6 @@ if(!isset($_SESSION['user_id'])){
         <div class="form-header">
             <h1>Post a New Property</h1>
             <p>Fill in the details below to list your property for potential tenants.</p>
-            <div class="user-tag"><i class="fas fa-user-check"></i> Logged in as <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Landlord'); ?></div>
         </div>
 
         <div class="form-card">
