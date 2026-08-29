@@ -126,9 +126,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="nav-brand-text">Adama<span>Rent</span></div>
     </a>
     <div class="nav-links">
-        <a href="index.php">Browse</a>
         <?php if(isset($_SESSION['user_id'])): ?>
-            <a href="manage_houses.php">Dashboard</a>
             <div class="user-avatar-wrap">
                 <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
                 <div class="user-dropdown">

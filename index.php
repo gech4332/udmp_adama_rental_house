@@ -111,9 +111,7 @@ header("Expires: 0");
             <div class="nav-brand-text">Adama<span>Rent</span></div>
         </a>
         <div class="nav-right">
-            <a href="index.php"><i class="fas fa-search"></i> Browse</a>
             <?php if(isset($_SESSION['user_id'])): ?>
-                <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
                 <div class="user-avatar-wrap">
                     <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
                     <div class="user-dropdown">
