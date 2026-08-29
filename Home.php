@@ -1,4 +1,9 @@
-﻿<?php include('session_config.php'); session_start(); ?>
+﻿<?php include('session_config.php'); session_start(); include('db.php');
+$total_houses  = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM houses"))[0];
+$total_landlords = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE is_admin=0"))[0];
+$total_kebeles = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(DISTINCT kebele) FROM houses"))[0];
+$total_tenants = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM requests WHERE status=0"))[0];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -163,10 +168,10 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 
 <section class="stats-bar">
     <div class="stats-grid">
-        <div class="stat-item"><h3>500+</h3><p>Properties Listed</p></div>
-        <div class="stat-item"><h3>200+</h3><p>Verified Landlords</p></div>
-        <div class="stat-item"><h3>30+</h3><p>Kebeles Covered</p></div>
-        <div class="stat-item"><h3>1000+</h3><p>Happy Tenants</p></div>
+        <div class="stat-item"><h3><?php echo $total_houses ?>+</h3><p>Properties Listed</p></div>
+        <div class="stat-item"><h3><?php echo $total_landlords ?>+</h3><p>Verified Landlords</p></div>
+        <div class="stat-item"><h3><?php echo $total_kebeles ?>+</h3><p>Kebeles Covered</p></div>
+        <div class="stat-item"><h3><?php echo $total_tenants ?>+</h3><p>Happy Tenants</p></div>
     </div>
 </section>
 
