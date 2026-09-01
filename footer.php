@@ -1,60 +1,38 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<footer style=" background: #4b7b8a; color: #bbb; padding: 60px 20px 20px 20px; margin-top: 50px; border-top: 5px solid #ffc107;">
-    <div style="max-width: 1200px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px;">
-        
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<footer style="background:#0f172a;color:rgba(255,255,255,.7);padding:60px 24px 30px;font-family:'Inter',system-ui,sans-serif">
+    <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px">
         <div>
-            <h3 style="color: white; margin-bottom: 20px; border-left: 3px solid #ffc107; padding-left: 10px;">AdamaRent</h3>
-            <p style=" color: white; font-size: 14px; line-height: 1.8;">
-                The First digital marketplace for property rentals in Adama City. We connect landlords and tenants directly, saving you time and money.
-            </p>
+            <h3 style="color:#fff;font-size:20px;font-weight:800;margin-bottom:12px">Adama<span style="color:#2dd4bf">Rent</span></h3>
+            <p style="font-size:14px;line-height:1.8;margin-bottom:20px">The trusted digital marketplace for property rentals in Adama City. Connecting landlords and tenants directly.</p>
+            <div style="display:flex;gap:10px">
+                <a href="https://t.me/Get_dope" target="_blank" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;background:rgba(0,136,204,.2);color:#0088cc;transition:all .3s;font-size:16px"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://facebook.com/Getdope" target="_blank" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;background:rgba(24,119,242,.2);color:#1877f2;transition:all .3s;font-size:16px"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://instagram.com/get_dope_men" target="_blank" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;background:rgba(225,48,108,.2);color:#e1306c;transition:all .3s;font-size:16px"><i class="fab fa-instagram"></i></a>
+                <a href="mailto:getahun930@gmail.com" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;background:rgba(234,67,53,.2);color:#ea4335;transition:all .3s;font-size:16px"><i class="fas fa-envelope"></i></a>
+            </div>
         </div>
-
         <div>
-            <h3 style="color: white; margin-bottom: 20px;">Navigation</h3>
-            <ul style="list-style: none; padding: 0; font-size: 14px;">
-                <li style="margin-bottom: 12px;"><a href="index.php" style="color: white; text-decoration: none;">🏠 Browse Houses</a></li>
-                <li style="margin-bottom: 12px;"><a href="post_house.php" style="color: white; text-decoration: none;">➕ Post a House</a></li>
-                <li style="margin-bottom: 12px;"><a href="login.php" style="color: white; text-decoration: none;">🔑 Landlord Login</a></li>
-            </ul>
+            <h4 style="color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Quick Links</h4>
+            <a href="index.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">Browse Properties</a>
+            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">List Your Property</a>
+            <a href="login.php" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s">Sign In</a>
         </div>
-
         <div>
-            <h3 style="color: white; margin-bottom: 20px;">Contact Us</h3>
-            <p style="font-size: 14px; color: white; display: flex; align-items: center; gap: 8px;">
-    <i class="fas fa-location-dot" style="color: #ffc107;"></i> 
-    Adama, Oromia, Ethiopia
-</p>
-            <p style="font-size: 14px; color: white;">📞 +251 910407721</p>
-            <p style="font-size: 14px; color: white;">📞 +251 938272728</p>
-
-            <div style="display: flex; gap: 15px; align-items: center;">
-    <a href="https://t.me/Get_dope" target="_blank" title="Telegram"
-       style="background: #0088cc; color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s;">
-       <i class="fab fa-telegram-plane" style="font-size: 18px;"></i>
-    </a>
-
-    <a href="https://facebook.com/Getdope" target="_blank" title="Facebook"
-       style="background: #1877f2; color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s;">
-       <i class="fab fa-facebook-f" style="font-size: 18px;"></i>
-    </a>
-
-    <a href="mailto:getahun930@gmail.com" title="Email Us"
-       style="background: #ea4335; color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s;">
-       <i class="fas fa-envelope" style="font-size: 16px;"></i>
-    </a>
-
-    <a href="https://instagram.com/get_dope_men" target="_blank" title="Instagram"
-       style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-       <i class="fab fa-instagram" style="font-size: 18px;"></i>
-    </a>
-</div>
-        
+            <h4 style="color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Categories</h4>
+            <a href="index.php?cat=Single+Home" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0">Single Homes</a>
+            <a href="index.php?cat=Apartment" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0">Apartments</a>
+            <a href="index.php?cat=Villa" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0">Villas</a>
+            <a href="index.php?cat=Shop" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0">Shops</a>
+        </div>
+        <div>
+            <h4 style="color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Contact</h4>
+            <a href="#" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0"><i class="fas fa-location-dot" style="color:#2dd4bf;margin-right:6px"></i> Adama, Oromia, Ethiopia</a>
+            <a href="tel:+251910407721" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0"><i class="fas fa-phone" style="color:#2dd4bf;margin-right:6px"></i> +251 910 407 721</a>
+            <a href="tel:+251938272728" style="display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0"><i class="fas fa-phone" style="color:#2dd4bf;margin-right:6px"></i> +251 938 272 728</a>
         </div>
     </div>
-
-    <hr style="border: 0; border-top: 1px solid #333; margin: 40px 0 20px 0;">
-
-    <div style="text-align: center; font-size: 12px; color: white;">
-        <p>&copy <?php echo date("Y"); ?> Adama House Rental System.All rights reserved</p>
+    <div style="max-width:1100px;margin:40px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);text-align:center;font-size:13px;color:rgba(255,255,255,.4)">
+        &copy; <?php echo date("Y"); ?> AdamaRent. All rights reserved.
     </div>
 </footer>

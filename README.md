@@ -34,6 +34,8 @@ Follow these steps to get the application up and running on your local machine.
 #### 5️⃣ View Your Site
 - Open your browser and navigate to:  
   **http://localhost:/rental_project/**
+- Or open your browser and navigate to: 
+  **http://localhost:/udmp_adama_rental_house/**
 - You should now see the application running!
 ---
 ### 🔧 Quick Troubleshooting

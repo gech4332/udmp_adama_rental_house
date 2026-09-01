@@ -1,34 +1,23 @@
 <?php
+include('session_config.php');
 session_start();
 include('db.php');
 
-// 1. Security Guard: Check Rank (Allows Rank 1 and Rank 2)
 if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1) {
     header("Location: login.php"); 
     exit();
 }
 
-// 2. Corrected Data Fetching Logic
-// Count Landlords (Rank 0)
 $landlords = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_admin = 0"));
-
-// Count Admins (Rank 1 and Rank 2 combined)
 $admins    = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_admin >= 1"));
-
-// Total Houses in the system (exclude pending/unapproved)
 $total_h   = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM houses WHERE NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)"));
 
-// Count Available (Active) — exclude pending/unapproved
 $res_active = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '0' OR status = 'Available') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
-$active_listings = mysqli_fetch_assoc($res_active)['total'];
+$active_listings = $res_active ? mysqli_fetch_assoc($res_active)['total'] : 0;
 
-// Count Rented (Occupied) — exclude pending/unapproved
 $res_rented = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '1' OR status = 'Rented') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
-$occupied_units = mysqli_fetch_assoc($res_rented)['total'];
+$occupied_units = $res_rented ? mysqli_fetch_assoc($res_rented)['total'] : 0;
 
-
-
-// Pending Requests (for Rank 1 to see work to do)
 $pending_req = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM requests WHERE status = 0"));
 ?>
 <!DOCTYPE html>
@@ -36,120 +25,81 @@ $pending_req = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM requests WHER
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Admin Console | Adama Rent</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
+    <title>Dashboard - AdamaRent Admin</title>
+    <?php include(__DIR__ . '/header.php'); ?>
     <style>
-        :root {
-            --primary-bg: #f8fafc;
-            --sidebar-color: #0f172a;
-            --card-white: #ffffff;
-            --text-main: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-green: #10b981;
-            --accent-orange: #f59e0b;
-            --accent-purple: #8b5cf6;
-            --accent-red: #ef4444;
-        }
-
-        body { font-family: 'Inter', sans-serif; background: var(--primary-bg); color: var(--text-main); margin: 0; display: flex; }
-
-        /* Sidebar Styling */
-        .sidebar { width: 280px; background: var(--sidebar-color); color: #fff; height: 100vh; position: fixed; padding: 30px 20px; box-sizing: border-box; }
-        .sidebar h2 { font-size: 22px; font-weight: 700; color: var(--accent-blue); margin-bottom: 40px; text-transform: uppercase; }
-        .nav-link { display: flex; align-items: center; padding: 14px 18px; color: #94a3b8; text-decoration: none; border-radius: 12px; margin-bottom: 8px; transition: 0.3s; }
-        .nav-link i { margin-right: 15px; width: 20px; text-align: center; }
-        .nav-link:hover, .nav-link.active { background: #1e293b; color: #fff; }
-        .nav-link.active { background: var(--accent-blue); }
-
-        /* Main Content */
-        .content { margin-left: 280px; padding: 50px; width: 100%; }
-        .header { margin-bottom: 40px; }
-        .header h1 { font-size: 28px; font-weight: 700; margin: 0; }
-        .header p { color: #64748b; margin-top: 5px; }
-
-        /* Grid & Clickable Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
-        .stat-link { text-decoration: none; color: inherit; display: block; }
-        .stat-box { background: var(--card-white); padding: 30px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: 0.3s; position: relative; overflow: hidden; border-top: 5px solid transparent; }
-        .stat-box:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .stat-box h3 { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
-        .stat-box .number { font-size: 36px; font-weight: 700; margin: 15px 0 0; }
-        .stat-box i { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.05; }
-        
-        /* Box Accents */
-        .border-blue { border-color: var(--accent-blue); }
-        .border-purple { border-color: var(--accent-purple); }
-        .border-dark { border-color: var(--sidebar-color); }
-        .border-green { border-color: var(--accent-green); }
-        .border-orange { border-color: var(--accent-orange); }
-        .border-red { border-color: var(--accent-red); }
+        .content{margin-left:260px;padding:40px;width:calc(100% - 260px)}
+        .header{margin-bottom:32px}
+        .header h1{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px}
+        .header p{color:#64748b;font-size:14px;margin-top:4px}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+        .stat-link{text-decoration:none;color:inherit;display:block}
+        .stat-box{background:#fff;padding:24px;border-radius:14px;border:1px solid #f1f5f9;transition:all .3s;position:relative;overflow:hidden}
+        .stat-box:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.06);border-color:#e2e8f0}
+        .stat-box h3{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0;font-weight:600}
+        .stat-box .number{font-size:32px;font-weight:800;margin:12px 0 0}
+        .stat-box i{position:absolute;right:-8px;bottom:-8px;font-size:64px;opacity:.04}
+        .accent-blue{border-top:3px solid #0d9488}
+        .accent-purple{border-top:3px solid #8b5cf6}
+        .accent-dark{border-top:3px solid #0f172a}
+        .accent-green{border-top:3px solid #10b981}
+        .accent-orange{border-top:3px solid #f59e0b}
+        .accent-red{border-top:3px solid #ef4444}
+        .accent-blue .number{color:#0d9488}
+        .accent-purple .number{color:#8b5cf6}
+        .accent-dark .number{color:#0f172a}
+        .accent-green .number{color:#10b981}
+        .accent-orange .number{color:#f59e0b}
+        .accent-red .number{color:#ef4444}
+        .info-bar{margin-top:32px;background:#fff;border:1px solid #f1f5f9;padding:20px;border-radius:14px;font-size:14px;color:#475569;display:flex;align-items:center;gap:16px}
+        .info-bar .info-icon{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     </style>
 </head>
 <body>
-
-    <?php include(__DIR__ . '/sidebar.php'); ?>
-
     <main class="content">
-        <button onclick="history.back()" style="background:#fff;border:1px solid #e2e8f0;padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:12px;font-weight:600;"><i class="fas fa-arrow-left"></i> Back</button>
         <header class="header">
-            <h1>Executive Summary</h1>
-            <p>Welcome back:<strong><?php echo $_SESSION['full_name']; ?></strong> <?php echo ($_SESSION['is_admin'] == 2) ? 'Super Admin' : 'Staff'; ?></p>
+            <h1>Dashboard</h1>
+            <p>Welcome back, <strong><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Admin'); ?></strong> &mdash; <?php echo ($_SESSION['is_admin'] == 2) ? 'Super Admin' : 'Staff'; ?></p>
         </header>
 
         <section class="stats-grid">
-            <!-- Landlords -->
-          <!-- Landlords -->
-<a href="admin_manage_users.php?role=landlords" class="stat-link">
-    <div class="stat-box border-blue">
-        <h3>Total Landlords</h3>
-        <div class="number"><?php echo $landlords; ?></div>
-        <i class="fas fa-users"></i>
-    </div>
-</a>
-            
-            <!-- Admins -->
-<a href="admin_manage_users.php?role=staff" class="stat-link">
-    <div class="stat-box border-purple">
-        <h3>Internal Staff</h3>
-        <div class="number"><?php echo $admins; ?></div>
-        <i class="fas fa-user-lock"></i>
-    </div>
-</a>
-
-            <!-- Total Inventory -->
-            <a href="admin_manage_houses.php" class="stat-link">
-                <div class="stat-box border-dark">
-                    <h3>Global Inventory</h3>
-                    <div class="number"><?php echo $total_h; ?></div>
-                    <i class="fas fa-city"></i>
+            <a href="admin_manage_users.php?role=landlords" class="stat-link">
+                <div class="stat-box accent-blue">
+                    <h3>Total Landlords</h3>
+                    <div class="number"><?php echo $landlords; ?></div>
+                    <i class="fas fa-users"></i>
                 </div>
             </a>
-
-            <!-- Corrected: Active Listings (Available) -->
-             <a href="admin_manage_houses.php?status=Available" class="stat-link">
-             
-                <div class="stat-box border-green">
+            <a href="admin_manage_users.php?role=staff" class="stat-link">
+                <div class="stat-box accent-purple">
+                    <h3>Internal Staff</h3>
+                    <div class="number"><?php echo $admins; ?></div>
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </a>
+            <a href="admin_manage_houses.php" class="stat-link">
+                <div class="stat-box accent-dark">
+                    <h3>Total Inventory</h3>
+                    <div class="number"><?php echo $total_h; ?></div>
+                    <i class="fas fa-building"></i>
+                </div>
+            </a>
+            <a href="admin_manage_houses.php?status=Available" class="stat-link">
+                <div class="stat-box accent-green">
                     <h3>Active Listings</h3>
                     <div class="number"><?php echo $active_listings; ?></div>
                     <i class="fas fa-check-double"></i>
                 </div>
             </a>
-
-            <!-- Corrected: Occupied Units (Rented) -->
-             <a href="admin_manage_houses.php?status=Rented" class="stat-link">
-            
-                <div class="stat-box border-orange">
+            <a href="admin_manage_houses.php?status=Rented" class="stat-link">
+                <div class="stat-box accent-orange">
                     <h3>Occupied Units</h3>
                     <div class="number"><?php echo $occupied_units; ?></div>
                     <i class="fas fa-key"></i>
                 </div>
             </a>
-
-            <!-- Pending Approvals -->
             <a href="admin_manage_requests.php" class="stat-link">
-                <div class="stat-box border-red">
+                <div class="stat-box accent-red">
                     <h3>Pending Approvals</h3>
                     <div class="number"><?php echo $pending_req; ?></div>
                     <i class="fas fa-hourglass-half"></i>
@@ -157,15 +107,10 @@ $pending_req = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM requests WHER
             </a>
         </section>
 
-        <div style="margin-top: 50px; background: #fff; border: 1px solid #e2e8f0; padding: 25px; border-radius: 20px; font-size: 14px; color: #475569; display: flex; align-items: center; gap: 20px;">
-            <div style="background: var(--accent-blue); color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-info"></i>
-            </div>
-            <div>
-                <strong>Operational Note:</strong> "Active Listings" reflects all properties currently marked as **Available**. Once a landlord or admin updates a property to **Rented**, it automatically moves to "Occupied Units."
-            </div>
+        <div class="info-bar">
+            <div class="info-icon"><i class="fas fa-info"></i></div>
+            <div><strong>Note:</strong> "Active Listings" shows properties marked as Available. Once marked as Rented by a landlord or admin, they move to "Occupied Units."</div>
         </div>
     </main>
-
 </body>
 </html>
