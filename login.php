@@ -13,6 +13,15 @@ if(isset($_POST['login'])){
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
             
+            // Check for a pending admin invite for this user
+            $uid = (int)$user['id'];
+            $check_invite = mysqli_query($conn, "SELECT * FROM admin_invites WHERE user_id=$uid AND status='pending' LIMIT 1");
+            if(mysqli_num_rows($check_invite) > 0){
+                $_SESSION['pending_admin_key'] = 1;
+                header("Location: admin_key.php");
+                exit();
+            }
+
             if($user['is_admin'] >= 1){
                 $_SESSION['is_admin'] = (int)$user['is_admin'];
                 header("Location: admin_panel.php");
