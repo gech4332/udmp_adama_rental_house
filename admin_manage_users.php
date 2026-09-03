@@ -25,6 +25,14 @@ if($role_filter == 'staff') {
 }
 
 $result = mysqli_query($conn, $query);
+
+$flash = [
+    'deleted'         => ['User deleted successfully.', 'green'],
+    'no_self_delete'  => ['You cannot delete your own account.', 'red'],
+    'no_super_delete' => ['You cannot delete a super admin account.', 'red'],
+    'invited'         => ['Admin invite generated.', 'green'],
+];
+$msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,35 +41,38 @@ $result = mysqli_query($conn, $query);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> - AdamaRent Admin</title>
     <?php include(__DIR__ . '/header.php'); ?>
-    <style>
-        .content{margin-left:260px;padding:40px;width:calc(100% - 260px)}
-        .content h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:24px;display:flex;align-items:center;gap:10px}
-        .content h1 i{color:#0d9488}
-        .badge-role{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-        .role-super{background:rgba(139,92,246,.1);color:#7c3aed}
-        .role-admin{background:rgba(245,158,11,.1);color:#d97706}
-        .role-landlord{background:rgba(100,116,139,.1);color:#475569}
-        .btn-sm{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-family:inherit;transition:all .2s}
-        .btn-edit{background:rgba(13,148,136,.1);color:#0d9488}
-        .btn-edit:hover{background:#0d9488;color:#fff}
-        .btn-delete{background:rgba(239,68,68,.08);color:#dc2626}
-        .btn-delete:hover{background:#ef4444;color:#fff}
-        .btn-promote{background:rgba(16,185,129,.1);color:#059669}
-        .btn-promote:hover{background:#059669;color:#fff}
-        .btn-revoke{background:rgba(245,158,11,.1);color:#d97706}
-        .btn-revoke:hover{background:#f59e0b;color:#fff}
-    </style>
 </head>
 <body>
 <div class="content">
-    <h1><i class="fas fa-users"></i> <?php echo $page_title; ?></h1>
+    <div class="page-header">
+        <div class="page-title">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div>
+                <h1><?php echo $page_title; ?></h1>
+                <div class="page-sub">Manage user accounts and roles</div>
+            </div>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-tabs">
+                <a href="admin_manage_users.php" class="filter-tab <?= ($role_filter=='all')?'active':'' ?>">All</a>
+                <a href="admin_manage_users.php?role=staff" class="filter-tab <?= ($role_filter=='staff')?'active':'' ?>">Staff</a>
+                <a href="admin_manage_users.php?role=landlords" class="filter-tab <?= ($role_filter=='landlords')?'active':'' ?>">Landlords</a>
+            </div>
+        </div>
+    </div>
+
+    <?php if($msg): ?>
+        <div class="flash flash-<?php echo $msg[1]; ?>">
+            <i class="fas fa-<?php echo $msg[1] === 'green' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+            <?php echo $msg[0]; ?>
+        </div>
+    <?php endif; ?>
     
     <div class="data-card">
         <table>
             <thead>
                 <tr>
-                    <th>Full Name</th>
-                    <th>Email</th>
+                    <th>User</th>
                     <th>Role</th>
                     <?php if($my_rank == 2): ?><th>Permissions</th><?php endif; ?>
                     <th>Actions</th>
@@ -71,10 +82,18 @@ $result = mysqli_query($conn, $query);
                 <?php while($row = mysqli_fetch_assoc($result)): 
                     $target_id = $row['id'];
                     $target_rank = $row['is_admin'];
+                    $initial = strtoupper(substr(trim($row['full_name'] ?? 'U'), 0, 1));
                 ?>
                 <tr>
-                    <td><strong><?php echo htmlspecialchars($row['full_name'] ?? 'User'); ?></strong></td>
-                    <td><?php echo htmlspecialchars($row['email']); ?></td>
+                    <td>
+                        <div class="cell-user">
+                            <div class="user-avatar-ms"><?php echo $initial; ?></div>
+                            <div>
+                                <strong><?php echo htmlspecialchars($row['full_name'] ?? 'User'); ?></strong>
+                                <div class="user-email"><?php echo htmlspecialchars($row['email']); ?></div>
+                            </div>
+                        </div>
+                    </td>
                     <td>
                         <?php 
                         $role_class = 'role-landlord';
@@ -87,27 +106,24 @@ $result = mysqli_query($conn, $query);
                     
                     <?php if($my_rank == 2): ?>
                     <td>
-                        <?php if($target_id != $my_id): ?>
-                            <form action="update_permission_v2.php" method="POST" style="display:inline">
-                                <input type="hidden" name="user_id" value="<?php echo $target_id; ?>">
-                                <?php if($target_rank == 0): ?>
-                                    <button name="action" value="1" class="btn-sm btn-promote"><i class="fas fa-arrow-up"></i> Make Admin</button>
-                                <?php else: ?>
-                                    <button name="action" value="0" class="btn-sm btn-revoke"><i class="fas fa-arrow-down"></i> Revoke</button>
-                                <?php endif; ?>
-                            </form>
+                        <?php if($target_id != $my_id && $target_rank == 0): ?>
+                            <a href="admin_invite.php" class="btn btn-sm btn-icon-promote" title="Generate an invite key to make this user an admin"><i class="fas fa-user-shield"></i> Invite as Admin</a>
+                        <?php elseif($target_id != $my_id): ?>
+                            <span style="font-size:12px;color:#94a3b8">Already admin</span>
                         <?php endif; ?>
                     </td>
                     <?php endif; ?>
 
                     <td>
-                        <a href="edit_user.php?id=<?php echo $target_id; ?>" class="btn-sm btn-edit"><i class="fas fa-edit"></i></a>
+                        <div style="display:flex;gap:6px">
+                        <a href="edit_user.php?id=<?php echo $target_id; ?>" class="btn-icon btn-icon-edit" title="Edit"><i class="fas fa-edit"></i></a>
                         <?php if($target_id != $my_id): ?>
                         <form action="delete_user.php" method="POST" style="display:inline" onsubmit="return confirm('Delete this user?')">
                             <input type="hidden" name="user_id" value="<?php echo $target_id; ?>">
-                            <button type="submit" class="btn-sm btn-delete"><i class="fas fa-trash"></i></button>
+                            <button type="submit" class="btn-icon btn-icon-del" title="Delete"><i class="fas fa-trash"></i></button>
                         </form>
                         <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endwhile; ?>

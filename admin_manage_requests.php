@@ -9,6 +9,12 @@ if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
 }
 
 $requests = mysqli_query($conn, "SELECT * FROM requests WHERE status = 0 ORDER BY created_at DESC");
+
+$flash = [
+    'approved' => ['Request approved.', 'green'],
+    'rejected' => ['Request rejected.', 'red'],
+];
+$msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,35 +23,25 @@ $requests = mysqli_query($conn, "SELECT * FROM requests WHERE status = 0 ORDER B
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Approvals - AdamaRent Admin</title>
     <?php include(__DIR__ . '/header.php'); ?>
-    <style>
-        .content{margin-left:260px;padding:40px;width:calc(100% - 260px)}
-        .content h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:24px;display:flex;align-items:center;gap:10px}
-        .content h1 i{color:#ef4444}
-        .request-card{background:#fff;border:1px solid #f1f5f9;border-radius:14px;padding:20px;margin-bottom:16px;display:flex;gap:20px;transition:all .3s}
-        .request-card:hover{border-color:#e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,.04)}
-        .req-img{flex:0 0 200px}
-        .req-img img{width:200px;height:140px;object-fit:cover;border-radius:10px}
-        .req-img .no-img{width:200px;height:140px;background:#f1f5f9;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px}
-        .req-body{flex:1}
-        .req-body h3{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:6px}
-        .req-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#64748b;margin-bottom:10px}
-        .req-meta strong{color:#374151}
-        .req-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:center;min-width:120px}
-        .btn-approve{padding:10px 20px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;transition:all .2s}
-        .btn-approve:hover{box-shadow:0 4px 12px rgba(5,150,105,.4);transform:translateY(-1px)}
-        .btn-reject{padding:10px 20px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;transition:all .2s}
-        .btn-reject:hover{background:#ef4444;color:#fff;border-color:#ef4444}
-        .empty-state{text-align:center;padding:60px 20px;background:#fff;border-radius:14px;border:1px solid #f1f5f9}
-        .empty-state i{font-size:48px;color:#d1d5db;margin-bottom:16px}
-        .empty-state h3{font-size:18px;font-weight:700;color:#374151;margin-bottom:8px}
-        .empty-state p{color:#64748b;font-size:14px}
-        .section-title{font-size:16px;font-weight:700;color:#0f172a;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
-        .section-title i{color:#0d9488}
-    </style>
 </head>
 <body>
 <div class="content">
-    <h1><i class="fas fa-inbox"></i> Pending Approvals</h1>
+    <div class="page-header">
+        <div class="page-title">
+            <div class="icon"><i class="fas fa-inbox"></i></div>
+            <div>
+                <h1>Pending Approvals</h1>
+                <div class="page-sub">Review property requests before they go live</div>
+            </div>
+        </div>
+    </div>
+
+    <?php if($msg): ?>
+        <div class="flash flash-<?php echo $msg[1]; ?>">
+            <i class="fas fa-<?php echo $msg[1] === 'green' ? 'check-circle' : 'times-circle'; ?>"></i>
+            <?php echo $msg[0]; ?>
+        </div>
+    <?php endif; ?>
 
     <?php if($requests && mysqli_num_rows($requests) > 0): ?>
         <?php while($req = mysqli_fetch_assoc($requests)): 
@@ -63,21 +59,21 @@ $requests = mysqli_query($conn, "SELECT * FROM requests WHERE status = 0 ORDER B
                     <?php endif; ?>
                 </div>
                 <div class="req-body">
-                    <h3><?php echo htmlspecialchars($house['description'] ?: $house['category'] ?? 'New Listing'); ?></h3>
+                    <h3><?php echo htmlspecialchars($house['description'] ?: ($house['category'] ?? 'New Listing')); ?></h3>
                     <div class="req-meta">
-                        <span><strong>Category:</strong> <?php echo htmlspecialchars($house['category'] ?? ''); ?></span>
-                        <span><strong>Price:</strong> <?php echo number_format($house['amount'] ?? 0); ?> ETB</span>
-                        <span><strong>Location:</strong> Kebele <?php echo htmlspecialchars($house['kebele'] ?? ''); ?>, <?php echo htmlspecialchars($house['street'] ?? ''); ?></span>
+                        <span><i class="fas fa-tag"></i> <strong><?php echo htmlspecialchars($house['category'] ?? ''); ?></strong></span>
+                        <span><i class="fas fa-money-bill"></i> <strong><?php echo number_format($house['amount'] ?? 0); ?> ETB</strong></span>
+                        <span><i class="fas fa-location-dot"></i> Kebele <?php echo htmlspecialchars($house['kebele'] ?? ''); ?></span>
                     </div>
                     <div class="req-meta">
-                        <span><strong>Posted by:</strong> <?php echo htmlspecialchars($user['full_name'] ?? 'Unknown'); ?></span>
-                        <span><strong>Phone:</strong> <?php echo htmlspecialchars($house['phone'] ?? 'N/A'); ?></span>
-                        <span><strong>Date:</strong> <?php echo date('M d, Y', strtotime($req['created_at'])); ?></span>
+                        <span><i class="fas fa-user"></i> <?php echo htmlspecialchars($user['full_name'] ?? 'Unknown'); ?></span>
+                        <span><i class="fas fa-phone"></i> <?php echo htmlspecialchars($house['phone'] ?? 'N/A'); ?></span>
+                        <span><i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($req['created_at'])); ?></span>
                     </div>
                 </div>
                 <div class="req-actions">
-                    <a href="admin_actions.php?action=approve&id=<?php echo $req['id']; ?>" class="btn-approve"><i class="fas fa-check"></i> Approve</a>
-                    <a href="admin_actions.php?action=reject&id=<?php echo $req['id']; ?>" class="btn-reject"><i class="fas fa-times"></i> Reject</a>
+                    <a href="admin_actions.php?action=approve&id=<?php echo $req['id']; ?>" class="btn btn-success"><i class="fas fa-check"></i> Approve</a>
+                    <a href="admin_actions.php?action=reject&id=<?php echo $req['id']; ?>" class="btn btn-danger-ghost"><i class="fas fa-times"></i> Reject</a>
                 </div>
             </div>
         <?php endwhile; ?>
@@ -106,18 +102,18 @@ $requests = mysqli_query($conn, "SELECT * FROM requests WHERE status = 0 ORDER B
                 <div class="req-body">
                     <h3><?php echo htmlspecialchars($house['description'] ?: 'New Listing'); ?></h3>
                     <div class="req-meta">
-                        <span><strong>Category:</strong> <?php echo htmlspecialchars($house['category']); ?></span>
-                        <span><strong>Price:</strong> <?php echo number_format($house['amount']); ?> ETB</span>
-                        <span><strong>Location:</strong> Kebele <?php echo htmlspecialchars($house['kebele']); ?>, <?php echo htmlspecialchars($house['street']); ?></span>
+                        <span><i class="fas fa-tag"></i> <strong><?php echo htmlspecialchars($house['category']); ?></strong></span>
+                        <span><i class="fas fa-money-bill"></i> <strong><?php echo number_format($house['amount']); ?> ETB</strong></span>
+                        <span><i class="fas fa-location-dot"></i> Kebele <?php echo htmlspecialchars($house['kebele']); ?></span>
                     </div>
                     <div class="req-meta">
-                        <span><strong>Posted by:</strong> <?php echo htmlspecialchars($house['full_name'] ?? 'Unknown'); ?></span>
-                        <span><strong>Date:</strong> <?php echo date('M d, Y', strtotime($house['created_at'])); ?></span>
+                        <span><i class="fas fa-user"></i> <?php echo htmlspecialchars($house['full_name'] ?? 'Unknown'); ?></span>
+                        <span><i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($house['created_at'])); ?></span>
                     </div>
                 </div>
                 <div class="req-actions">
-                    <a href="admin_actions.php?action=approve_house&id=<?php echo $house['id']; ?>" class="btn-approve"><i class="fas fa-check"></i> Approve</a>
-                    <a href="admin_actions.php?action=reject_house&id=<?php echo $house['id']; ?>" class="btn-reject"><i class="fas fa-times"></i> Reject</a>
+                    <a href="admin_actions.php?action=approve_house&id=<?php echo $house['id']; ?>" class="btn btn-success"><i class="fas fa-check"></i> Approve</a>
+                    <a href="admin_actions.php?action=reject_house&id=<?php echo $house['id']; ?>" class="btn btn-danger-ghost"><i class="fas fa-times"></i> Reject</a>
                 </div>
             </div>
         <?php endwhile; ?>

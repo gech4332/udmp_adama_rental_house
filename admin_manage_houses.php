@@ -32,28 +32,25 @@ $result = mysqli_query($conn, $sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> - AdamaRent Admin</title>
     <?php include(__DIR__ . '/header.php'); ?>
-    <style>
-        .content{margin-left:260px;padding:40px;width:calc(100% - 260px)}
-        .content h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:24px;display:flex;align-items:center;gap:10px}
-        .content h1 i{color:#0d9488}
-        .txt-available{color:#059669;font-weight:600;background:rgba(16,185,129,.1);padding:4px 10px;border-radius:6px;font-size:12px}
-        .txt-rented{color:#dc2626;font-weight:600;background:rgba(239,68,68,.1);padding:4px 10px;border-radius:6px;font-size:12px}
-        .txt-pending{color:#d97706;font-weight:600;background:rgba(245,158,11,.1);padding:4px 10px;border-radius:6px;font-size:12px}
-        .txt-unknown{color:#64748b;font-weight:600;background:#f1f5f9;padding:4px 10px;border-radius:6px;font-size:12px}
-        .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.5);backdrop-filter:blur(4px)}
-        .modal-content{background:#fff;margin:8% auto;padding:0;width:90%;max-width:500px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-        .modal-header{padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
-        .modal-header h3{font-size:16px;font-weight:700;color:#0f172a}
-        .close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;padding:4px}
-        .modal-body{padding:24px}
-        .detail-img{width:100%;height:220px;object-fit:cover;border-radius:10px;margin-bottom:16px}
-        .modal-body p{margin:8px 0;font-size:14px;color:#374151}
-        .modal-body strong{color:#0f172a}
-    </style>
 </head>
 <body>
 <div class="content">
-    <h1><i class="fas fa-building"></i> <?php echo $page_title; ?></h1>
+    <div class="page-header">
+        <div class="page-title">
+            <div class="icon"><i class="fas fa-building"></i></div>
+            <div>
+                <h1><?php echo $page_title; ?></h1>
+                <div class="page-sub">Manage all property listings</div>
+            </div>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-tabs">
+                <a href="admin_manage_houses.php" class="filter-tab <?= ($status_filter=='all')?'active':'' ?>">All</a>
+                <a href="admin_manage_houses.php?status=Available" class="filter-tab <?= ($status_filter=='Available')?'active':'' ?>">Available</a>
+                <a href="admin_manage_houses.php?status=Rented" class="filter-tab <?= ($status_filter=='Rented')?'active':'' ?>">Rented</a>
+            </div>
+        </div>
+    </div>
     
     <div class="data-card">
         <table>
@@ -71,7 +68,7 @@ $result = mysqli_query($conn, $sql);
             <tbody>
                 <?php while($row = mysqli_fetch_assoc($result)): ?>
                 <tr>
-                    <td>#<?php echo $row['id']; ?></td>
+                    <td><span class="badge badge-gray">#<?php echo $row['id']; ?></span></td>
                     <td><strong><?php echo htmlspecialchars($row['full_name']); ?></strong></td>
                     <td><?php echo htmlspecialchars($row['category'] ?? 'N/A'); ?></td>
                     <td>Kebele <?php echo htmlspecialchars($row['kebele']); ?></td>
@@ -80,24 +77,26 @@ $result = mysqli_query($conn, $sql);
                         <?php 
                         $status_val = $row['status'] ?? '';
                         if($status_val === '0' || strcasecmp($status_val, 'Available') === 0)
-                            echo '<span class="txt-available">Available</span>';
+                            echo '<span class="status-chip chip-available"><i class="fas fa-circle" style="font-size:6px"></i> Available</span>';
                         elseif($status_val === '1' || strcasecmp($status_val, 'Rented') === 0)
-                            echo '<span class="txt-rented">Rented</span>';
+                            echo '<span class="status-chip chip-rented"><i class="fas fa-circle" style="font-size:6px"></i> Rented</span>';
                         elseif(strcasecmp($status_val, 'Pending') === 0 || $row['is_approved'] == 0)
-                            echo '<span class="txt-pending">Pending</span>';
+                            echo '<span class="status-chip chip-pending"><i class="fas fa-circle" style="font-size:6px"></i> Pending</span>';
                         else
-                            echo '<span class="txt-unknown">Unknown</span>';
+                            echo '<span class="status-chip chip-unknown">Unknown</span>';
                         ?>
                     </td>
                     <td>
-                        <button class="btn btn-blue" 
+                        <div style="display:flex;gap:6px">
+                        <button class="btn-icon btn-icon-view" title="View"
                             onclick="showDetails('<?php echo addslashes($row['full_name']); ?>', '<?php echo number_format($row['amount']); ?>', '<?php echo addslashes($row['description'] ?? ''); ?>', '<?php echo $row['image']; ?>')">
-                            <i class="fas fa-eye"></i> View
+                            <i class="fas fa-eye"></i>
                         </button>
                         <form action="process_request.php" method="POST" style="display:inline;" onsubmit="return confirm('Delete this listing permanently?')">
                             <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-                            <button type="submit" name="action" value="delete_house" class="btn btn-red"><i class="fas fa-trash"></i></button>
+                            <button type="submit" name="action" value="delete_house" class="btn-icon btn-icon-del" title="Delete"><i class="fas fa-trash"></i></button>
                         </form>
+                        </div>
                     </td>
                 </tr>
                 <?php endwhile; ?>
