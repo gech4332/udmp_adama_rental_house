@@ -1,64 +1,78 @@
-Here's a polished, professional version of your run checklist:
+# 🏠 AdamaRent — Property Rental Marketplace
+
+A PHP/MySQL rental house marketplace for **Adama City, Ethiopia** (plain PHP, no framework). Landlords list properties and tenants browse/search them; there is a landlord dashboard and an admin console for managing users, houses, and approvals.
+
+**Stack:** PHP · Apache (XAMPP/LAMPP) · MySQL (mysqli) · HTML/CSS/JS
+
 ---
-# 🚀 Web Application Run Checklist
-## Quick Start Guide
-Follow these steps to get the application up and running on your local machine.
+
+## ✅ Requirements
+
+- **XAMPP** (or LAMPP on Linux) with Apache + MySQL running
+- PHP **7.4+** (project developed on **8.2**)
+- Project folder placed inside `htdocs/`
+  - Windows: `C:\xampp\htdocs\`
+  - Linux: `/opt/lampp/htdocs/`
+
 ---
-### ✅ Step-by-Step Instructions
-#### 1️⃣ Start XAMPP
-- Open the **XAMPP Control Panel**
-- Click **Start** for **Apache** (Web Server)
-- Click **Start** for **MySQL** (Database)
-- *(Alternative: Start the Windows services directly if configured)*
-#### 2️⃣ Verify Project Location
-- Ensure your project folder is placed inside:  
-  `C:\xampp\htdocs\` (or your XAMPP installation path)
-- Confirm that `index.php` exists in the root of your project folder
-#### 3️⃣ Configure Database Connection
-- Open `db.php` (or your database configuration file)
-- Verify the following settings match your MySQL setup:
-  ```php
-  $host = 'localhost';     // Usually localhost
-  $user = 'root';          // Default XAMPP user
-  $password = '';          // Default is empty in XAMPP
-  $dbname = 'rental_db';   // Your database name
-  ```
-#### 4️⃣ Import the Database
-- Open your browser and go to:  
-  **http://localhost/phpmyadmin/**
-- Click **New** on the left sidebar
-- Create a database named `rental_db` (or match what's in your config)
-- Select the database, click the **Import** tab
-- Choose your SQL dump file (e.g., `rental_db.sql`)
-- Click **Go** to import the data
-#### 5️⃣ View Your Site
-- Open your browser and navigate to:  
-  **http://localhost:/rental_project/**
-- Or open your browser and navigate to: 
-  **http://localhost:/udmp_adama_rental_house/**
-- You should now see the application running!
+
+## 🚀 Installation (First-Time Setup)
+
+### 1️⃣ Start XAMPP
+- **XAMPP Control Panel** → Start **Apache** and **MySQL**.
+
+### 2️⃣ Configure Database Credentials
+Open `db.php` and match it to your MySQL:
+```php
+$host   = 'localhost';
+$user   = 'root';
+$pass   = '';          // default empty in XAMPP — change if yours has a password
+$dbname = 'rental_db'; // database name (the app creates it for you)
+```
+
+### 3️⃣ Run the One-Click Setup
+Open in your browser:
+```
+http://localhost/udmp_adama_rental_house/setup.php
+```
+This **automatically**:
+- Creates the `rental_db` database
+- Creates all required tables (`users`, `houses`, `requests`, `admin_invites`, `app_config`)
+- Creates the `uploads/` folder for property images
+
+> ⚠️ **Important:** `setup.php` does **NOT** create an admin account for you. You must register one using the setup key (next step).
+
+### 4️⃣ Create the First Super Admin
+1. Go to `register.php`.
+2. Fill in your name, email, and password.
+3. Tick **"I'm the site administrator"** to reveal the **Admin Setup Key** field.
+4. Paste the key from step 3 and submit.
+5. That account becomes the **Super Admin**.
+6. The setup key is **destroyed** after this — it cannot be reused.
+
+> Everyone else who registers normally (no key) becomes a **landlord**.
+
+### 5️⃣ View Your Site
+```
+http://localhost/udmp_adama_rental_house/
+```
+The site loads the landing page (Home). Click **Browse** to see/search properties.
+
 ---
-### 🔧 Quick Troubleshooting
+
+## 🔧 Troubleshooting
+
 | Issue | Solution |
 |-------|----------|
-| Port 80/443 in use | Stop Skype, Teams, or IIS; or change Apache ports in XAMPP settings |
-| "Access denied" error | Check `password` in `db.php` (try empty or `''`) |
-| Database not found | Run the import again, ensure database name matches |
-| White screen / PHP errors | Enable error reporting in `php.ini` or check Apache logs |
-| Page not loading | Verify Apache is running (green indicator in XAMPP) |
----
-### 📋 Environment Prerequisites
-- [ ] XAMPP installed (version 7.4+ recommended)
-- [ ] Apache and MySQL services running
-- [ ] Project files in `htdocs/rental_project/`
-- [ ] MySQL database imported successfully
----
-### ✅ Success Indicators
-After completing all steps:
-- ✅ Apache shows **green** in XAMPP Control Panel
-- ✅ MySQL shows **green** in XAMPP Control Panel
-- ✅ No errors when importing the SQL file
-- ✅ The rental application loads without errors at `http://localhost/rental_project/`
----
-**Need help?** Check the Apache or MySQL error logs via the XAMPP Control Panel (click "Logs" button).
+| **"Connection failed"** | Check `$pass` in `db.php` (XAMPP default is empty) and that MySQL is started. |
+| **Database/tables missing** | Run `setup.php` once to create everything. |
+| **Can't log in as admin** | You must **register the first Super Admin** via `setup.php` key (see Installation step 4). |
+| **Setup key not showing** | The key only shows while **no admin exists** — once an admin is created it's destroyed. |
+| **Landlord promoted but not admin** | They must enter the invite key at `admin_key.php` (they may have clicked "Skip for now"). |
+| **Port 80/443 in use** | Stop Skype/Teams/IIS or change Apache ports in XAMPP. |
+| **White screen / PHP errors** | Enable error reporting in `php.ini` or check Apache logs. |
+| **Uploads not saving** | Ensure `uploads/` exists and is writable (Apache needs write access). |
 
+---
+
+**Need help?** Check the Apache/MySQL logs via the XAMPP Control Panel ("Logs" button), or open an issue on the repository.
