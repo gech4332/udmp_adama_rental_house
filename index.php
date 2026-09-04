@@ -114,6 +114,7 @@ header("Expires: 0");
         </a>
         <div class="nav-right">
             <?php if(isset($_SESSION['user_id'])): ?>
+                <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> New Posts</a>
                 <div class="user-avatar-wrap">
                     <div class="user-avatar"><?php echo strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1)); ?></div>
                     <div class="user-dropdown">
