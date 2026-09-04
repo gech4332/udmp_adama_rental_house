@@ -160,7 +160,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <h1>Find Your Perfect <span>Rental Home</span> in Adama</h1>
         <p>The trusted digital marketplace connecting landlords and tenants across Adama City. Search, compare, and secure your next property.</p>
         <div class="hero-actions">
-            <a href="index.php" class="btn-hero btn-hero-primary"><i class="fas fa-search"></i> Search Properties</a>
+            <a href="index.php" class="btn-hero btn-hero-primary"><i class="fas fa-search"></i> Get Started</a>
             <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>" class="btn-hero btn-hero-secondary"><i class="fas fa-plus-circle"></i> List Your Property</a>
         </div>
     </div>
@@ -174,7 +174,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="stat-item"><h3><?php echo $total_tenants ?>+</h3><p>Happy Tenants</p></div>
     </div>
 </section>
-p
+
 <section class="categories">
     <div class="section-header">
         <div class="tag">Property Types</div>
@@ -208,7 +208,7 @@ p
     <div class="steps-grid">
         <div class="step">
             <div class="step-number">1</div>
-            <h3>Search Properties</h3>
+            <h3>Get Started</h3>
             <p>Browse listings by category, location, and price range to find your ideal property.</p>
         </div>
         <div class="step">
