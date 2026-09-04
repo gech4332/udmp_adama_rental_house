@@ -174,7 +174,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="stat-item"><h3><?php echo $total_tenants ?>+</h3><p>Happy Tenants</p></div>
     </div>
 </section>
-
+p
 <section class="categories">
     <div class="section-header">
         <div class="tag">Property Types</div>

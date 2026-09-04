@@ -1,14 +1,39 @@
 <?php
 include('db.php');
 
+function has_admin(): bool {
+    global $conn;
+    $r = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE is_admin >= 1");
+    return $r && (int)(mysqli_fetch_row($r)[0] ?? 0) > 0;
+}
+
+function setup_key_valid(string $submitted): bool {
+    global $conn;
+    $r = mysqli_query($conn, "SELECT config_value FROM app_config WHERE config_key='admin_setup_key'");
+    if (!$r) return false;
+    $row = mysqli_fetch_assoc($r);
+    $key = $row['config_value'] ?? '';
+    return $key !== '' && hash_equals($key, $submitted);
+}
+
 if(isset($_POST['register'])){
     $name = mysqli_real_escape_string($conn, $_POST['full_name']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $pass = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $setup_key = trim($_POST['setup_key'] ?? '');
 
     $check_email = mysqli_query($conn, "SELECT id FROM users WHERE email='$email'");
     if($check_email && mysqli_num_rows($check_email) > 0){
         $error = "An account with this email already exists.";
+    } elseif ($setup_key !== '' && !has_admin() && setup_key_valid($setup_key)) {
+        $sql = "INSERT INTO users (full_name, email, password, is_admin, status) VALUES ('$name', '$email', '$pass', 2, 1)";
+        if(mysqli_query($conn, $sql)){
+            mysqli_query($conn, "DELETE FROM app_config WHERE config_key='admin_setup_key'");
+            header("Location: login.php?setup=admin");
+            exit();
+        } else {
+            $error = "Registration failed. Please try again.";
+        }
     } else {
         $sql = "INSERT INTO users (full_name, email, password) VALUES ('$name', '$email', '$pass')";
         if(mysqli_query($conn, $sql)){
@@ -120,6 +145,19 @@ if(isset($_POST['register'])){
                         <input type="password" name="password" placeholder="Create a strong password" required minlength="6">
                     </div>
                 </div>
+                <div class="form-group" id="setupKeyGroup" style="display:none">
+                    <label>Admin Setup Key <span class="opt">(optional)</span></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="text" name="setup_key" placeholder="Paste admin setup key here">
+                    </div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:6px">Only needed if you want this account to become the first administrator.</div>
+                </div>
+                <div style="text-align:center;margin-bottom:8px">
+                    <label style="font-size:13px;color:#64748b;cursor:pointer">
+                        <input type="checkbox" id="setupKeyToggle" style="margin-right:6px"> I'm the site administrator
+                    </label>
+                </div>
                 <button type="submit" name="register" class="btn-submit">Create Account</button>
             </form>
             <div class="auth-footer">
@@ -127,5 +165,10 @@ if(isset($_POST['register'])){
             </div>
         </div>
     </div>
+    <script>
+    document.getElementById('setupKeyToggle').addEventListener('change', function(){
+        document.getElementById('setupKeyGroup').style.display = this.checked ? 'block' : 'none';
+    });
+    </script>
 </body>
 </html>

@@ -35,6 +35,11 @@ if(!isset($current_page)) $current_page = basename($_SERVER['PHP_SELF']);
         <i class="fas fa-users"></i> Manage Users
     </a>
     <?php endif; ?>
+    <?php if(isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 2): ?>
+    <a href="admin_invite.php" class="nav-link <?= ($current_page=='admin_invite.php') ? 'active' : '' ?>">
+        <i class="fas fa-user-shield"></i> Invite Admin
+    </a>
+    <?php endif; ?>
     <a href="admin_manage_houses.php" class="nav-link <?= ($current_page=='admin_manage_houses.php') ? 'active' : '' ?>">
         <i class="fas fa-building"></i> Manage Houses
     </a>
