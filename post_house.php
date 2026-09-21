@@ -2,6 +2,7 @@
 include('includes/session_config.php');
 session_start();
 include('includes/db.php');
+include('includes/lang.php');
 include('includes/security.php');
 if(!isset($_SESSION['csrf_token'])) csrf_token(); 
 
@@ -11,11 +12,11 @@ if(!isset($_SESSION['user_id'])){
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post a Property - AdamaRent</title>
+    <title><?php echo htmlspecialchars(t('ph_title')); ?> - AdamaRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -30,6 +31,19 @@ if(!isset($_SESSION['user_id'])){
         .nav-right{display:flex;align-items:center;gap:6px}
         .nav-right a{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .2s}
         .nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
+        .lang-drop{position:relative;display:inline-flex}
+        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 14px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Inter',sans-serif}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
+        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
         .user-avatar-wrap{position:relative}
         .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
         .user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
@@ -44,6 +58,12 @@ if(!isset($_SESSION['user_id'])){
         .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+        .user-dropdown-lang a.active{color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .user-dropdown-lang a{display:flex;align-items:center;gap:8px;padding:8px 16px}
 
         .form-page{max-width:680px;margin:40px auto;padding:0 20px}
         .form-header{margin-bottom:28px}
@@ -144,11 +164,20 @@ if(!isset($_SESSION['user_id'])){
                     <div class="user-dropdown-header">
                         <div class="user-avatar-sm"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                         <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
-                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?></div></div>
+                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?></div></div>
                     </div>
                     <div class="user-dropdown-divider"></div>
-                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                    <a href="profile.php"><i class="fas fa-user"></i> <?php echo t('nav_profile'); ?></a>
+                    <div class="user-dropdown-divider"></div>
+                    <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
+                    <div class="user-dropdown-lang">
+                        <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                        <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                        <?php } ?>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> <?php echo t('nav_signout'); ?></a>
                 </div>
             </div>
         </div>
@@ -156,8 +185,8 @@ if(!isset($_SESSION['user_id'])){
 
     <div class="form-page">
         <div class="form-header">
-            <h1>Post a New Property</h1>
-            <p>Fill in the details below to list your property for potential tenants.</p>
+            <h1><?php echo t('ph_page_heading'); ?></h1>
+            <p><?php echo t('ph_page_sub'); ?></p>
         </div>
 
         <div class="form-card">
@@ -169,73 +198,73 @@ if(!isset($_SESSION['user_id'])){
                     <?php echo csrf_field(); ?>
                 <!-- Location -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-location-dot"></i> Location Details</div>
+                    <div class="form-section-title"><i class="fas fa-location-dot"></i> <?php echo t('ph_location'); ?></div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Kebele <span class="req">*</span></label>
-                            <input type="text" name="kebele" placeholder="e.g. 03 or 12" required>
+                            <label><?php echo t('ph_kebele'); ?> <span class="req">*</span></label>
+                            <input type="text" name="kebele" placeholder="<?php echo t('ph_kebele_ph'); ?>" required>
                         </div>
                         <div class="form-group">
-                            <label>House Number</label>
-                            <input type="text" name="house_num" placeholder="e.g. 45">
+                            <label><?php echo t('ph_house_number'); ?></label>
+                            <input type="text" name="house_num" placeholder="<?php echo t('ph_house_number_ph'); ?>">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Street Name <span class="req">*</span></label>
-                        <input type="text" name="street" placeholder="e.g. Bole Road" required>
+                        <label><?php echo t('ph_street'); ?> <span class="req">*</span></label>
+                        <input type="text" name="street" placeholder="<?php echo t('ph_street_ph'); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Map Link</label>
-                        <input type="url" id="map_link" name="map_link" placeholder="Paste a Google Maps link here (optional)">
-                        <label class="map-toggle"><input type="checkbox" id="map_auto"> Auto-generate map link from location fields</label>
-                        <div class="map-auto" id="auto-gen-note"><i class="fas fa-check-circle"></i> Auto-generated from location fields</div>
+                        <label><?php echo t('ph_map_link'); ?></label>
+                        <input type="url" id="map_link" name="map_link" placeholder="<?php echo t('ph_map_ph'); ?>">
+                        <label class="map-toggle"><input type="checkbox" id="map_auto"> <?php echo t('ph_map_auto'); ?></label>
+                        <div class="map-auto" id="auto-gen-note"><i class="fas fa-check-circle"></i> <?php echo t('ph_map_auto_note'); ?></div>
                     </div>
                 </div>
 
                 <!-- Property Info -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-home"></i> Property Information</div>
+                    <div class="form-section-title"><i class="fas fa-home"></i> <?php echo t('ph_property_info'); ?></div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Category <span class="req">*</span></label>
+                            <label><?php echo t('ph_category'); ?> <span class="req">*</span></label>
                             <select name="category" required>
-                                <option value="">Select type...</option>
-                                <optgroup label="Residential">
-                                    <option value="Single Home">Single Home</option>
-                                    <option value="Apartment">Apartment</option>
-                                    <option value="Villa">Villa</option>
+                                <option value=""><?php echo t('ph_select_type'); ?></option>
+                                <optgroup label="<?php echo t('residential'); ?>">
+                                    <option value="Single Home"><?php echo t('single_home'); ?></option>
+                                    <option value="Apartment"><?php echo t('apartment'); ?></option>
+                                    <option value="Villa"><?php echo t('villa'); ?></option>
                                 </optgroup>
-                                <optgroup label="Commercial">
-                                    <option value="Office">Office</option>
-                                    <option value="Shop">Shop</option>
-                                    <option value="Warehouse">Warehouse</option>
+                                <optgroup label="<?php echo t('commercial'); ?>">
+                                    <option value="Office"><?php echo t('office'); ?></option>
+                                    <option value="Shop"><?php echo t('shop'); ?></option>
+                                    <option value="Warehouse"><?php echo t('warehouse'); ?></option>
                                 </optgroup>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Monthly Price (ETB) <span class="req">*</span></label>
-                            <input type="number" name="amount" placeholder="e.g. 8000" required min="1">
+                            <label><?php echo t('ph_monthly_price'); ?> <span class="req">*</span></label>
+                            <input type="number" name="amount" placeholder="<?php echo t('ph_price_ph'); ?>" required min="1">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Contact Phone <span class="req">*</span></label>
-                        <input type="text" name="phone" placeholder="e.g. 0911234567" required>
+                        <label><?php echo t('ph_contact_phone'); ?> <span class="req">*</span></label>
+                        <input type="text" name="phone" placeholder="<?php echo t('ph_contact_phone_ph'); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="desc" placeholder="Describe your property - water, electricity, furnished status, etc."></textarea>
+                        <label><?php echo t('ph_description'); ?></label>
+                        <textarea name="desc" placeholder="<?php echo t('ph_desc_ph'); ?>"></textarea>
                     </div>
                 </div>
 
                 <!-- Photos -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-camera"></i> Photos</div>
+                    <div class="form-section-title"><i class="fas fa-camera"></i> <?php echo t('ph_photos'); ?></div>
                     <div class="form-group">
-                        <label>Property Photos <span class="req">*</span></label>
+                        <label><?php echo t('ph_property_photos'); ?> <span class="req">*</span></label>
                         <div class="file-upload" onclick="this.querySelector('input').click()">
                             <i class="fas fa-images"></i>
-                            <p>Click to upload photos</p>
-                            <span>JPG, PNG, WebP or GIF &middot; the first photo becomes the cover &middot; up to 6 photos (5MB each)</span>
+                            <p><?php echo t('ph_upload_click'); ?></p>
+                            <span><?php echo t('ph_upload_hint'); ?></span>
                             <div class="file-name" id="img-name"></div>
                             <input type="file" name="house_photos[]" accept="image/*" multiple required onchange="updatePhotoList(this)">
                         </div>
@@ -244,8 +273,8 @@ if(!isset($_SESSION['user_id'])){
 
                 <!-- Amenities -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-star"></i> Amenities</div>
-                    <p style="font-size:13px;color:#94a3b8;margin-bottom:14px">Select all amenities that apply to your property</p>
+                    <div class="form-section-title"><i class="fas fa-star"></i> <?php echo t('ph_amenities'); ?></div>
+                    <p style="font-size:13px;color:#94a3b8;margin-bottom:14px"><?php echo t('ph_amenities_hint'); ?></p>
                     <div class="amenity-grid">
                         <?php
                         $amenities_result = mysqli_query($conn, "SELECT * FROM amenities ORDER BY sort_order ASC");
@@ -260,12 +289,25 @@ if(!isset($_SESSION['user_id'])){
                     </div>
                 </div>
 
-                <button type="submit" name="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit for Approval</button>
+                <button type="submit" name="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> <?php echo t('ph_submit'); ?></button>
             </form>
         </div>
     </div>
 
     <script>
+    var phPhotoLabel = <?php echo json_encode(t('ph_photo')); ?>;
+    var phPhotosLabel = <?php echo json_encode(t('ph_photos_plural')); ?>;
+    var phSelectedLabel = <?php echo json_encode(t('ph_selected')); ?>;
+    function toggleLangMenu(btn){
+        var drop = btn.closest('.lang-drop');
+        var isOpen = drop.classList.contains('open');
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+        if(!isOpen) drop.classList.add('open');
+    }
+    document.addEventListener('click', function(e){
+        if(e.target.closest('.lang-drop')) return;
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+    });
     const kebeleInput = document.querySelector('input[name="kebele"]');
     const amenityCheckboxes = document.querySelectorAll('.amenity-item input[type="checkbox"]');
     amenityCheckboxes.forEach(function(cb){
@@ -317,7 +359,7 @@ if(!isset($_SESSION['user_id'])){
         }
         var names = [];
         for(var i = 0; i < n; i++) names.push(input.files[i].name);
-        el.textContent = n + (n > 1 ? ' photos' : ' photo') + ' selected: ' + names.join(', ');
+        el.textContent = n + ' ' + (n > 1 ? phPhotosLabel : phPhotoLabel) + ' ' + phSelectedLabel + names.join(', ');
         el.style.display = 'block';
     }
     </script>
@@ -344,9 +386,9 @@ if(!isset($_SESSION['user_id'])){
         $user_id  = $_SESSION['user_id'];
 
         if(empty($_FILES['house_photos']['name'][0])){
-            $toast_error = 'Upload failed: Please select at least one photo.';
+            $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_no_photo');
         } elseif(!is_writable($upload_dir)){
-            $toast_error = 'Upload failed: The uploads folder is not writable. Check permissions.';
+            $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_not_writable');
         } else {
             $photos  = $_FILES['house_photos'];
             $names   = [];
@@ -358,21 +400,21 @@ if(!isset($_SESSION['user_id'])){
 
                 if($photos['error'][$i] !== UPLOAD_ERR_OK){
                     $err_msg = match($photos['error'][$i]){
-                        UPLOAD_ERR_INI_SIZE   => 'File exceeds server upload limit.',
-                        UPLOAD_ERR_FORM_SIZE  => 'File exceeds form upload limit.',
-                        UPLOAD_ERR_PARTIAL    => 'a file was only partially uploaded.',
-                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder on server.',
-                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-                        UPLOAD_ERR_EXTENSION  => 'Upload blocked by server extension.',
-                        default               => 'Unknown upload error (code: ' . $photos['error'][$i] . ').'
+                        UPLOAD_ERR_INI_SIZE   => t('ph_err_ini_size'),
+                        UPLOAD_ERR_FORM_SIZE  => t('ph_err_form_size'),
+                        UPLOAD_ERR_PARTIAL    => t('ph_err_partial'),
+                        UPLOAD_ERR_NO_TMP_DIR => t('ph_err_no_tmp'),
+                        UPLOAD_ERR_CANT_WRITE => t('ph_err_cant_write'),
+                        UPLOAD_ERR_EXTENSION  => t('ph_err_extension'),
+                        default               => t('ph_err_unknown') . ' (code: ' . $photos['error'][$i] . ').'
                     };
-                    $toast_error = 'Upload failed: ' . $err_msg;
+                    $toast_error = t('ph_upload_failed') . ': ' . $err_msg;
                     break;
                 }
 
                 $ext = strtolower(pathinfo($photos['name'][$i], PATHINFO_EXTENSION));
                 if(!in_array($ext, $allowed, true)){
-                    $toast_error = 'Upload failed: Only JPG, PNG, WebP, GIF, HEIC or HEIF photos are allowed.';
+                    $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_bad_type');
                     break;
                 }
 
@@ -388,13 +430,13 @@ if(!isset($_SESSION['user_id'])){
                             $fname = $jpgName;
                         } else {
                             @unlink($target);
-                            $toast_error = 'Upload failed: Could not convert HEIC photo to JPEG.';
+                            $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_heic');
                             break;
                         }
                     }
                     $names[] = $fname;
                 } else {
-                    $toast_error = 'Upload failed: move_uploaded_file returned false. Check server error log.';
+                    $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_move');
                     break;
                 }
 
@@ -406,7 +448,7 @@ if(!isset($_SESSION['user_id'])){
                     @unlink($upload_dir . '/' . $f);
                 }
             } elseif(empty($names)){
-                $toast_error = 'Upload failed: No valid photos were processed.';
+                $toast_error = t('ph_upload_failed') . ': ' . t('ph_err_no_valid');
             } else {
                 $featured = array_shift($names);
                 $stmt = mysqli_prepare($conn, "INSERT INTO houses (kebele, street, house_number, category, amount, phone, map_link, image, description, user_id, status, is_approved, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 0, NOW())");
@@ -441,7 +483,7 @@ if(!isset($_SESSION['user_id'])){
                         @unlink($upload_dir . '/' . $f);
                     }
                     @unlink($upload_dir . '/' . $featured);
-                    $toast_error = 'Database error. Please try again.';
+                    $toast_error = t('ph_err_db');
                 }
             }
         }
@@ -454,23 +496,23 @@ if(!isset($_SESSION['user_id'])){
     <div class="ph-overlay ph-active" id="phSuccess">
         <div class="ph-card">
             <div class="ph-icon"><i class="fas fa-check"></i></div>
-            <h2>Submitted for Approval</h2>
-            <p>Your property is now in review. Once an admin approves it, it will go live on the marketplace.</p>
+            <h2><?php echo t('ph_submitted_title'); ?></h2>
+            <p><?php echo t('ph_submitted_desc'); ?></p>
             <div class="ph-steps">
-                <div class="ph-step done"><div class="ph-dot"><i class="fas fa-check"></i></div><span>Submitted</span></div>
+                <div class="ph-step done"><div class="ph-dot"><i class="fas fa-check"></i></div><span><?php echo t('ph_step_submitted'); ?></span></div>
                 <div class="ph-bar done"></div>
-                <div class="ph-step active"><div class="ph-dot"><i class="fas fa-clock"></i></div><span>In Review</span></div>
+                <div class="ph-step active"><div class="ph-dot"><i class="fas fa-clock"></i></div><span><?php echo t('ph_step_review'); ?></span></div>
                 <div class="ph-bar"></div>
-                <div class="ph-step"><div class="ph-dot"><i class="fas fa-home"></i></div><span>Live</span></div>
+                <div class="ph-step"><div class="ph-dot"><i class="fas fa-home"></i></div><span><?php echo t('ph_step_live'); ?></span></div>
             </div>
             <div class="ph-actions">
-                <a href="post_house.php" class="ph-btn ph-btn-ghost"><i class="fas fa-plus"></i> Add Another</a>
-                <a href="manage_houses.php" class="ph-btn ph-btn-primary"><i class="fas fa-th-large"></i> Go to Dashboard</a>
+                <a href="post_house.php" class="ph-btn ph-btn-ghost"><i class="fas fa-plus"></i> <?php echo t('ph_add_another'); ?></a>
+                <a href="manage_houses.php" class="ph-btn ph-btn-primary"><i class="fas fa-th-large"></i> <?php echo t('ph_go_dashboard'); ?></a>
             </div>
         </div>
     </div>
     <?php elseif($toast_error): ?>
-        <script>window.addEventListener('DOMContentLoaded', function(){ showToast(<?php echo json_encode($toast_error); ?>, "error", "Upload failed"); });</script>
+        <script>window.addEventListener('DOMContentLoaded', function(){ showToast(<?php echo json_encode($toast_error); ?>, "error", <?php echo json_encode(t('ph_upload_failed')); ?>); });</script>
     <?php endif; ?>
 </body>
 </html>

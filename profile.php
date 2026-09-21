@@ -3,6 +3,7 @@ include('includes/session_config.php');
 session_start();
 include('includes/db.php');
 include('includes/security.php');
+include('includes/lang.php');
 
 if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
@@ -90,6 +91,19 @@ if(!$user){ header("Location: logout.php"); exit(); }
         .nav-right .btn-accent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
         .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
+        .lang-drop{position:relative;display:inline-flex;margin-right:4px}
+        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Poppins',sans-serif}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
+        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
 
         .page{max-width:820px;margin:0 auto;width:100%;padding:30px 24px 60px;flex:1}
         .profile-head{display:flex;align-items:center;gap:16px;margin-bottom:24px}
@@ -134,8 +148,8 @@ if(!$user){ header("Location: logout.php"); exit(); }
             <div class="nav-brand-text">Adama<span>Rent</span></div>
         </a>
         <div class="nav-right">
-            <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> New Posts</a>
-            <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> <?php echo t('new_posts'); ?></a>
+            <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
         </div>
     </nav>
 
@@ -149,7 +163,7 @@ if(!$user){ header("Location: logout.php"); exit(); }
             <div>
                 <h1><?php echo htmlspecialchars($user['full_name']); ?></h1>
                 <div class="role-chip <?php echo (int)$user['is_admin'] >= 1 ? 'admin' : 'landlord'; ?>">
-                    <i class="fas fa-circle" style="font-size:6px"></i> <?php echo (int)$user['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?>
+                    <i class="fas fa-circle" style="font-size:6px"></i> <?php echo (int)$user['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?>
                 </div>
             </div>
         </div>
@@ -157,11 +171,11 @@ if(!$user){ header("Location: logout.php"); exit(); }
         <form method="POST">
                 <?php echo csrf_field(); ?>
             <div class="card">
-                <h3><i class="fas fa-user-pen"></i> Personal Information</h3>
-                <p class="card-sub">Update your name, contact details and preferred contact numbers.</p>
+                <h3><i class="fas fa-user-pen"></i> <?php echo t('profile_info_title'); ?></h3>
+                <p class="card-sub"><?php echo t('profile_info_sub'); ?></p>
 
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label><?php echo t('full_name'); ?></label>
                     <div class="input-wrap">
                         <i class="fas fa-user"></i>
                         <input type="text" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
@@ -169,7 +183,7 @@ if(!$user){ header("Location: logout.php"); exit(); }
                 </div>
 
                 <div class="form-group">
-                    <label>Email Address</label>
+                    <label><?php echo t('email_address'); ?></label>
                     <div class="input-wrap">
                         <i class="fas fa-envelope"></i>
                         <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
@@ -178,36 +192,36 @@ if(!$user){ header("Location: logout.php"); exit(); }
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Primary Phone Number</label>
+                        <label><?php echo t('phone_primary'); ?></label>
                         <div class="input-wrap">
                             <i class="fas fa-phone"></i>
-                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" placeholder="e.g. 0911234567" pattern="[0-9+ ]{7,20}" title="Enter a valid phone number">
+                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" placeholder="<?php echo t('phone_placeholder'); ?>" pattern="[0-9+ ]{7,20}" title="Enter a valid phone number">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Additional Phone Number <span style="color:#94a3b8;font-weight:500">(optional)</span></label>
+                        <label><?php echo t('phone_additional'); ?> <span style="color:#94a3b8;font-weight:500"><?php echo t('profile_optional'); ?></span></label>
                         <div class="input-wrap">
                             <i class="fas fa-phone-volume"></i>
-                            <input type="tel" name="phone2" value="<?php echo htmlspecialchars($user['phone2']); ?>" placeholder="e.g. 0922233445" pattern="[0-9+ ]{7,20}" title="Enter a valid phone number">
+                            <input type="tel" name="phone2" value="<?php echo htmlspecialchars($user['phone2']); ?>" placeholder="<?php echo t('phone_placeholder'); ?>" pattern="[0-9+ ]{7,20}" title="Enter a valid phone number">
                         </div>
                     </div>
                 </div>
-                <div class="form-hint"><i class="fas fa-circle-info"></i> Tenants and the owner are only shown the primary number when you list a property.</div>
+                <div class="form-hint"><i class="fas fa-circle-info"></i> <?php echo t('profile_phone_hint'); ?></div>
             </div>
 
             <div class="card">
-                <h3><i class="fas fa-lock"></i> Change Password</h3>
-                <p class="card-sub">Leave the field empty to keep your current password.</p>
+                <h3><i class="fas fa-lock"></i> <?php echo t('profile_password_title'); ?></h3>
+                <p class="card-sub"><?php echo t('profile_password_sub'); ?></p>
                 <div class="form-group">
-                    <label>New Password</label>
+                    <label><?php echo t('new_password'); ?></label>
                     <div class="input-wrap">
                         <i class="fas fa-key"></i>
-                        <input type="password" name="new_password" placeholder="Enter a new password (min 6 characters)" minlength="6">
+                        <input type="password" name="new_password" placeholder="<?php echo t('new_password_ph'); ?>" minlength="6">
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
+            <button type="submit" class="btn-save"><i class="fas fa-save"></i> <?php echo t('save_changes'); ?></button>
         </form>
     </div>
 
@@ -216,6 +230,16 @@ if(!$user){ header("Location: logout.php"); exit(); }
         var msg = <?php echo json_encode($notif['message']); ?>;
         window.addEventListener('DOMContentLoaded', function(){ showToast(msg, <?php echo json_encode($notif['type']); ?>, <?php echo json_encode($notif['title']); ?>); });
         <?php endif; ?>
+        function toggleLangMenu(btn){
+            var drop = btn.closest('.lang-drop');
+            var isOpen = drop.classList.contains('open');
+            document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+            if(!isOpen) drop.classList.add('open');
+        }
+        document.addEventListener('click', function(e){
+            if(e.target.closest('.lang-drop')) return;
+            document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+        });
     </script>
     <?php include(__DIR__ . '/includes/popup.php'); ?>
 </body>

@@ -2,6 +2,7 @@
 include('includes/session_config.php');
 session_start();
 include('includes/db.php');
+include('includes/lang.php');
 include('includes/security.php');
 if(!isset($_SESSION['csrf_token'])) csrf_token();
 
@@ -45,24 +46,24 @@ $updated = false;
 function process_upload($file, $upload_dir, $allowed){
     if($file['error'] !== UPLOAD_ERR_OK){
         $err_msg = match($file['error']){
-            UPLOAD_ERR_INI_SIZE   => 'File exceeds server upload limit.',
-            UPLOAD_ERR_FORM_SIZE  => 'File exceeds form upload limit.',
-            UPLOAD_ERR_PARTIAL    => 'File was only partially uploaded.',
-            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder on server.',
-            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
-            UPLOAD_ERR_EXTENSION  => 'Upload blocked by server extension.',
-            default               => 'Unknown upload error (code: ' . $file['error'] . ').'
+            UPLOAD_ERR_INI_SIZE   => t('ph_err_ini_size'),
+            UPLOAD_ERR_FORM_SIZE  => t('ph_err_form_size'),
+            UPLOAD_ERR_PARTIAL    => t('ph_err_partial'),
+            UPLOAD_ERR_NO_TMP_DIR => t('ph_err_no_tmp'),
+            UPLOAD_ERR_CANT_WRITE => t('ph_err_cant_write'),
+            UPLOAD_ERR_EXTENSION  => t('ph_err_extension'),
+            default               => t('ph_err_unknown') . ' (code: ' . $file['error'] . ').'
         };
         return [false, $err_msg];
     }
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     if(!in_array($ext, $allowed, true)){
-        return [false, 'Only JPG, PNG, WebP, GIF, HEIC or HEIF photos are allowed.'];
+        return [false, t('ph_err_bad_type')];
     }
     $fname  = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
     $target = $upload_dir . '/' . $fname;
     if(!move_uploaded_file($file['tmp_name'], $target)){
-        return [false, 'Could not save the uploaded file. Check server error log.'];
+        return [false, t('ph_err_save_file')];
     }
     if(in_array($ext, ['heic', 'heif'], true)){
         $jpgName = preg_replace('/\.(heic|heif)$/i', '', $fname) . '.jpg';
@@ -72,7 +73,7 @@ function process_upload($file, $upload_dir, $allowed){
             $fname = $jpgName;
         } else {
             @unlink($target);
-            return [false, 'Could not convert HEIC photo to JPEG.'];
+            return [false, t('ph_err_heic')];
         }
     }
     return [true, $fname];
@@ -106,7 +107,7 @@ if(isset($_POST['update'])){
     $error = null;
 
     if($kebele === '' || $street === '' || $category === '' || $amount < 1 || $phone === ''){
-        $error = 'Please fill in Kebele, Street, Category, Price and Phone.';
+        $error = t('eh_err_fill');
     } else {
         $imgName = $data['image'];
 
@@ -151,14 +152,14 @@ if(isset($_POST['update'])){
             $changes_json = '';
             if($was_approved){
                 $labels = [
-                    'kebele'       => 'Kebele',
-                    'street'       => 'Street Name',
-                    'house_number' => 'House Number',
-                    'category'     => 'Category',
-                    'amount'       => 'Monthly Price (ETB)',
-                    'phone'        => 'Contact Phone',
-                    'map_link'     => 'Map Link',
-                    'description'  => 'Description',
+                    'kebele'       => t('ph_kebele'),
+                    'street'       => t('ph_street'),
+                    'house_number' => t('ph_house_number'),
+                    'category'     => t('ph_category'),
+                    'amount'       => t('ph_monthly_price'),
+                    'phone'        => t('ph_contact_phone'),
+                    'map_link'     => t('ph_map_link'),
+                    'description'  => t('ph_description'),
                 ];
                 $field_sets = [
                     'kebele'       => [(string)($data['kebele'] ?? ''), $kebele],
@@ -178,7 +179,7 @@ if(isset($_POST['update'])){
                 }
 
                 if($imgName !== ($data['image'] ?? '') && !empty($data['image'])){
-                    $changes[] = ['field' => 'Cover photo', 'from' => basename($data['image']), 'to' => basename($imgName)];
+                    $changes[] = ['field' => t('eh_cover_photo'), 'from' => basename($data['image']), 'to' => basename($imgName)];
                 }
 
                 $old_gallery_files = [];
@@ -189,7 +190,7 @@ if(isset($_POST['update'])){
                 $g_added   = array_values(array_diff($new_gallery_files, $old_gallery_files));
                 $g_removed = array_values(array_diff($old_gallery_files, $new_gallery_files));
                 if($g_added || $g_removed){
-                    $changes[] = ['field' => 'Gallery photos', 'from' => count($old_gallery_files), 'to' => count($new_gallery_files), 'added' => $g_added, 'removed' => $g_removed];
+                    $changes[] = ['field' => t('eh_gallery'), 'from' => count($old_gallery_files), 'to' => count($new_gallery_files), 'added' => $g_added, 'removed' => $g_removed];
                 }
 
                 $old_amen = array_keys($current_amenities);
@@ -204,7 +205,7 @@ if(isset($_POST['update'])){
                 $am_added   = array_values(array_diff($new_amen, $old_amen));
                 $am_removed = array_values(array_diff($old_amen, $new_amen));
                 if($am_added || $am_removed){
-                    $changes[] = ['field' => 'Amenities', 'added' => $am_added, 'removed' => $am_removed];
+                    $changes[] = ['field' => t('ph_amenities'), 'added' => $am_added, 'removed' => $am_removed];
                 }
 
                 $changes_json = json_encode($changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -266,7 +267,7 @@ if(isset($_POST['update'])){
 
                 $updated = true;
             } else {
-                $error = 'Database error. Your changes were not saved.';
+                $error = t('eh_db_error');
             }
         }
     }
@@ -285,11 +286,11 @@ if(isset($_POST['update'])){
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Property - AdamaRent</title>
+    <title><?php echo htmlspecialchars(t('eh_title')); ?> - AdamaRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -319,6 +320,11 @@ if(isset($_POST['update'])){
         .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+        .user-dropdown-lang a.active{color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
 
         .form-page{max-width:760px;margin:40px auto;padding:0 20px}
         .form-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
@@ -433,20 +439,28 @@ if(isset($_POST['update'])){
             <div class="nav-brand-text">Adama<span>Rent</span></div>
         </a>
         <div class="nav-right">
-            <a href="index.php"><i class="fas fa-search"></i> Browse</a>
-            <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> New Post</a>
+            <a href="index.php"><i class="fas fa-search"></i> <?php echo t('nav_browse'); ?></a>
+            <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> <?php echo t('eh_new_post'); ?></a>
             <div class="user-avatar-wrap">
                 <div class="user-avatar"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                 <div class="user-dropdown">
                     <div class="user-dropdown-header">
                         <div class="user-avatar-sm"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                         <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
-                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?></div></div>
+                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?></div></div>
                     </div>
                     <div class="user-dropdown-divider"></div>
-                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
-                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                    <a href="profile.php"><i class="fas fa-user"></i> <?php echo t('nav_profile'); ?></a>
+                    <div class="user-dropdown-divider"></div>
+                    <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
+                    <div class="user-dropdown-lang">
+                        <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                        <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                        <?php } ?>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> <?php echo t('nav_signout'); ?></a>
                 </div>
             </div>
         </div>
@@ -455,12 +469,12 @@ if(isset($_POST['update'])){
     <div class="form-page">
         <div class="form-header">
             <div>
-                <h1>Edit Property</h1>
-                <p>Update your listing details below.</p>
+                <h1><?php echo t('eh_title'); ?></h1>
+                <p><?php echo t('eh_page_sub'); ?></p>
             </div>
             <div class="head-actions">
-                <a class="view-link" href="house_detail.php?house=<?php echo (int)$house_id; ?>"><i class="fas fa-external-link"></i> Preview
-                    <span class="status-pill"><?php echo htmlspecialchars($data['status'] ?? 'Pending'); ?></span>
+                <a class="view-link" href="house_detail.php?house=<?php echo (int)$house_id; ?>"><i class="fas fa-external-link"></i> <?php echo t('eh_preview'); ?>
+                    <span class="status-pill"><?php echo htmlspecialchars(t_status($data['status'] ?? 'Pending')); ?></span>
                 </a>
             </div>
         </div>
@@ -475,117 +489,117 @@ if(isset($_POST['update'])){
 
                 <!-- Location -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-location-dot"></i> Location Details</div>
+                    <div class="form-section-title"><i class="fas fa-location-dot"></i> <?php echo t('ph_location'); ?></div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Kebele <span class="req">*</span></label>
-                            <input type="text" name="kebele" placeholder="e.g. 03 or 12" value="<?php echo htmlspecialchars($form['kebele']); ?>" required>
+                            <label><?php echo t('ph_kebele'); ?> <span class="req">*</span></label>
+                            <input type="text" name="kebele" placeholder="<?php echo t('ph_kebele_ph'); ?>" value="<?php echo htmlspecialchars($form['kebele']); ?>" required>
                         </div>
                         <div class="form-group">
-                            <label>House Number</label>
-                            <input type="text" name="house_num" placeholder="e.g. 45" value="<?php echo htmlspecialchars($form['house_number'] ?? ''); ?>">
+                            <label><?php echo t('ph_house_number'); ?></label>
+                            <input type="text" name="house_num" placeholder="<?php echo t('ph_house_number_ph'); ?>" value="<?php echo htmlspecialchars($form['house_number'] ?? ''); ?>">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Street Name <span class="req">*</span></label>
-                        <input type="text" name="street" placeholder="e.g. Bole Road" value="<?php echo htmlspecialchars($form['street']); ?>" required>
+                        <label><?php echo t('ph_street'); ?> <span class="req">*</span></label>
+                        <input type="text" name="street" placeholder="<?php echo t('ph_street_ph'); ?>" value="<?php echo htmlspecialchars($form['street']); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Map Link</label>
-                        <input type="url" id="map_link" name="map_link" placeholder="Paste a Google Maps link here (optional)" value="<?php echo htmlspecialchars($form['map_link'] ?? ''); ?>">
-                        <label class="map-toggle"><input type="checkbox" id="map_auto"> Auto-generate map link from location fields</label>
-                        <div class="map-auto" id="auto-gen-note"><i class="fas fa-check-circle"></i> Auto-generated from location fields</div>
+                        <label><?php echo t('ph_map_link'); ?></label>
+                        <input type="url" id="map_link" name="map_link" placeholder="<?php echo t('ph_map_ph'); ?>" value="<?php echo htmlspecialchars($form['map_link'] ?? ''); ?>">
+                        <label class="map-toggle"><input type="checkbox" id="map_auto"> <?php echo t('ph_map_auto'); ?></label>
+                        <div class="map-auto" id="auto-gen-note"><i class="fas fa-check-circle"></i> <?php echo t('ph_map_auto_note'); ?></div>
                     </div>
                 </div>
 
                 <!-- Property Info -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-home"></i> Property Information</div>
+                    <div class="form-section-title"><i class="fas fa-home"></i> <?php echo t('ph_property_info'); ?></div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Category <span class="req">*</span></label>
+                            <label><?php echo t('ph_category'); ?> <span class="req">*</span></label>
                             <select name="category" required>
-                                <option value="">Select type...</option>
-                                <optgroup label="Residential">
-                                    <option value="Single Home" <?php echo $form['category'] === 'Single Home' ? 'selected' : ''; ?>>Single Home</option>
-                                    <option value="Apartment" <?php echo $form['category'] === 'Apartment' ? 'selected' : ''; ?>>Apartment</option>
-                                    <option value="Villa" <?php echo $form['category'] === 'Villa' ? 'selected' : ''; ?>>Villa</option>
+                                <option value=""><?php echo t('ph_select_type'); ?></option>
+                                <optgroup label="<?php echo t('residential'); ?>">
+                                    <option value="Single Home" <?php echo $form['category'] === 'Single Home' ? 'selected' : ''; ?>><?php echo t('single_home'); ?></option>
+                                    <option value="Apartment" <?php echo $form['category'] === 'Apartment' ? 'selected' : ''; ?>><?php echo t('apartment'); ?></option>
+                                    <option value="Villa" <?php echo $form['category'] === 'Villa' ? 'selected' : ''; ?>><?php echo t('villa'); ?></option>
                                 </optgroup>
-                                <optgroup label="Commercial">
-                                    <option value="Office" <?php echo $form['category'] === 'Office' ? 'selected' : ''; ?>>Office</option>
-                                    <option value="Shop" <?php echo $form['category'] === 'Shop' ? 'selected' : ''; ?>>Shop</option>
-                                    <option value="Warehouse" <?php echo $form['category'] === 'Warehouse' ? 'selected' : ''; ?>>Warehouse</option>
+                                <optgroup label="<?php echo t('commercial'); ?>">
+                                    <option value="Office" <?php echo $form['category'] === 'Office' ? 'selected' : ''; ?>><?php echo t('office'); ?></option>
+                                    <option value="Shop" <?php echo $form['category'] === 'Shop' ? 'selected' : ''; ?>><?php echo t('shop'); ?></option>
+                                    <option value="Warehouse" <?php echo $form['category'] === 'Warehouse' ? 'selected' : ''; ?>><?php echo t('warehouse'); ?></option>
                                 </optgroup>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Monthly Price (ETB) <span class="req">*</span></label>
-                            <input type="number" name="amount" placeholder="e.g. 8000" value="<?php echo htmlspecialchars($form['amount']); ?>" required min="1">
+                            <label><?php echo t('ph_monthly_price'); ?> <span class="req">*</span></label>
+                            <input type="number" name="amount" placeholder="<?php echo t('ph_price_ph'); ?>" value="<?php echo htmlspecialchars($form['amount']); ?>" required min="1">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Contact Phone <span class="req">*</span></label>
-                        <input type="text" name="phone" placeholder="e.g. 0911234567" value="<?php echo htmlspecialchars($form['phone']); ?>" required>
+                        <label><?php echo t('ph_contact_phone'); ?> <span class="req">*</span></label>
+                        <input type="text" name="phone" placeholder="<?php echo t('ph_contact_phone_ph'); ?>" value="<?php echo htmlspecialchars($form['phone']); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="desc" placeholder="Describe your property - water, electricity, furnished status, etc."><?php echo htmlspecialchars($form['description'] ?? ''); ?></textarea>
+                        <label><?php echo t('ph_description'); ?></label>
+                        <textarea name="desc" placeholder="<?php echo t('ph_desc_ph'); ?>"><?php echo htmlspecialchars($form['description'] ?? ''); ?></textarea>
                     </div>
                 </div>
 
                 <!-- Photos -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-camera"></i> Photos</div>
+                    <div class="form-section-title"><i class="fas fa-camera"></i> <?php echo t('ph_photos'); ?></div>
 
                     <div class="cover-block" style="margin-bottom:20px">
                         <div class="cover-preview">
-                            <span class="cover-tag">Cover</span>
-                            <img src="uploads/<?php echo htmlspecialchars($data['image']); ?>" alt="Cover photo">
+                            <span class="cover-tag"><?php echo t('eh_cover'); ?></span>
+                            <img src="uploads/<?php echo htmlspecialchars($data['image']); ?>" alt="<?php echo htmlspecialchars(t('eh_cover_photo')); ?>">
                         </div>
                         <div class="cover-actions">
                             <div class="file-upload" onclick="this.querySelector('input').click()">
                                 <i class="fas fa-camera-retro"></i>
-                                <p>Change Cover Photo</p>
+                                <p><?php echo t('eh_change_cover'); ?></p>
                                 <div class="file-name" id="cover-name"></div>
                                 <input type="file" name="house_image" accept="image/*" onchange="updatePhotoList(this, 'cover-name')">
                             </div>
-                            <div class="hint">JPG, PNG, WebP, GIF, HEIC or HEIF &middot; 5MB max &middot; HEIC is converted automatically</div>
+                            <div class="hint"><?php echo t('eh_cover_hint'); ?></div>
                         </div>
                     </div>
 
                     <?php if(!empty($gallery)): ?>
                     <div class="form-group" style="margin-bottom:14px">
-                        <label>Gallery Photos <span class="badge"><?php echo count($gallery); ?></span></label>
+                        <label><?php echo t('eh_gallery'); ?> <span class="badge"><?php echo count($gallery); ?></span></label>
                         <div class="gallery-grid">
                             <?php foreach($gallery as $img): ?>
                             <div class="gallery-item" data-toggle="gallery">
-                                <img src="uploads/<?php echo htmlspecialchars($img['filename']); ?>" alt="Gallery photo">
-                                <button type="button" class="remove-btn" title="Remove photo"><i class="fas fa-xmark"></i></button>
+                                <img src="uploads/<?php echo htmlspecialchars($img['filename']); ?>" alt="<?php echo htmlspecialchars(t('eh_gallery')); ?>">
+                                <button type="button" class="remove-btn" title="<?php echo htmlspecialchars(t('eh_remove_photo')); ?>"><i class="fas fa-xmark"></i></button>
                                 <input type="checkbox" name="remove_img[]" value="<?php echo htmlspecialchars($img['filename']); ?>">
-                                <span class="remove-tag"><i class="fas fa-trash"></i> Remove</span>
+                                <span class="remove-tag"><i class="fas fa-trash"></i> <?php echo t('eh_remove'); ?></span>
                             </div>
                             <?php endforeach; ?>
                         </div>
-                        <div class="hint">Click the <i class="fas fa-xmark"></i> on a photo to mark it for removal before saving.</div>
+                        <div class="hint"><?php echo t('eh_remove_hint'); ?></div>
                     </div>
                     <?php endif; ?>
 
                     <div class="form-group">
-                        <label>Add More Photos</label>
+                        <label><?php echo t('eh_add_more'); ?></label>
                         <div class="gallery-add" onclick="this.querySelector('input').click()">
                             <i class="fas fa-image"></i>
-                            Add Photo(s)
+                            <?php echo t('eh_add_photos'); ?>
                             <div class="file-name" id="gallery-name"></div>
                             <input type="file" name="house_photos[]" accept="image/*" multiple onchange="updatePhotoList(this, 'gallery-name')">
                         </div>
-                        <div class="hint">Up to 6 photos total &middot; JPG, PNG, WebP, GIF, HEIC or HEIF</div>
+                        <div class="hint"><?php echo t('eh_add_hint'); ?></div>
                     </div>
                 </div>
 
                 <!-- Amenities -->
                 <div class="form-section">
-                    <div class="form-section-title"><i class="fas fa-star"></i> Amenities</div>
-                    <p style="font-size:13px;color:#94a3b8;margin-bottom:14px">Select all amenities that apply to your property</p>
+                    <div class="form-section-title"><i class="fas fa-star"></i> <?php echo t('ph_amenities'); ?></div>
+                    <p style="font-size:13px;color:#94a3b8;margin-bottom:14px"><?php echo t('ph_amenities_hint'); ?></p>
                     <div class="amenity-grid">
                         <?php
                         $amenities_result = mysqli_query($conn, "SELECT * FROM amenities ORDER BY sort_order ASC");
@@ -601,14 +615,19 @@ if(isset($_POST['update'])){
                 </div>
 
                 <div class="btn-row">
-                    <button type="submit" name="update" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
-                    <a href="manage_houses.php" class="btn-cancel">Cancel</a>
+                    <button type="submit" name="update" class="btn-save"><i class="fas fa-save"></i> <?php echo t('eh_save'); ?></button>
+                    <a href="manage_houses.php" class="btn-cancel"><?php echo t('eh_cancel'); ?></a>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+    var ehPhotosLabel = <?php echo json_encode(t('ph_photos_plural')); ?>;
+    var ehPhotoLabel = <?php echo json_encode(t('ph_photo')); ?>;
+    var ehSelectedLabel = <?php echo json_encode(t('ph_selected')); ?>;
+    var ehUndoRemove = <?php echo json_encode(t('eh_undo_remove')); ?>;
+    var ehRemovePhoto = <?php echo json_encode(t('eh_remove_photo')); ?>;
     document.querySelectorAll('.amenity-item input[type="checkbox"]').forEach(function(cb){
         cb.addEventListener('change', function(){
             this.closest('.amenity-item').classList.toggle('checked', this.checked);
@@ -622,7 +641,7 @@ if(isset($_POST['update'])){
             var removing = box.checked;
             item.classList.toggle('removing', removing);
             btn.innerHTML = removing ? '<i class="fas fa-rotate-left"></i>' : '<i class="fas fa-xmark"></i>';
-            btn.title = removing ? 'Undo remove' : 'Remove photo';
+            btn.title = removing ? ehUndoRemove : ehRemovePhoto;
         }
         btn.addEventListener('click', function(){
             box.checked = !box.checked;
@@ -637,7 +656,7 @@ if(isset($_POST['update'])){
         if(n === 0){ el.style.display = 'none'; return; }
         var names = [];
         for(var i = 0; i < n; i++) names.push(input.files[i].name);
-        el.textContent = n + (n > 1 ? ' photos' : ' photo') + ' selected: ' + names.join(', ');
+        el.textContent = n + ' ' + (n > 1 ? ehPhotosLabel : ehPhotoLabel) + ' ' + ehSelectedLabel + names.join(', ');
         el.style.display = 'block';
     }
 
@@ -680,11 +699,11 @@ if(isset($_POST['update'])){
     <div class="ph-overlay ph-active" id="phSuccess">
         <div class="ph-card">
             <div class="ph-icon"><i class="fas fa-check"></i></div>
-            <h2>Changes Saved</h2>
-            <p>Your changes have been submitted and will be reviewed by an admin. The listing will go live again once approved.</p>
+            <h2><?php echo t('eh_saved_title'); ?></h2>
+            <p><?php echo t('eh_saved_desc'); ?></p>
             <div class="ph-actions">
-                <a href="edit_house.php?id=<?php echo (int)$house_id; ?>" class="ph-btn ph-btn-ghost"><i class="fas fa-pen"></i> Keep Editing</a>
-                <a href="manage_houses.php" class="ph-btn ph-btn-primary"><i class="fas fa-th-large"></i> Go to Dashboard</a>
+                <a href="edit_house.php?id=<?php echo (int)$house_id; ?>" class="ph-btn ph-btn-ghost"><i class="fas fa-pen"></i> <?php echo t('eh_keep_editing'); ?></a>
+                <a href="manage_houses.php" class="ph-btn ph-btn-primary"><i class="fas fa-th-large"></i> <?php echo t('ph_go_dashboard'); ?></a>
             </div>
         </div>
     </div>

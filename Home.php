@@ -1,11 +1,11 @@
-﻿<?php include('includes/session_config.php'); session_start(); include('includes/db.php');
+﻿<?php include('includes/session_config.php'); session_start(); include('includes/db.php'); include('includes/lang.php');
 $total_houses  = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM houses"))[0];
 $total_landlords = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE is_admin=0"))[0];
 $total_kebeles = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(DISTINCT kebele) FROM houses"))[0];
 $total_tenants = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM requests WHERE status=0"))[0];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,7 +52,25 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .user-dropdown a{display:flex;align-items:center;gap:8px;padding:10px 16px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;transition:all .15s}
 .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
 .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
-.user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+        .user-dropdown-lang a.active{color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+.lang-drop{position:relative;display:inline-flex}
+.lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Poppins',sans-serif}
+.lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
+.lang-pill .lg-code{color:#2dd4bf}
+.lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+.lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+.lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+.lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+.lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+.lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+.lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+.lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
 
 /* HERO */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0f172a}
@@ -65,8 +83,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .hero-content p{color:rgba(255,255,255,.7);font-size:clamp(16px,2vw,20px);line-height:1.7;margin-bottom:36px;max-width:600px;margin-left:auto;margin-right:auto}
 .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .btn-hero{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:14px;font-size:16px;font-weight:700;text-decoration:none;transition:all .3s;border:none;cursor:pointer}
-.btn-hero-primary{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 4px 20px rgba(13,148,136,.4)}
-.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(13,148,136,.5)}
+.btn-hero-primary{background:#fff;color:#000;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
 .btn-hero-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(10px)}
 .btn-hero-secondary:hover{background:rgba(255,255,255,.15);transform:translateY(-3px)}
 
@@ -121,7 +139,8 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 
 @media(max-width:768px){
 .navbar{padding:12px 20px}
-.nav-links a:not(.btn-nav){display:none}
+.nav-links a:not(.btn-nav),.nav-links:not(:has(a.btn-nav)) a{display:none}
+.lang-drop{display:inline-flex !important;position:relative;z-index:1100}
 .stats-grid{grid-template-columns:repeat(2,1fr);gap:16px}
 .cat-grid{grid-template-columns:1fr}
 .steps-grid{grid-template-columns:1fr}
@@ -138,12 +157,22 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="nav-brand-text">Adama<span>Rent</span></div>
     </a>
     <div class="nav-center">
-        <a href="index.php">Home</a>
-        <a href="#property-types">Property types</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#contact">Contact</a>
+        <a href="index.php"><?php echo t('nav_home'); ?></a>
+        <a href="#property-types"><?php echo t('nav_property_types'); ?></a>
+        <a href="#how-it-works"><?php echo t('nav_how_it_works'); ?></a>
+        <a href="#contact"><?php echo t('nav_contact'); ?></a>
     </div>
     <div class="nav-links">
+        <?php if(!isset($_SESSION['user_id'])): ?>
+        <div class="lang-drop">
+            <button type="button" class="lang-pill" onclick="toggleLangMenu(this)" aria-label="Choose language"><i class="fas fa-globe"></i> <span class="lg-code"><?php echo htmlspecialchars(strtoupper($lang)); ?></span> <i class="fas fa-chevron-down chev"></i></button>
+            <div class="lang-menu">
+                <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                <?php } ?>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php if(isset($_SESSION['user_id'])): ?>
             <div class="user-avatar-wrap">
                 <div class="user-avatar"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
@@ -151,88 +180,97 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
                     <div class="user-dropdown-header">
                         <div class="user-avatar-sm"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                         <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
-                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?></div></div>
+                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?></div></div>
                     </div>
                     <div class="user-dropdown-divider"></div>
-                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
-                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                    <a href="profile.php"><i class="fas fa-user"></i> <?php echo t('nav_profile'); ?></a>
+                    <div class="user-dropdown-divider"></div>
+                    <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
+                    <div class="user-dropdown-lang">
+                        <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                        <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                        <?php } ?>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> <?php echo t('nav_signout'); ?></a>
                 </div>
             </div>
         <?php else: ?>
-            <a href="login.php" class="btn-nav"><i class="fas fa-right-to-bracket"></i> Login</a>
+            <a href="login.php" class="btn-nav"><i class="fas fa-right-to-bracket"></i> <?php echo t('nav_login'); ?></a>
         <?php endif; ?>
     </div>
 </nav>
 
 <header class="hero">
     <div class="hero-bg">
+        <img src="images/IMG_7182.jpeg" alt="">
         <div class="hero-gradient"></div>
     </div>
     <div class="hero-content">
-        <h1>Find Your Perfect <span>Rental Home</span> in Adama</h1>
-        <p>The trusted digital marketplace connecting landlords and tenants across Adama City. Search, compare, and secure your next property.</p>
+        <h1><?php echo t('hero_title1'); ?><span><?php echo t('hero_title2'); ?></span><?php echo t('hero_title3'); ?></h1>
+        <p><?php echo t('hero_desc'); ?></p>
         <div class="hero-actions">
-            <a href="index.php" class="btn-hero btn-hero-primary"><i class="fas fa-search"></i> Get Started</a>
-            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>" class="btn-hero btn-hero-secondary"><i class="fas fa-plus-circle"></i> List Your Property</a>
+            <a href="index.php" class="btn-hero btn-hero-primary"><i class="fas fa-search"></i> <?php echo t('btn_get_started'); ?></a>
+            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>" class="btn-hero btn-hero-secondary"><i class="fas fa-plus-circle"></i> <?php echo t('btn_list_property'); ?></a>
         </div>
     </div>
 </header>
 
 <section class="stats-bar">
     <div class="stats-grid">
-        <div class="stat-item"><h3><?php echo $total_houses ?>+</h3><p>Properties Listed</p></div>
-        <div class="stat-item"><h3><?php echo $total_landlords ?>+</h3><p>Verified Landlords</p></div>
-        <div class="stat-item"><h3><?php echo $total_kebeles ?>+</h3><p>Kebeles Covered</p></div>
-        <div class="stat-item"><h3><?php echo $total_tenants ?>+</h3><p>Happy Tenants</p></div>
+        <div class="stat-item"><h3><?php echo $total_houses ?>+</h3><p><?php echo t('stat_properties'); ?></p></div>
+        <div class="stat-item"><h3><?php echo $total_landlords ?>+</h3><p><?php echo t('stat_landlords'); ?></p></div>
+        <div class="stat-item"><h3><?php echo $total_kebeles ?>+</h3><p><?php echo t('stat_kebeles'); ?></p></div>
+        <div class="stat-item"><h3><?php echo $total_tenants ?>+</h3><p><?php echo t('stat_tenants'); ?></p></div>
     </div>
 </section>
 
 <section class="categories" id="property-types">
     <div class="section-header">
-        <div class="tag">Property Types</div>
-        <h2>Browse by Category</h2>
-        <p>From cozy rooms to commercial spaces, find exactly what you need.</p>
+        <div class="tag"><?php echo t('cat_tag'); ?></div>
+        <h2><?php echo t('cat_heading'); ?></h2>
+        <p><?php echo t('cat_sub'); ?></p>
     </div>
     <div class="cat-grid">
         <a href="index.php?cat=Single+Home" class="cat-card">
             <div class="cat-icon"><i class="fas fa-house-chimney"></i></div>
-            <h3>Single Homes</h3>
-            <p>Cozy rooms and traditional houses perfect for students and working professionals.</p>
+            <h3><?php echo t('cat_single'); ?></h3>
+            <p><?php echo t('cat_single_desc'); ?></p>
         </a>
         <a href="index.php?cat=Apartment" class="cat-card">
             <div class="cat-icon"><i class="fas fa-building"></i></div>
-            <h3>Apartments & Villas</h3>
-            <p>Modern apartments and luxury villas in prime locations across Adama.</p>
+            <h3><?php echo t('cat_apt'); ?></h3>
+            <p><?php echo t('cat_apt_desc'); ?></p>
         </a>
         <a href="index.php?cat=Shop" class="cat-card">
             <div class="cat-icon"><i class="fas fa-store"></i></div>
-            <h3>Commercial Spaces</h3>
-            <p>Offices, shops, and warehouses for businesses of all sizes.</p>
+            <h3><?php echo t('cat_com'); ?></h3>
+            <p><?php echo t('cat_com_desc'); ?></p>
         </a>
     </div>
 </section>
 
 <section class="how-it-works" id="how-it-works">
     <div class="section-header">
-        <div class="tag">How It Works</div>
-        <h2>Simple as 1-2-3</h2>
+        <div class="tag"><?php echo t('hiw_tag'); ?></div>
+        <h2><?php echo t('hiw_heading'); ?></h2>
     </div>
     <div class="steps-grid">
         <div class="step">
             <div class="step-number">1</div>
-            <h3>Get Started</h3>
-            <p>Browse listings by category, location, and price range to find your ideal property.</p>
+            <h3><?php echo t('step1_t'); ?></h3>
+            <p><?php echo t('step1_d'); ?></p>
         </div>
         <div class="step">
             <div class="step-number">2</div>
-            <h3>Contact Landlord</h3>
-            <p>Get the landlord's contact details and reach out directly to schedule a visit.</p>
+            <h3><?php echo t('step2_t'); ?></h3>
+            <p><?php echo t('step2_d'); ?></p>
         </div>
         <div class="step">
             <div class="step-number">3</div>
-            <h3>Move In</h3>
-            <p>Finalize your agreement and move into your new home or business space.</p>
+            <h3><?php echo t('step3_t'); ?></h3>
+            <p><?php echo t('step3_d'); ?></p>
         </div>
     </div>
 </section>
@@ -241,7 +279,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
     <div class="footer-grid">
         <div class="footer-brand">
             <h3>Adama<span>Rent</span></h3>
-            <p>The first digital marketplace for property rentals in Adama City. Connecting landlords and tenants directly, saving you time and money.</p>
+            <p><?php echo t('footer_tagline'); ?></p>
             <div class="footer-social">
                 <a href="https://t.me/Get_dope" target="_blank" class="tg"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://facebook.com/Getdope" target="_blank" class="fb"><i class="fab fa-facebook-f"></i></a>
@@ -250,33 +288,43 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
             </div>
         </div>
         <div class="footer-col">
-            <h4>Quick Links</h4>
-            <a href="index.php">Browse Properties</a>
-            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>">List Your Property</a>
-            <a href="login.php">Sign In</a>
+            <h4><?php echo t('footer_quick'); ?></h4>
+            <a href="index.php"><?php echo t('footer_browse'); ?></a>
+            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>"><?php echo t('btn_list_property'); ?></a>
+            <a href="login.php"><?php echo t('footer_signin'); ?></a>
         </div>
         <div class="footer-col">
-            <h4>Categories</h4>
-            <a href="index.php?cat=Single+Home">Single Homes</a>
-            <a href="index.php?cat=Apartment">Apartments</a>
-            <a href="index.php?cat=Villa">Villas</a>
-            <a href="index.php?cat=Shop">Shops</a>
+            <h4><?php echo t('footer_categories'); ?></h4>
+            <a href="index.php?cat=Single+Home"><?php echo t('cat_single'); ?></a>
+            <a href="index.php?cat=Apartment"><?php echo t('footer_apartments'); ?></a>
+            <a href="index.php?cat=Villa"><?php echo t('footer_villas'); ?></a>
+            <a href="index.php?cat=Shop"><?php echo t('footer_shops'); ?></a>
         </div>
         <div class="footer-col">
-            <h4>Contact</h4>
+            <h4><?php echo t('footer_contact'); ?></h4>
             <a href="#"><i class="fas fa-location-dot"></i> Adama, Oromia, Ethiopia</a>
             <a href="tel:+251910407721"><i class="fas fa-phone"></i> +251 910 407 721</a>
             <a href="tel:+251938272728"><i class="fas fa-phone"></i> +251 938 272 728</a>
         </div>
     </div>
     <div class="footer-bottom">
-        &copy; <?php echo date("Y"); ?> AdamaRent. All rights reserved.
+        &copy; <?php echo date("Y"); ?> AdamaRent. <?php echo t('footer_rights'); ?>
     </div>
 </footer>
 
 <script>
 window.addEventListener('scroll',()=>{
     document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50);
+});
+function toggleLangMenu(btn){
+    var drop = btn.closest('.lang-drop');
+    var isOpen = drop.classList.contains('open');
+    document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+    if(!isOpen) drop.classList.add('open');
+}
+document.addEventListener('click', function(e){
+    if(e.target.closest('.lang-drop')) return;
+    document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
 });
 </script>
 </body>

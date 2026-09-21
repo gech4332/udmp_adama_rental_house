@@ -3,6 +3,7 @@ include('includes/session_config.php');
 session_start();
 include('includes/db.php');
 include('includes/security.php');
+include('includes/lang.php');
 
 if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
@@ -39,7 +40,7 @@ $pending_req_count = 0;
 foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_count++; }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,6 +68,19 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
         .nav-right .btn-post{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
         .nav-right .btn-post:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
         .nav-right .btn-post:hover i{transform:rotate(90deg) scale(1.15)}
+        .lang-drop{position:relative;display:inline-flex;margin-right:4px}
+        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Inter',sans-serif}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
+        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
         .user-avatar-wrap{position:relative}
         .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
         .user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
@@ -81,6 +95,12 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
         .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+        .user-dropdown-lang a.active{color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .user-dropdown-lang a{display:flex;align-items:center;gap:8px;padding:8px 16px}
 
         .dashboard{max-width:1200px;margin:0 auto;padding:32px}
 
@@ -188,20 +208,28 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
             <div class="nav-brand-text">Adama<span>Rent</span></div>
         </a>
         <div class="nav-right">
-            <a href="index.php"><i class="fas fa-home"></i> Home</a>
-            <a href="post_house.php" class="btn-post"><i class="fas fa-plus"></i> New Posts</a>
+            <a href="index.php"><i class="fas fa-home"></i> <?php echo t('nav_home'); ?></a>
+            <a href="post_house.php" class="btn-post"><i class="fas fa-plus"></i> <?php echo t('new_posts'); ?></a>
             <div class="user-avatar-wrap">
                 <div class="user-avatar"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                 <div class="user-dropdown">
                     <div class="user-dropdown-header">
                         <div class="user-avatar-sm"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
                         <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
-                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? 'Admin' : 'Landlord'; ?></div></div>
+                        <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?></div></div>
                     </div>
                     <div class="user-dropdown-divider"></div>
-                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a href="profile.php"><i class="fas fa-user"></i> My Profile</a>
-                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+                    <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                    <a href="profile.php"><i class="fas fa-user"></i> <?php echo t('nav_profile'); ?></a>
+                    <div class="user-dropdown-divider"></div>
+                    <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
+                    <div class="user-dropdown-lang">
+                        <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                        <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                        <?php } ?>
+                    </div>
+                    <div class="user-dropdown-divider"></div>
+                    <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> <?php echo t('nav_signout'); ?></a>
                 </div>
             </div>
         </div>
@@ -209,45 +237,45 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
 
     <div class="dashboard">
         <div class="welcome">
-            <h1>Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></h1>
-            <p>Manage your property listings from your personal dashboard</p>
+            <h1><?php echo t('dash_welcome'); ?><?php echo htmlspecialchars($_SESSION['user_name']); ?></h1>
+            <p><?php echo t('dash_welcome_sub'); ?></p>
         </div>
 
         <div class="stats-row">
             <div class="stat-box">
-                <div class="stat-label">Total Listings</div>
+                <div class="stat-label"><?php echo t('stat_total'); ?></div>
                 <div class="stat-number"><?php echo $stats['total'] ?? 0; ?></div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">Available</div>
+                <div class="stat-label"><?php echo t('stat_available'); ?></div>
                 <div class="stat-number"><?php echo $stats['available'] ?? 0; ?></div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">Rented</div>
+                <div class="stat-label"><?php echo t('stat_rented'); ?></div>
                 <div class="stat-number"><?php echo $stats['rented'] ?? 0; ?></div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">Pending</div>
+                <div class="stat-label"><?php echo t('stat_pending'); ?></div>
                 <div class="stat-number"><?php echo $stats['pending'] ?? 0; ?></div>
             </div>
         </div>
 
         <div class="section-title">
-            <h2>Rental Requests<?php if($pending_req_count > 0): ?><span class="card-category" style="background:rgba(245,158,11,.15);color:#d97706;margin-left:8px"><?php echo $pending_req_count; ?> pending</span><?php endif; ?></h2>
+            <h2><?php echo t('req_title'); ?><?php if($pending_req_count > 0): ?><span class="card-category" style="background:rgba(245,158,11,.15);color:#d97706;margin-left:8px"><?php echo $pending_req_count; ?> <?php echo t('req_badge_pending'); ?></span><?php endif; ?></h2>
         </div>
 
         <?php if(isset($_GET['msg'])):
             if($_GET['msg'] == 'status_saved'): ?>
-                <div class="flash flash-ok"><i class="fas fa-check-circle"></i> Listing status updated.</div>
+                <div class="flash flash-ok"><i class="fas fa-check-circle"></i> <?php echo t('flash_status_saved'); ?></div>
             <?php elseif($_GET['msg'] == 'accepted'): ?>
-                <div class="flash flash-ok"><i class="fas fa-check-circle"></i> Rental request accepted. The tenant has been notified and the property is marked as rented.</div>
+                <div class="flash flash-ok"><i class="fas fa-check-circle"></i> <?php echo t('flash_accepted'); ?></div>
             <?php elseif($_GET['msg'] == 'rejected'): ?>
-                <div class="flash flash-err"><i class="fas fa-circle-xmark"></i> Rental request declined. The tenant has been notified.</div>
+                <div class="flash flash-err"><i class="fas fa-circle-xmark"></i> <?php echo t('flash_rejected'); ?></div>
             <?php endif;
         endif; ?>
 
         <?php if(empty($rental_reqs)): ?>
-            <div class="req-empty"><i class="fas fa-hand-holding-heart"></i>No rental requests yet. When someone wants to rent your property, their request will appear here.</div>
+            <div class="req-empty"><i class="fas fa-hand-holding-heart"></i><?php echo t('req_empty'); ?></div>
         <?php else: ?>
             <div class="req-list">
                 <?php foreach($rental_reqs as $r): ?>
@@ -256,9 +284,9 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                         <div class="req-info">
                             <div class="req-tenant">
                                 <?php echo htmlspecialchars($r['full_name'] ?? 'Tenant'); ?>
-                                <span class="req-status <?php echo htmlspecialchars($r['req_status']); ?>"><?php echo htmlspecialchars($r['req_status']); ?></span>
+                                <span class="req-status <?php echo htmlspecialchars($r['req_status']); ?>"><?php echo t('req_' . $r['req_status']); ?></span>
                             </div>
-                            <div class="req-prop"><i class="fas fa-location-dot"></i><?php echo htmlspecialchars($r['category']); ?> in Kebele <?php echo htmlspecialchars($r['kebele']); ?>, <?php echo htmlspecialchars($r['street']); ?> &middot; <?php echo number_format($r['amount']); ?> ETB</div>
+                            <div class="req-prop"><i class="fas fa-location-dot"></i><?php echo htmlspecialchars($r['category']); ?> <?php echo t('req_in_kebele'); ?> <?php echo htmlspecialchars($r['kebele']); ?>, <?php echo htmlspecialchars($r['street']); ?> &middot; <?php echo number_format($r['amount']); ?> ETB</div>
                             <div class="req-time"><?php echo date('M j, g:i a', strtotime($r['created_at'])); ?></div>
                         </div>
                         <?php if($r['req_status'] === 'pending'): ?>
@@ -267,13 +295,13 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="action" value="accept">
                                     <input type="hidden" name="id" value="<?php echo (int)$r['id']; ?>">
-                                    <a href="javascript:void(0)" onclick="confirmAccept(<?php echo (int)$r['id']; ?>)" class="btn-accept"><i class="fas fa-check"></i> Accept</a>
+                                    <a href="javascript:void(0)" onclick="confirmAccept(<?php echo (int)$r['id']; ?>)" class="btn-accept"><i class="fas fa-check"></i> <?php echo t('btn_accept'); ?></a>
                                 </form>
                                 <form action="rental_request_action.php" method="POST" id="rr-reject-<?php echo (int)$r['id']; ?>" style="display:inline">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="action" value="reject">
                                     <input type="hidden" name="id" value="<?php echo (int)$r['id']; ?>">
-                                    <a href="javascript:void(0)" onclick="confirmReject(<?php echo (int)$r['id']; ?>)" class="btn-reject"><i class="fas fa-xmark"></i> Decline</a>
+                                    <a href="javascript:void(0)" onclick="confirmReject(<?php echo (int)$r['id']; ?>)" class="btn-reject"><i class="fas fa-xmark"></i> <?php echo t('btn_reject'); ?></a>
                                 </form>
                             </div>
                         <?php endif; ?>
@@ -283,7 +311,7 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
         <?php endif; ?>
 
         <div class="section-title">
-            <h2>Your Listings</h2>
+            <h2><?php echo t('your_listings'); ?></h2>
         </div>
 
         <div class="card-grid">
@@ -299,11 +327,15 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                     $badgeClass = 'badge-available';
                     if(strcasecmp($status,'Rented')===0) $badgeClass = 'badge-rented';
                     elseif(strcasecmp($status,'Pending')===0) $badgeClass = 'badge-pending';
+                    $statusLabel = $status;
+                    if(strcasecmp($status,'Available')===0) $statusLabel = t('stat_available');
+                    elseif(strcasecmp($status,'Rented')===0) $statusLabel = t('stat_rented');
+                    elseif(strcasecmp($status,'Pending')===0) $statusLabel = t('stat_pending');
             ?>
                 <div class="card">
                     <div class="card-img">
                         <img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Property" loading="lazy">
-                        <span class="card-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($status); ?></span>
+                        <span class="card-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($statusLabel); ?></span>
                     </div>
                     <div class="card-body">
                         <div class="card-info">
@@ -312,7 +344,7 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                         </div>
                         <div class="card-location">
                             <i class="fas fa-location-dot"></i>
-                            Kebele <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
+                            <?php echo t('in_kebele'); ?> <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
                         </div>
                         <div class="card-actions">
                             <?php if($status === 'Available' || strcasecmp($status,'Rented')===0): ?>
@@ -320,22 +352,22 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                     <button type="submit" class="btn-toggle">
-                                        <i class="fas fa-sync-alt"></i> <?php echo ($status=='Available') ? 'Mark Rented' : 'Mark Available'; ?>
+                                        <i class="fas fa-sync-alt"></i> <?php echo ($status=='Available') ? t('mark_rented') : t('mark_available'); ?>
                                     </button>
                                 </form>
                             <?php elseif(strcasecmp($status,'Pending')===0): ?>
-                                <span class="btn-toggle btn-disabled"><i class="fas fa-clock"></i> Awaiting Approval</span>
+                                <span class="btn-toggle btn-disabled"><i class="fas fa-clock"></i> <?php echo t('awaiting_approval'); ?></span>
                             <?php else: ?>
-                                <span class="btn-toggle btn-disabled"><i class="fas fa-ban"></i> Not Available</span>
+                                <span class="btn-toggle btn-disabled"><i class="fas fa-ban"></i> <?php echo t('not_available'); ?></span>
                             <?php endif; ?>
                             <a href="edit_house.php?id=<?php echo $row['id']; ?>" class="btn-edit">
-                                <i class="fas fa-edit"></i> Edit
+                                <i class="fas fa-edit"></i> <?php echo t('btn_edit'); ?>
                             </a>
                             <form action="delete.php" method="POST" id="del-myhouse-<?php echo $row['id']; ?>" style="display:contents">
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
                                 <input type="hidden" name="delete_btn" value="1">
-                                <button type="button" class="btn-delete" onclick="confirmMyListingDelete(<?php echo $row['id']; ?>)"><i class="fas fa-trash"></i> Delete</button>
+                                <button type="button" class="btn-delete" onclick="confirmMyListingDelete(<?php echo $row['id']; ?>)"><i class="fas fa-trash"></i> <?php echo t('btn_delete'); ?></button>
                             </form>
                         </div>
                     </div>
@@ -343,7 +375,7 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
             <?php 
                 }
             } else {
-                echo '<div class="empty-state"><i class="fas fa-home"></i><h3>No listings yet</h3><p>Start listing your properties and reach potential tenants.</p><a href="post_house.php"><i class="fas fa-plus"></i> Post Your First House</a></div>';
+                echo '<div class="empty-state"><i class="fas fa-home"></i><h3>' . t('empty_listings_h') . '</h3><p>' . t('empty_listings_p') . '</p><a href="post_house.php"><i class="fas fa-plus"></i> ' . t('post_first_house') . '</a></div>';
             }
             ?>
         </div>
@@ -375,6 +407,16 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
             onConfirm: function(){ document.getElementById('del-myhouse-' + id).submit(); }
         });
     }
+    function toggleLangMenu(btn){
+        var drop = btn.closest('.lang-drop');
+        var isOpen = drop.classList.contains('open');
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+        if(!isOpen) drop.classList.add('open');
+    }
+    document.addEventListener('click', function(e){
+        if(e.target.closest('.lang-drop')) return;
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+    });
     </script>
 
     <?php include('includes/footer.php'); ?>
