@@ -3,13 +3,11 @@
 if (file_exists(__DIR__ . '/../config/config_secrets.php')) {
     require_once __DIR__ . '/../config/config_secrets.php';
 }
-if (!defined('BREVO_API_KEY')) {
-    define('BREVO_API_KEY', '');
-    define('BREVO_FROM_EMAIL', '');
-    define('BREVO_FROM_NAME', 'AdamaRent');
-    define('GOOGLE_CLIENT_ID', '');
-    define('GOOGLE_CLIENT_SECRET', '');
-}
+if (!defined('BREVO_API_KEY'))        define('BREVO_API_KEY', '');
+if (!defined('BREVO_FROM_EMAIL'))     define('BREVO_FROM_EMAIL', '');
+if (!defined('BREVO_FROM_NAME'))      define('BREVO_FROM_NAME', 'AdamaRent');
+if (!defined('GOOGLE_CLIENT_ID'))     define('GOOGLE_CLIENT_ID', '');
+if (!defined('GOOGLE_CLIENT_SECRET')) define('GOOGLE_CLIENT_SECRET', '');
 
 if (!function_exists('app_base_url')) {
     function app_base_url() {

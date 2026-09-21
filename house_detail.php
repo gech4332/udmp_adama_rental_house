@@ -78,7 +78,7 @@ if($house){
 }
 $rentHref  = isset($_SESSION['user_id'])
     ? '#rent'
-    : 'login.php?redirect=' . urlencode('rent_request.php?house=' . $id);
+    : 'login.php?redirect=' . urlencode('house_detail.php?house=' . $id);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang); ?>">
