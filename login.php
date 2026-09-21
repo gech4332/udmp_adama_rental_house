@@ -138,6 +138,10 @@ if(isset($_GET['google'])){
         .form-group input{width:100%;padding:13px 44px;border:1.5px solid var(--line);border-radius:12px;font-size:14.5px;font-family:inherit;background:#f8fafc;color:#0f172a;transition:all .22s}
         .form-group input::placeholder{color:#a8b3c0}
         .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(13,148,136,.12)}
+        .form-group input:-webkit-autofill,.form-group input:-webkit-autofill:hover,.form-group input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-fill-color:#0f172a;border-color:var(--line)}
+        .input-wrapper:focus-within>i{color:var(--brand)}
+        @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .auth-card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both}
         .form-row{display:flex;align-items:center;justify-content:space-between;margin:2px 0 20px}
         .check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;line-height:1.5}
         .check input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin:0}
@@ -150,11 +154,15 @@ if(isset($_GET['google'])){
         .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
         .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;cursor:pointer;text-decoration:none;transition:all .2s}
         .btn-google:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.06)}
-        .auth-footer{text-align:center;margin-top:28px;font-size:14px;color:var(--muted)}
-        .auth-footer a{color:var(--brand);text-decoration:none;font-weight:700}
-        .auth-footer a:hover{text-decoration:underline}
+        .auth-footer{text-align:center;margin-top:28px}
+        .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
+        .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
+        .auth-footer a.footer-link:hover{background:#f0fdfa;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(13,148,136,.12)}
         .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;color:#0f766e;font-size:12px;display:flex;align-items:center;gap:8px}
         .auth-card .secure-note i{font-size:15px}
+        .resend-line{text-align:center;margin-top:16px;font-size:12.5px}
+        .resend-line a{color:#94a3b8;text-decoration:none;font-weight:600;transition:color .2s}
+        .resend-line a:hover{color:var(--brand)}
         .lang-drop{position:fixed;top:20px;right:24px;z-index:1200}
         .lang-pill{display:inline-flex;align-items:center;gap:8px;color:#fff;background:#0f172a;border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.2)}
         .lang-pill:hover{background:#1e293b;border-color:rgba(45,212,191,.4)}
@@ -171,11 +179,12 @@ if(isset($_GET['google'])){
         .mobile-brand{display:none;text-align:center;margin-bottom:30px}
         .mobile-brand .logo{width:54px;height:54px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;margin:0 auto 14px;box-shadow:0 6px 18px rgba(13,148,136,.35)}
         .mobile-brand h3{font-size:20px;font-weight:800;color:var(--ink)}
-        @media(max-width:1024px){.auth-left{display:none}}
-        @media(max-width:768px){
-            body{flex-direction:column;background:#f1f5f9}
+        @media(max-width:1024px){
             .auth-left{display:none}
             .mobile-brand{display:block}
+        }
+        @media(max-width:768px){
+            body{flex-direction:column;background:#f1f5f9}
             .auth-right{padding:24px 16px}
             .auth-card{padding:32px 24px;border-radius:16px}
         }
@@ -228,14 +237,14 @@ if(isset($_GET['google'])){
                     <label><?php echo t('email_address'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required>
+                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required autocomplete="email">
                     </div>
                 </div>
                 <div class="form-group">
                     <label><?php echo t('password'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder'); ?>" required>
+                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder'); ?>" required autocomplete="current-password">
                         <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password"><i class="fas fa-eye" id="pwIcon"></i></button>
                     </div>
                 </div>
@@ -244,8 +253,8 @@ if(isset($_GET['google'])){
                     <a href="forgot_password.php"><?php echo t('forgot_password'); ?></a>
                 </div>
                 <button type="submit" name="login" class="btn-submit"><i class="fas fa-right-to-bracket"></i> <?php echo t('sign_in'); ?></button>
-                <p style="text-align:center;margin-top:16px;font-size:12.5px">
-                    <a href="resend_verification.php" style="color:#94a3b8;text-decoration:none;font-weight:600"><?php echo t('resend_verify_link'); ?></a>
+                <p class="resend-line">
+                    <a href="resend_verification.php"><?php echo t('resend_verify_link'); ?></a>
                 </p>
             </form>
 
@@ -262,7 +271,8 @@ if(isset($_GET['google'])){
             <?php endif; ?>
 
             <div class="auth-footer">
-                <?php echo t('no_account'); ?> <a href="register.php"><?php echo t('create_one'); ?></a>
+                <p><?php echo t('no_account'); ?></p>
+                <a href="register.php" class="footer-link"><i class="fas fa-user-plus"></i> <?php echo t('create_one'); ?></a>
             </div>
             <div class="secure-note"><i class="fas fa-lock"></i> <?php echo t('secure_note'); ?></div>
         </div>

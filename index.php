@@ -118,19 +118,26 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
 <?php
 }
 
-function loadAmenities($conn) {
+function loadAmenities($conn, array $ids = []) {
     $all = [];
     $res = mysqli_query($conn, "SELECT id, name, icon FROM amenities");
     if($res) { while($r = mysqli_fetch_assoc($res)) $all[$r['id']] = $r; }
     $map = [];
-    $res2 = mysqli_query($conn, "SELECT house_id, amenity_id FROM house_amenities");
+    if(!empty($ids)) {
+        $in = implode(',', array_map('intval', $ids));
+        $res2 = mysqli_query($conn, "SELECT house_id, amenity_id FROM house_amenities WHERE house_id IN ($in)");
+    } else {
+        $res2 = false;
+    }
     if($res2) { while($r = mysqli_fetch_assoc($res2)) $map[$r['house_id']][] = $r['amenity_id']; }
     return [$all, $map];
 }
 
-function loadHouseImages($conn) {
+function loadHouseImages($conn, array $ids = []) {
     $map = [];
-    $res = mysqli_query($conn, "SELECT house_id, filename FROM house_images ORDER BY sort_order ASC, id ASC");
+    if(empty($ids)) return $map;
+    $in = implode(',', array_map('intval', $ids));
+    $res = mysqli_query($conn, "SELECT house_id, filename FROM house_images WHERE house_id IN ($in) ORDER BY sort_order ASC, id ASC");
     if($res) { while($r = mysqli_fetch_assoc($res)) $map[$r['house_id']][] = $r['filename']; }
     return $map;
 }
@@ -140,9 +147,7 @@ if(isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     $q = buildListingQuery($conn);
     $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : 0;
     $limit = isset($_GET['limit']) ? min(50, max(1, (int)$_GET['limit'])) : $LISTING_LIMIT;
-    list($all_amenities, $house_amenities) = loadAmenities($conn);
-    $house_images = loadHouseImages($conn);
-    
+
     $stmt = mysqli_prepare($conn, $q['sql'] . " LIMIT ? OFFSET ?");
     $types = $q['types'] . 'ii';
     $params = $q['params'];
@@ -151,13 +156,22 @@ if(isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     mysqli_stmt_bind_param($stmt, $types, ...$params);
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
-    
-    $count = 0;
-    if($res && mysqli_num_rows($res) > 0) {
+
+    $rows = [];
+    $idList = [];
+    if($res) {
         while($row = mysqli_fetch_assoc($res)) {
-            renderPropertyCard($row, $all_amenities, $house_amenities, $house_images);
-            $count++;
+            $rows[] = $row;
+            $idList[] = (int)$row['id'];
         }
+    }
+    list($all_amenities, $house_amenities) = loadAmenities($conn, $idList);
+    $house_images = loadHouseImages($conn, $idList);
+
+    $count = 0;
+    foreach($rows as $row) {
+        renderPropertyCard($row, $all_amenities, $house_amenities, $house_images);
+        $count++;
     }
     header('X-Items-Count: ' . $count);
     exit;
@@ -172,8 +186,6 @@ if($q['types']) {
 mysqli_stmt_execute($count_stmt);
 $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
 
-list($all_amenities, $house_amenities) = loadAmenities($conn);
-$house_images = loadHouseImages($conn);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang); ?>">
@@ -549,11 +561,20 @@ $house_images = loadHouseImages($conn);
             mysqli_stmt_bind_param($stmt, $types, ...$params);
             mysqli_stmt_execute($stmt);
             $res = mysqli_stmt_get_result($stmt);
-            $rendered = 0;
-            if($res && mysqli_num_rows($res) > 0) {
+            $rows = [];
+            $idList = [];
+            if($res) {
                 while($row = mysqli_fetch_assoc($res)) {
+                    $rows[] = $row;
+                    $idList[] = (int)$row['id'];
+                }
+            }
+            $rendered = count($rows);
+            if(!empty($rows)) {
+                list($all_amenities, $house_amenities) = loadAmenities($conn, $idList);
+                $house_images = loadHouseImages($conn, $idList);
+                foreach($rows as $row) {
                     renderPropertyCard($row, $all_amenities, $house_amenities, $house_images);
-                    $rendered++;
                 }
             } else {
                 echo '<div class="empty-state"><i class="fas fa-home"></i><h3>'.t('no_properties').'</h3><p>'.t('try_adjust').'</p></div>';
