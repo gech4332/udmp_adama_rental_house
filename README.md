@@ -22,7 +22,7 @@ A PHP/MySQL rental house marketplace for **Adama City, Ethiopia** (plain PHP, no
 - **XAMPP Control Panel** → Start **Apache** and **MySQL**.
 
 ### 2️⃣ Configure Database Credentials
-Open `db.php` and match it to your MySQL:
+Match MySQL credentials in `includes/db.php` (or copy `config/config_secrets.example.php` to `config/config_secrets.php`):
 ```php
 $host   = 'localhost';
 $user   = 'root';
@@ -64,7 +64,7 @@ The site loads the landing page (Home). Click **Browse** to see/search propertie
 
 | Issue | Solution |
 |-------|----------|
-| **"Connection failed"** | Check `$pass` in `db.php` (XAMPP default is empty) and that MySQL is started. |
+| **"Connection failed"** | Check `$pass` in `includes/db.php` (XAMPP default is empty) and that MySQL is started. |
 | **Database/tables missing** | Run `setup.php` once to create everything. |
 | **Can't log in as admin** | You must **register the first Super Admin** via `setup.php` key (see Installation step 4). |
 | **Setup key not showing** | The key only shows while **no admin exists** — once an admin is created it's destroyed. |
