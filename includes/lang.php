@@ -152,6 +152,9 @@ $T = [
     'footer_ethio' => ['Ethiopia', 'ኢትዮጵያ', 'Itoophiyaa'],
     'footer_hours' => ['Open every day', 'በየቀኑ ክፍት', 'Guyyaa hunda banaa'],
     'footer_reply' => ['We reply within 24h', 'በ24 ሰዓት ውስጥ እንመልሳለን', 'Sa\'aa 24 keessatti deebina'],
+    'stat_verified' => ['Verified Listings', 'የተረጋገጡ ማስታወቂያዎች', 'Baallannoo Mirkaneeffaman'],
+    'stat_direct' => ['Direct from Landlords', 'በቀጥታ ከቤት አከራዮች', 'Kallattiin Abbootii Manaa'],
+    'stat_free' => ['Free to List', 'በነጻ ለማስታወቅ', 'Kaffaltii Malee Baalladhu'],
 
     // Browse / index page
     'find_properties' => ['Find Properties in Adama', 'በአዳማ ውስጥ ንብረቶችን ያግኙ', 'Adaamaa keessatti Qabeenya Barbaadhu'],
