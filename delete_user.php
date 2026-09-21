@@ -70,6 +70,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             $stmt4 = mysqli_prepare($conn, "DELETE FROM house_images WHERE house_id IN ($placeholders)");
             mysqli_stmt_bind_param($stmt4, $types, ...$hids);
             mysqli_stmt_execute($stmt4);
+
+            $stmt_ha = mysqli_prepare($conn, "DELETE FROM house_amenities WHERE house_id IN ($placeholders)");
+            mysqli_stmt_bind_param($stmt_ha, $types, ...$hids);
+            mysqli_stmt_execute($stmt_ha);
         }
 
         // Delete their houses and requests (cleanup)
@@ -90,6 +94,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
         mysqli_stmt_execute($del);
 
         $del = mysqli_prepare($conn, "DELETE FROM houses WHERE user_id=?");
+        mysqli_stmt_bind_param($del, "i", $target_id);
+        mysqli_stmt_execute($del);
+
+        $del = mysqli_prepare($conn, "DELETE FROM notifications WHERE user_id=?");
         mysqli_stmt_bind_param($del, "i", $target_id);
         mysqli_stmt_execute($del);
 
