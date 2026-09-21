@@ -206,3 +206,25 @@ function send_verification_email($email, $name, $token) {
     }
     return $res;
 }
+
+// Build + send a "reset your password" mail.
+// The reset link is logged locally ONLY when mail is not configured
+// (dev mode) — never when a real email is sent, so tokens can't leak from logs.
+function send_password_reset_email($email, $name, $token) {
+    $link = app_base_url() . '/reset_password.php?email=' . urlencode($email) . '&token=' . urlencode($token);
+    $subject = 'Reset your AdamaRent password';
+    $html = '<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto">'
+        . '<h2 style="color:#0f172a">Password reset, ' . htmlspecialchars($name) . '</h2>'
+        . '<p style="font-size:15px;color:#475569">We received a request to reset your AdamaRent password. Click the button below to choose a new one.</p>'
+        . '<p style="text-align:center"><a href="' . $link . '" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Reset my password</a></p>'
+        . '<p style="font-size:13px;color:#94a3b8">Or copy this link into your browser: <br>' . $link . '</p>'
+        . '<p style="font-size:12px;color:#cbd5e1">This link expires in 1 hour. If you didn\'t request a password reset, you can safely ignore this email.</p>'
+        . '</div>';
+    $res = send_mail_brevo($email, $name, $subject, $html, "Reset your AdamaRent password: $link");
+    if ($res['ok']) {
+        log_mail_dev($subject, $email, 'kept private in inbox', 'sent via Brevo');
+    } else {
+        log_mail_dev($subject, $email, $res['info'] === 'dev' ? $link : 'n/a', $res['info'] === 'dev' ? 'mail not configured (dev link below)' : $res['info']);
+    }
+    return $res;
+}

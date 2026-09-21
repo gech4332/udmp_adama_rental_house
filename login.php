@@ -227,6 +227,10 @@ if(isset($_GET['google'])){
                 <div class="info-msg"><i class="fas fa-check-circle"></i> <?php echo tout('This email is already verified — sign in below.'); ?></div>
             <?php endif; ?>
 
+            <?php if(isset($_GET['reset']) && $_GET['reset'] === 'done'): ?>
+                <div class="info-msg"><i class="fas fa-check-circle"></i> <?php echo tout('Your password has been reset. Please sign in.'); ?></div>
+            <?php endif; ?>
+
             <form method="POST">
                 <?php echo csrf_field(); ?>
                 <div class="form-group">
@@ -246,9 +250,12 @@ if(isset($_GET['google'])){
                 </div>
                 <div class="form-row">
                     <label class="check"><input type="checkbox" name="remember"> <?php echo t('remember_me'); ?></label>
-                    <a href="resend_verification.php"><?php echo t('forgot_password'); ?></a>
+                    <a href="forgot_password.php"><?php echo t('forgot_password'); ?></a>
                 </div>
                 <button type="submit" name="login" class="btn-submit"><i class="fas fa-right-to-bracket"></i> <?php echo t('sign_in'); ?></button>
+                <p style="text-align:center;margin-top:16px;font-size:12.5px">
+                    <a href="resend_verification.php" style="color:#94a3b8;text-decoration:none;font-weight:600"><?php echo t('resend_verify_link'); ?></a>
+                </p>
             </form>
 
             <?php if($google_enabled): ?>

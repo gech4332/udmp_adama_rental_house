@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
     status INT DEFAULT 0,
     email_verified TINYINT(1) NOT NULL DEFAULT 0,
     verify_token VARCHAR(64) NULL,
-    verify_expires DATETIME NULL
+    verify_expires DATETIME NULL,
+    reset_token VARCHAR(64) NULL,
+    reset_expires DATETIME NULL
 );
 
 CREATE TABLE IF NOT EXISTS houses (
