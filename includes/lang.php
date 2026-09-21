@@ -146,6 +146,12 @@ $T = [
     'footer_shops' => ['Shops', 'ሱቆች', 'Suuqii'],
     'footer_contact' => ['Contact', 'አግኙን', 'Quunnamuu'],
     'footer_rights' => ['All rights reserved.', 'ሁሉም መብቶች የተጠበቁ ናቸው።', 'Mirga hunda eegamaadha.'],
+    'footer_terms' => ['Terms of Service', 'የአገልግሎት ውሎች', 'Waltiiwwan Tajaajilaa'],
+    'footer_privacy' => ['Privacy Policy', 'የግላዊነት ፖሊሲ', 'Imaammata Icciitii'],
+    'footer_adama' => ['Adama, Oromia', 'አዳማ፣ ኦሮሚያ', 'Adaamaa, Oromiyaa'],
+    'footer_ethio' => ['Ethiopia', 'ኢትዮጵያ', 'Itoophiyaa'],
+    'footer_hours' => ['Open every day', 'በየቀኑ ክፍት', 'Guyyaa hunda banaa'],
+    'footer_reply' => ['We reply within 24h', 'በ24 ሰዓት ውስጥ እንመልሳለን', 'Sa\'aa 24 keessatti deebina'],
 
     // Browse / index page
     'find_properties' => ['Find Properties in Adama', 'በአዳማ ውስጥ ንብረቶችን ያግኙ', 'Adaamaa keessatti Qabeenya Barbaadhu'],
