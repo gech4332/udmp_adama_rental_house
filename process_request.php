@@ -67,6 +67,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             mysqli_stmt_bind_param($del, "i", $id);
             mysqli_stmt_execute($del);
 
+            $del = mysqli_prepare($conn, "DELETE FROM house_amenities WHERE house_id = ?");
+            mysqli_stmt_bind_param($del, "i", $id);
+            mysqli_stmt_execute($del);
+
             $del = mysqli_prepare($conn, "DELETE FROM houses WHERE id = ?");
             mysqli_stmt_bind_param($del, "i", $id);
             mysqli_stmt_execute($del);
