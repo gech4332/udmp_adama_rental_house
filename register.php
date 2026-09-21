@@ -154,7 +154,7 @@ if(isset($_POST['register'])){
         .auth-stats .stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);line-height:1.35}
 
         /* RIGHT FORM PANEL */
-        .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 40px}
+        .auth-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
         .auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:40px 40px 36px;box-shadow:0 20px 50px rgba(15,23,42,.08)}
         .auth-card .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:28px;transition:color .2s}
         .auth-card .back-link:hover{color:var(--brand)}
@@ -188,7 +188,7 @@ if(isset($_POST['register'])){
         .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
         .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;cursor:pointer;text-decoration:none;transition:all .2s}
         .btn-google:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.06)}
-        .auth-footer{text-align:center;margin-top:28px}
+        .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
         .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
         .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
         .auth-footer a.footer-link:hover{background:#f0fdfa;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(13,148,136,.12)}
