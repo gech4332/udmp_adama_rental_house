@@ -38,6 +38,13 @@ if(isset($_SESSION['user_id'])){
 
 $LISTING_LIMIT = 8;
 
+function quickFilterUrl($catValue) {
+    $p = $_GET;
+    $p['cat'] = $catValue;
+    if(isset($p['ajax'])) unset($p['ajax']);
+    return 'index.php?' . http_build_query($p);
+}
+
 function buildListingQuery($conn) {
     $where = "houses.status IN ('Available', 'Rented') AND houses.is_approved = 1";
     $types = '';
@@ -264,30 +271,41 @@ $house_images = loadHouseImages($conn);
         .notif-footer button:hover{background:rgba(13,148,136,.25)}
 
         /* SEARCH */
-        .search-section{background:linear-gradient(180deg,#ffffff 0%,#f8fbfd 100%);border-bottom:1px solid #e8eef4;padding:30px 32px 34px}
-        .search-inner{max-width:1200px;margin:0 auto}
-        .search-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+        .search-section{position:relative;background:linear-gradient(150deg,#0b2e2b 0%,#115e59 52%,#0d9488 100%);border-bottom:1px solid #082f2c;padding:46px 32px 76px;overflow:hidden}
+        .search-section::before{content:'';position:absolute;top:-180px;right:-120px;width:520px;height:520px;background:radial-gradient(circle,rgba(45,212,191,.22),transparent 62%);pointer-events:none}
+        .search-section::after{content:'';position:absolute;bottom:-200px;left:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(45,212,191,.16),transparent 62%);pointer-events:none}
+        .search-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+        .search-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
         .search-title-text{min-width:0}
-        .search-eyebrow{display:inline-flex;align-items:center;gap:7px;color:#0d9488;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:8px}
+        .search-eyebrow{display:inline-flex;align-items:center;gap:7px;color:#5eead4;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin-bottom:10px}
         .search-eyebrow i{font-size:12px}
-        .search-title h1{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px;line-height:1.15}
-        .search-title p{color:#64748b;font-size:13.5px;margin-top:6px;line-height:1.6}
-        .search-title .count{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:#eef4f9;color:#475569;padding:8px 16px;border-radius:50px;font-size:12.5px;font-weight:700;border:1px solid #e2eaf2}
-        .search-title .count i{color:#0d9488;font-size:12px}
-        .search-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid #e2eaf2;border-radius:16px;padding:8px;box-shadow:0 8px 24px -18px rgba(15,23,42,.25)}
-        .search-field{display:flex;align-items:center;gap:9px;flex:1 1 150px;min-width:150px;padding:10px 14px;background:#f6f9fc;border:1px solid transparent;border-radius:11px;transition:all .2s}
-        .search-field:hover{background:#fff;border-color:#e2eaf2}
-        .search-field:focus-within{background:#fff;border-color:#0d9488;box-shadow:0 0 0 4px rgba(13,148,136,.1)}
-        .search-field>i{color:#94a3b8;font-size:14px;flex-shrink:0;pointer-events:none}
-        .search-field select,.search-field input{width:100%;border:none;background:transparent;font-family:inherit;font-size:13.5px;color:#1e293b;outline:none;appearance:none;padding:0;cursor:pointer}
-        .search-field select{cursor:pointer}
-        .search-field input::placeholder{color:#9aa7b5}
-        .search-field-sort{flex:0 1 190px}
-        .search-form .btn-search{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(13,148,136,.3)}
-        .search-form .btn-search:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(13,148,136,.4)}
+        .search-title h1{font-size:30px;font-weight:800;color:#ffffff;letter-spacing:-.6px;line-height:1.12}
+        .search-title p{color:rgba(255,255,255,.72);font-size:14px;margin-top:8px;line-height:1.65;max-width:560px}
+        .search-title .count{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;padding:9px 18px;border-radius:50px;font-size:12.5px;font-weight:700;border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(8px)}
+        .search-title .count i{color:#5eead4;font-size:12px}
+        .search-form{display:flex;flex-wrap:wrap;align-items:stretch;background:#fff;border:1px solid #eef2f6;border-radius:20px;padding:10px;box-shadow:0 30px 60px -30px rgba(2,42,38,.55)}
+        .search-field{flex:1 1 165px;min-width:165px;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 16px 10px}
+        .search-field+.search-field{border-left:1px solid #eef2f6}
+        .sf-label{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#94a3b8}
+        .sf-label i{color:#0d9488;font-size:11px}
+        .sf-control{display:flex;align-items:center;gap:9px}
+        .sf-control>i{color:#94a3b8;font-size:13px;flex-shrink:0;pointer-events:none}
+        .sf-control select,.sf-control input{width:100%;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:#0f172a;outline:none;appearance:none;padding:0}
+        .sf-control select{cursor:pointer}
+        .sf-control input{cursor:text}
+        .sf-control input::placeholder{color:#9aa7b5;font-weight:500}
+        .sf-chev{color:#94a3b8;font-size:10px;flex-shrink:0;pointer-events:none}
+        .search-form .btn-search{display:inline-flex;align-items:center;gap:8px;padding:0 26px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 6px 18px rgba(13,148,136,.35)}
+        .search-form .btn-search:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(13,148,136,.45)}
         .search-form .btn-search:active{transform:translateY(0)}
-        .search-form .btn-reset{width:44px;height:44px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#64748b;border:1.5px solid #e2eaf2;border-radius:11px;text-decoration:none;font-size:13px;transition:all .2s}
+        .search-form .btn-reset{width:50px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;color:#64748b;border:1.5px solid #e8eef4;border-radius:14px;text-decoration:none;font-size:13px;transition:all .2s}
         .search-form .btn-reset:hover{border-color:#0d9488;color:#0d9488;background:#f0fdfa}
+        .search-quick{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:18px}
+        .search-quick .sq-label{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.8);font-size:13px;font-weight:700;letter-spacing:.3px;margin-right:2px}
+        .search-quick .sq-label i{color:#5eead4;font-size:11px}
+        .search-quick a{color:rgba(255,255,255,.85);text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.26);padding:7px 16px;border-radius:50px;font-size:12.5px;font-weight:600;backdrop-filter:blur(6px);transition:all .2s}
+        .search-quick a:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55);color:#fff}
+        .search-quick a.active{background:#fff;color:#0d9488;border-color:#fff;font-weight:700}
 
         /* GRID */
         .listings{max-width:1200px;margin:0 auto;padding:28px 32px 48px;flex:1;width:100%}
@@ -353,15 +371,20 @@ $house_images = loadHouseImages($conn);
         @media(max-width:900px){
             .search-form .btn-reset{display:none}
             .search-title{flex-direction:column;align-items:flex-start;gap:12px}
+            .search-section{padding:38px 24px 64px}
+            .search-field{flex:1 1 40%}
+            .search-field+.search-field{border-left:none}
         }
         @media(max-width:768px){
             .navbar{padding:12px 16px}
-            .search-section{padding:22px 16px 26px}
+            .search-section{padding:30px 16px 56px}
             .listings{padding:20px 16px 40px}
-            .search-form{flex-direction:column;align-items:stretch}
-            .search-field{flex:1 1 auto;min-width:0}
-            .search-form .btn-search{justify-content:center;width:100%}
-            .search-title h1{font-size:22px}
+            .search-form{flex-direction:column;align-items:stretch;border-radius:16px}
+            .search-field{flex:1 1 auto;min-width:0;padding:10px 14px}
+            .search-field+.search-field{border-left:none;border-top:1px solid #eef2f6}
+            .search-form .btn-search{justify-content:center;width:100%;min-height:50px}
+            .search-title h1{font-size:23px}
+            .search-quick{gap:8px}
         }
         @media(max-width:480px){
             .navbar{padding:10px 12px}
@@ -456,40 +479,56 @@ $house_images = loadHouseImages($conn);
             </div>
             <form method="GET" action="index.php" class="search-form">
                 <div class="search-field">
-                    <i class="fas fa-tag"></i>
-                    <select name="cat">
-                        <option value=""><?php echo t('all_categories'); ?></option>
-                        <optgroup label="<?php echo t('residential'); ?>">
-                            <option value="Single Home" <?php if(isset($_GET['cat']) && $_GET['cat']=='Single Home') echo 'selected'; ?>><?php echo t('single_home'); ?></option>
-                            <option value="Apartment" <?php if(isset($_GET['cat']) && $_GET['cat']=='Apartment') echo 'selected'; ?>><?php echo t('apartment'); ?></option>
-                            <option value="Villa" <?php if(isset($_GET['cat']) && $_GET['cat']=='Villa') echo 'selected'; ?>><?php echo t('villa'); ?></option>
-                        </optgroup>
-                        <optgroup label="<?php echo t('commercial'); ?>">
-                            <option value="Office" <?php if(isset($_GET['cat']) && $_GET['cat']=='Office') echo 'selected'; ?>><?php echo t('office'); ?></option>
-                            <option value="Shop" <?php if(isset($_GET['cat']) && $_GET['cat']=='Shop') echo 'selected'; ?>><?php echo t('shop'); ?></option>
-                            <option value="Warehouse" <?php if(isset($_GET['cat']) && $_GET['cat']=='Warehouse') echo 'selected'; ?>><?php echo t('warehouse'); ?></option>
-                        </optgroup>
-                    </select>
+                    <label class="sf-label" for="f-cat"><i class="fas fa-tag"></i> <?php echo t('lbl_category'); ?></label>
+                    <div class="sf-control">
+                        <select id="f-cat" name="cat">
+                            <option value=""><?php echo t('all_categories'); ?></option>
+                            <optgroup label="<?php echo t('residential'); ?>">
+                                <option value="Single Home" <?php if(isset($_GET['cat']) && $_GET['cat']=='Single Home') echo 'selected'; ?>><?php echo t('single_home'); ?></option>
+                                <option value="Apartment" <?php if(isset($_GET['cat']) && $_GET['cat']=='Apartment') echo 'selected'; ?>><?php echo t('apartment'); ?></option>
+                                <option value="Villa" <?php if(isset($_GET['cat']) && $_GET['cat']=='Villa') echo 'selected'; ?>><?php echo t('villa'); ?></option>
+                            </optgroup>
+                            <optgroup label="<?php echo t('commercial'); ?>">
+                                <option value="Office" <?php if(isset($_GET['cat']) && $_GET['cat']=='Office') echo 'selected'; ?>><?php echo t('office'); ?></option>
+                                <option value="Shop" <?php if(isset($_GET['cat']) && $_GET['cat']=='Shop') echo 'selected'; ?>><?php echo t('shop'); ?></option>
+                                <option value="Warehouse" <?php if(isset($_GET['cat']) && $_GET['cat']=='Warehouse') echo 'selected'; ?>><?php echo t('warehouse'); ?></option>
+                            </optgroup>
+                        </select>
+                        <i class="fas fa-chevron-down sf-chev"></i>
+                    </div>
                 </div>
                 <div class="search-field">
-                    <i class="fas fa-map-location-dot"></i>
-                    <input type="text" name="kb" placeholder="<?php echo t('search_kebele'); ?>" value="<?php echo isset($_GET['kb']) ? htmlspecialchars($_GET['kb']) : ''; ?>">
+                    <label class="sf-label" for="f-loc"><i class="fas fa-map-location-dot"></i> <?php echo t('lbl_location'); ?></label>
+                    <div class="sf-control">
+                        <input id="f-loc" type="text" name="kb" placeholder="<?php echo t('search_kebele'); ?>" value="<?php echo isset($_GET['kb']) ? htmlspecialchars($_GET['kb']) : ''; ?>">
+                    </div>
                 </div>
                 <div class="search-field">
-                    <i class="fas fa-coins"></i>
-                    <input type="number" name="max_pr" placeholder="<?php echo t('max_price'); ?>" value="<?php echo isset($_GET['max_pr']) ? htmlspecialchars($_GET['max_pr']) : ''; ?>">
+                    <label class="sf-label" for="f-price"><i class="fas fa-coins"></i> <?php echo t('lbl_price'); ?></label>
+                    <div class="sf-control">
+                        <input id="f-price" type="number" name="max_pr" placeholder="<?php echo t('max_price'); ?>" value="<?php echo isset($_GET['max_pr']) ? htmlspecialchars($_GET['max_pr']) : ''; ?>">
+                    </div>
                 </div>
-                <div class="search-field search-field-sort">
-                    <i class="fas fa-arrow-down-wide-short"></i>
-                    <select name="sort">
-                        <option value="newest" <?php if(isset($_GET['sort']) && $_GET['sort']=='newest') echo 'selected'; ?>><?php echo t('newest_first'); ?></option>
-                        <option value="price_low" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_low') echo 'selected'; ?>><?php echo t('price_low'); ?></option>
-                        <option value="price_high" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_high') echo 'selected'; ?>><?php echo t('price_high'); ?></option>
-                    </select>
+                <div class="search-field">
+                    <label class="sf-label" for="f-sort"><i class="fas fa-arrow-down-wide-short"></i> <?php echo t('lbl_sort'); ?></label>
+                    <div class="sf-control">
+                        <select id="f-sort" name="sort">
+                            <option value="newest" <?php if(isset($_GET['sort']) && $_GET['sort']=='newest') echo 'selected'; ?>><?php echo t('newest_first'); ?></option>
+                            <option value="price_low" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_low') echo 'selected'; ?>><?php echo t('price_low'); ?></option>
+                            <option value="price_high" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_high') echo 'selected'; ?>><?php echo t('price_high'); ?></option>
+                        </select>
+                        <i class="fas fa-chevron-down sf-chev"></i>
+                    </div>
                 </div>
                 <button type="submit" class="btn-search"><i class="fas fa-search"></i><span><?php echo t('search_btn'); ?></span></button>
                 <a href="index.php" class="btn-reset" title="<?php echo t('reset_btn'); ?>"><i class="fas fa-rotate-left"></i></a>
             </form>
+            <div class="search-quick">
+                <span class="sq-label"><i class="fas fa-fire"></i> <?php echo t('popular'); ?></span>
+                <?php $quickCats = [['Apartment', 'apartment'], ['Villa', 'villa'], ['Single Home', 'single_home'], ['Office', 'office']]; foreach($quickCats as $qc): ?>
+                <a href="<?php echo quickFilterUrl($qc[0]); ?>" class="<?php echo (isset($_GET['cat']) && $_GET['cat'] === $qc[0]) ? 'active' : ''; ?>"><i class="fas fa-house"></i> <?php echo t($qc[1]); ?></a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 
