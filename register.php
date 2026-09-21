@@ -144,10 +144,6 @@ if(isset($_POST['register'])){
         .auth-left .features li>i{width:46px;height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#2dd4bf;background:rgba(13,148,136,.28);border:1px solid rgba(45,212,191,.2);border-radius:12px;font-size:18px}
         .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:2px}
         .auth-left .features li small{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
-        .auth-quote{position:relative;z-index:2;margin-top:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:16px;padding:20px 24px;max-width:440px}
-        .auth-quote .quote-stars{color:#fbbf24;font-size:13px;letter-spacing:2px;margin-bottom:8px}
-        .auth-quote p{font-size:14px;line-height:1.7;color:rgba(255,255,255,.85)}
-        .auth-quote .quote-author{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px;font-weight:600}
 
         /* RIGHT FORM PANEL */
         .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 40px}
@@ -228,11 +224,6 @@ if(isset($_POST['register'])){
             <li><i class="fa-solid fa-chart-line"></i><span><strong><?php echo t('feat_reach'); ?></strong><small><?php echo t('feat_reach_s'); ?></small></span></li>
             <li><i class="fa-solid fa-user-shield"></i><span><strong><?php echo t('feat_free'); ?></strong><small><?php echo t('feat_free_s'); ?></small></span></li>
         </ul>
-    </div>
-    <div class="auth-quote">
-        <div class="quote-stars">★★★★★</div>
-        <p><?php echo t('quote_text'); ?></p>
-        <div class="quote-author"><?php echo t('quote_author'); ?></div>
     </div>
 </div>
     <div class="auth-right">
