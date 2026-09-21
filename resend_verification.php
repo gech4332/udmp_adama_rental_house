@@ -28,11 +28,13 @@ mysqli_stmt_bind_param($stmt, "s", $email);
 mysqli_stmt_execute($stmt);
 $res = mysqli_stmt_get_result($stmt);
 if (!$res || !($user = mysqli_fetch_assoc($res))) {
-    header("Location: $back?resend=noaccount");
+    // Anti-enumeration: respond identically whether or not the account exists.
+    header("Location: verify_pending.php?email=" . urlencode($email) . "&resend=sent");
     exit();
 }
 if ((int)$user['email_verified'] === 1) {
-    header("Location: $back?resend=already");
+    // Anti-enumeration: respond identically to a fresh resend.
+    header("Location: verify_pending.php?email=" . urlencode($email) . "&resend=sent");
     exit();
 }
 

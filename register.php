@@ -43,7 +43,11 @@ if(isset($_POST['register'])){
         $check_email = mysqli_stmt_get_result($stmt);
 
         if ($check_email && mysqli_num_rows($check_email) > 0) {
-            $error = "An account with this email already exists.";
+            // Anti-enumeration: respond identically to a successful sign-up so
+            // the server never reveals whether the email is already registered.
+            $_SESSION['verify_pending_email'] = $email_raw;
+            header("Location: verify_pending.php?email=" . urlencode($email_raw));
+            exit();
         } elseif ($setup_key !== '') {
             // Admin bootstrap — use a transaction to prevent TOCTOU race condition
             mysqli_begin_transaction($conn);

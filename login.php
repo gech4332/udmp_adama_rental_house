@@ -63,11 +63,11 @@ if(isset($_POST['login'])){
             }
         } else {
             record_login_failure($email);
-            $error = "Invalid password. Please try again.";
+            $error = "Invalid email or password.";
         }
     } else {
         record_login_failure($email);
-        $error = "No account found with this email address.";
+        $error = "Invalid email or password.";
     }
     }
 }

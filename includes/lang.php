@@ -337,6 +337,7 @@ $T = [
 
 // Map known English messages -> [en, am, om]
 $ERR_MAP = [
+    'Invalid email or password.' => ['Invalid email or password.', 'የተሳሳተ ኢሜይል ወይም የይለፍ ቃል።', 'Imaayelii ykn jecha iccitii dogoggoraa.'],
     'Invalid password. Please try again.' => ['Invalid password. Please try again.', 'የይለፍ ቃሉ የተሳሳተ ነው። እባክዎ እንደገና ይሞክሩ።', 'Jecha iccitii dogoggoraa. Kadhattee amma yaali.'],
     'No account found with this email address.' => ['No account found with this email address.', 'በዚህ ኢሜይል አድራሻ መለያ አልተገኘም።', 'Akkaawuntii teessoo imaayelii kana wajjin hin argamne.'],
     'Sign-in with Google was cancelled.' => ['Sign-in with Google was cancelled.', 'በGoogle መግባት ተሰርዟል።', 'Seensi Google dhoofame.'],
