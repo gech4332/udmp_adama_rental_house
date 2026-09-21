@@ -75,7 +75,7 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
                 <div class="card" data-href="house_detail.php?house=<?php echo (int)$row['id']; ?>">
                     <div class="card-img">
                         <img src="uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Property" loading="lazy">
-                        <span class="card-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($status); ?></span>
+                        <span class="card-badge <?php echo $badgeClass; ?>"><i class="fas <?php echo ($status == 'Rented') ? 'fa-circle-check' : 'fa-bolt'; ?>"></i><?php echo htmlspecialchars($status); ?></span>
                         <span class="card-category"><?php echo htmlspecialchars($row['category']); ?></span>
                         <span class="card-photos-count"><i class="fas fa-camera"></i> <?php echo (1 + count($images)); ?></span>
                     </div>
@@ -87,7 +87,7 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
                     </div>
                     <?php endif; ?>
                     <div class="card-body">
-                        <div class="card-price"><?php echo number_format($row['amount']); ?> <span><?php echo t('etb_month'); ?></span></div>
+                        <div class="card-price"><?php echo number_format($row['amount']); ?><span class="card-price-cur"> <?php echo t('etb_month'); ?></span></div>
                         <div class="card-location">
                             <i class="fas fa-location-dot"></i>
                             Kebele <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
@@ -98,12 +98,13 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
                             <?php foreach($house_amenities[$row['id']] as $aid):
                                 if(!isset($all_amenities[$aid])) continue;
                             ?>
-                                <span class="card-amenity" title="<?php echo htmlspecialchars($all_amenities[$aid]['name']); ?>"><i class="<?php echo htmlspecialchars($all_amenities[$aid]['icon']); ?>"></i> <?php echo htmlspecialchars($all_amenities[$aid]['name']); ?></span>
+                                <span class="card-amenity" title="<?php echo htmlspecialchars($all_amenities[$aid]['name']); ?>"><i class="<?php echo htmlspecialchars($all_amenities[$aid]['icon']); ?>"></i><?php echo htmlspecialchars($all_amenities[$aid]['name']); ?></span>
                             <?php endforeach; ?>
                         </div>
                         <?php endif; ?>
                         <div class="card-meta">
-                            <div class="card-owner"><i class="fas fa-user"></i> <?php echo htmlspecialchars($row['full_name'] ?? 'Private'); ?></div>
+                            <div class="card-owner"><span class="owner-dot"></span> <?php echo htmlspecialchars($row['full_name'] ?? 'Private'); ?></div>
+                            <span class="card-view"><i class="fas fa-circle-arrow-right"></i></span>
                         </div>
                     </div>
                 </div>
@@ -178,18 +179,16 @@ $house_images = loadHouseImages($conn);
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         html{scroll-behavior:smooth}
-        body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
+        body{font-family:'Inter',system-ui,sans-serif;background:#f2f6fa;color:#1e293b;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+        button{font-family:inherit}
+        a{font-family:inherit}
 
         /* NAVBAR */
-        .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
+        .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 24px -16px rgba(0,0,0,.5)}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}
-        .nav-brand-text{color:#fff;font-size:18px;font-weight:800}
+        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(13,148,136,.35)}
+        .nav-brand-text{color:#fff;font-size:18px;font-weight:800;letter-spacing:-.3px}
         .nav-brand-text span{color:#2dd4bf}
-        .nav-center{display:flex;align-items:center}
-        .nav-home-btn{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;font-weight:600;padding:9px 18px;border-radius:9px;transition:all .2s;border:1px solid transparent}
-        .nav-home-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
-        .nav-home-btn.active{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.12)}
         .nav-right{display:flex;align-items:center;gap:6px}
         .nav-right a{position:relative;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .25s cubic-bezier(.4,0,.2,1),color .25s}
         .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#2dd4bf,#14b8a6);transition:width .3s cubic-bezier(.4,0,.2,1)}
@@ -201,7 +200,7 @@ $house_images = loadHouseImages($conn);
         .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
         .lang-drop{position:relative;display:inline-flex;margin-right:4px}
-        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Poppins',sans-serif}
+        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer}
         .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
         .lang-pill .lg-code{color:#2dd4bf}
         .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
@@ -261,54 +260,72 @@ $house_images = loadHouseImages($conn);
         .notif-empty{padding:32px 16px;text-align:center;color:#94a3b8;font-size:13px}
         .notif-empty i{font-size:26px;color:#475569;display:block;margin-bottom:8px}
         .notif-footer{padding:10px 16px;border-top:1px solid rgba(255,255,255,.08)}
-        .notif-footer button{width:100%;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.3);color:#2dd4bf;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+        .notif-footer button{width:100%;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.3);color:#2dd4bf;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
         .notif-footer button:hover{background:rgba(13,148,136,.25)}
 
         /* SEARCH */
-        .search-section{background:#fff;border-bottom:1px solid #f1f5f9;padding:24px 32px}
+        .search-section{background:linear-gradient(180deg,#ffffff 0%,#f8fbfd 100%);border-bottom:1px solid #e8eef4;padding:30px 32px 34px}
         .search-inner{max-width:1200px;margin:0 auto}
-        .search-title{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-        .search-title h1{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-.3px}
-        .search-title .count{background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
-        .search-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-        .search-form select,.search-form input{padding:11px 16px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#374151;transition:border-color .2s;min-width:160px}
-        .search-form select:focus,.search-form input:focus{outline:none;border-color:#0d9488}
-        .search-form .btn-search{padding:11px 24px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .3s}
-        .search-form .btn-search:hover{box-shadow:0 4px 15px rgba(13,148,136,.4)}
-        .search-form .btn-reset{padding:11px 16px;background:transparent;color:#64748b;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;text-decoration:none;transition:all .2s}
-        .search-form .btn-reset:hover{border-color:#0d9488;color:#0d9488}
+        .search-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+        .search-title-text{min-width:0}
+        .search-eyebrow{display:inline-flex;align-items:center;gap:7px;color:#0d9488;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:8px}
+        .search-eyebrow i{font-size:12px}
+        .search-title h1{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.5px;line-height:1.15}
+        .search-title p{color:#64748b;font-size:13.5px;margin-top:6px;line-height:1.6}
+        .search-title .count{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:#eef4f9;color:#475569;padding:8px 16px;border-radius:50px;font-size:12.5px;font-weight:700;border:1px solid #e2eaf2}
+        .search-title .count i{color:#0d9488;font-size:12px}
+        .search-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid #e2eaf2;border-radius:16px;padding:8px;box-shadow:0 8px 24px -18px rgba(15,23,42,.25)}
+        .search-field{display:flex;align-items:center;gap:9px;flex:1 1 150px;min-width:150px;padding:10px 14px;background:#f6f9fc;border:1px solid transparent;border-radius:11px;transition:all .2s}
+        .search-field:hover{background:#fff;border-color:#e2eaf2}
+        .search-field:focus-within{background:#fff;border-color:#0d9488;box-shadow:0 0 0 4px rgba(13,148,136,.1)}
+        .search-field>i{color:#94a3b8;font-size:14px;flex-shrink:0;pointer-events:none}
+        .search-field select,.search-field input{width:100%;border:none;background:transparent;font-family:inherit;font-size:13.5px;color:#1e293b;outline:none;appearance:none;padding:0;cursor:pointer}
+        .search-field select{cursor:pointer}
+        .search-field input::placeholder{color:#9aa7b5}
+        .search-field-sort{flex:0 1 190px}
+        .search-form .btn-search{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(13,148,136,.3)}
+        .search-form .btn-search:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(13,148,136,.4)}
+        .search-form .btn-search:active{transform:translateY(0)}
+        .search-form .btn-reset{width:44px;height:44px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#64748b;border:1.5px solid #e2eaf2;border-radius:11px;text-decoration:none;font-size:13px;transition:all .2s}
+        .search-form .btn-reset:hover{border-color:#0d9488;color:#0d9488;background:#f0fdfa}
 
         /* GRID */
-        .listings{max-width:1200px;margin:0 auto;padding:24px 32px;flex:1}
-        .card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;align-items:start;gap:20px}
+        .listings{max-width:1200px;margin:0 auto;padding:28px 32px 48px;flex:1;width:100%}
+        .card-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;align-items:start;gap:22px}
         @media(max-width:1200px){.card-grid{grid-template-columns:repeat(3,1fr)}}
         @media(max-width:900px){.card-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:600px){.card-grid{grid-template-columns:1fr}}
-        .card{background:#fff;border-radius:14px;overflow:hidden;border:1px solid #f1f5f9;transition:all .3s;position:relative;cursor:pointer}
-        .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.08);border-color:#e2e8f0}
-        .card-img{position:relative;height:210px;overflow:hidden}
-        .card-img img{width:100%;height:100%;object-fit:cover;background:#f1f5f9}
-        .card-badge{position:absolute;top:12px;left:12px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;backdrop-filter:blur(8px)}
-        .badge-available{background:rgba(16,185,129,.9);color:#fff}
-        .badge-rented{background:rgba(239,68,68,.9);color:#fff}
-        .card-category{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.92);color:#0f172a;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;backdrop-filter:blur(8px)}
-        .card-photos-count{position:absolute;bottom:12px;right:12px;background:rgba(15,23,42,.72);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(8px)}
+        .card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e9eff5;transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s,border-color .3s;position:relative;cursor:pointer;display:flex;flex-direction:column}
+        .card:hover{transform:translateY(-6px);box-shadow:0 22px 46px -20px rgba(15,23,42,.28);border-color:#dbe5ee}
+        .card-img{position:relative;height:215px;overflow:hidden;background:#e9eef4}
+        .card-img::after{content:'';position:absolute;inset:auto 0 0 0;height:64px;background:linear-gradient(180deg,transparent,rgba(15,23,42,.35));pointer-events:none}
+        .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.3,1)}
+        .card:hover .card-img img{transform:scale(1.06)}
+        .card-badge{position:absolute;top:12px;left:12px;padding:5px 11px;border-radius:50px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.16)}
+        .card-badge i{font-size:9px}
+        .badge-available{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+        .badge-rented{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+        .card-category{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.94);color:#0f172a;padding:5px 11px;border-radius:50px;font-size:10.5px;font-weight:700;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+        .card-photos-count{position:absolute;bottom:12px;right:12px;background:rgba(15,23,42,.78);color:#fff;padding:5px 11px;border-radius:50px;font-size:10.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(8px);z-index:2}
         .card-photos-count i{color:#2dd4bf;font-size:10px}
-        .card-body{padding:18px}
-        .card-price{font-size:22px;font-weight:800;color:#0d9488;margin-bottom:4px}
-        .card-price span{font-size:13px;font-weight:500;color:#94a3b8}
-        .card-location{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b;margin-bottom:12px}
-        .card-location i{color:#0d9488;font-size:12px}
+        .card-body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
+        .card-price{font-size:21px;font-weight:800;color:#0d9488;letter-spacing:-.3px;margin-bottom:5px}
+        .card-price-cur{font-size:12px;font-weight:600;color:#94a3b8;letter-spacing:0}
+        .card-location{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b;margin-bottom:10px}
+        .card-location i{color:#0d9488;font-size:12px;flex-shrink:0}
         .card-desc{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .card-amenities{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-        .card-amenity{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;color:#475569;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500}
+        .card-amenities{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+        .card-amenity{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;color:#475569;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:500}
         .card-amenity i{color:#0d9488;font-size:10px}
-        .card-meta{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #f1f5f9}
-        .card-owner{font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:4px}
+        .card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:12px;border-top:1px solid #eef2f6}
+        .card-owner{font-size:12px;color:#64748b;display:flex;align-items:center;gap:7px;font-weight:500}
+        .owner-dot{width:7px;height:7px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.18);flex-shrink:0}
+        .card-view{color:#cbd5e1;font-size:15px;transition:color .2s,transform .25s cubic-bezier(.34,1.56,.64,1)}
+        .card:hover .card-view{color:#0d9488;transform:translateX(2px)}
 
         /* THUMBNAILS */
         .card-thumbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 0;background:#fff}
-        .card-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:#f1f5f9}
+        .card-thumb{width:50px;height:50px;object-fit:cover;border-radius:9px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:#f1f5f9}
         .card-thumb:hover{border-color:#0d9488;transform:scale(1.08)}
 
         /* LIGHTBOX */
@@ -322,21 +339,29 @@ $house_images = loadHouseImages($conn);
         .lb-prev{left:16px}
         .lb-next{right:16px}
 
-        .empty-state{text-align:center;padding:80px 20px;grid-column:1/-1}
-        .empty-state i{font-size:48px;color:#d1d5db;margin-bottom:16px}
-        .empty-state h3{font-size:18px;font-weight:700;color:#374151;margin-bottom:8px}
-        .empty-state p{color:#64748b;font-size:14px}
+        .empty-state{text-align:center;padding:90px 20px;grid-column:1/-1;background:#fff;border:1px dashed #d5dee8;border-radius:18px}
+        .empty-state i{font-size:46px;color:#c6d2de;margin-bottom:16px}
+        .empty-state h3{font-size:18px;font-weight:700;color:#334155;margin-bottom:8px}
+        .empty-state p{color:#64748b;font-size:14px;max-width:360px;margin:0 auto;line-height:1.6}
 
-        .load-more-wrap{text-align:center;padding:40px 0}
+        .load-more-wrap{text-align:center;padding:44px 0 8px}
         .load-more-wrap[hidden]{display:none}
+        .load-more-wrap .btn-search{display:inline-flex;align-items:center;gap:8px;padding:13px 34px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(13,148,136,.3)}
+        .load-more-wrap .btn-search:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(13,148,136,.4)}
         .load-more-spinner{font-size:24px;color:#0d9488}
 
+        @media(max-width:900px){
+            .search-form .btn-reset{display:none}
+            .search-title{flex-direction:column;align-items:flex-start;gap:12px}
+        }
         @media(max-width:768px){
             .navbar{padding:12px 16px}
-            .search-section{padding:16px}
-            .listings{padding:16px}
-            .search-form{flex-direction:column}
-            .search-form select,.search-form input{width:100%}
+            .search-section{padding:22px 16px 26px}
+            .listings{padding:20px 16px 40px}
+            .search-form{flex-direction:column;align-items:stretch}
+            .search-field{flex:1 1 auto;min-width:0}
+            .search-form .btn-search{justify-content:center;width:100%}
+            .search-title h1{font-size:22px}
         }
         @media(max-width:480px){
             .navbar{padding:10px 12px}
@@ -422,34 +447,48 @@ $house_images = loadHouseImages($conn);
     <div class="search-section">
         <div class="search-inner">
             <div class="search-title">
-                <h1><?php echo t('find_properties'); ?></h1>
-                <span class="count">
-                    <?php echo $total_filtered . ' ' . t('listings_count'); ?>
-                </span>
+                <div class="search-title-text">
+                    <div class="search-eyebrow"><i class="fas fa-house-chimney"></i> <?php echo t('browse_eyebrow'); ?></div>
+                    <h1><?php echo t('find_properties'); ?></h1>
+                    <p><?php echo t('browse_sub'); ?></p>
+                </div>
+                <span class="count"><i class="fas fa-layer-group"></i> <?php echo $total_filtered . ' ' . t('listings_count'); ?></span>
             </div>
             <form method="GET" action="index.php" class="search-form">
-                <select name="cat">
-                    <option value=""><?php echo t('all_categories'); ?></option>
-                    <optgroup label="<?php echo t('residential'); ?>">
-                        <option value="Single Home" <?php if(isset($_GET['cat']) && $_GET['cat']=='Single Home') echo 'selected'; ?>><?php echo t('single_home'); ?></option>
-                        <option value="Apartment" <?php if(isset($_GET['cat']) && $_GET['cat']=='Apartment') echo 'selected'; ?>><?php echo t('apartment'); ?></option>
-                        <option value="Villa" <?php if(isset($_GET['cat']) && $_GET['cat']=='Villa') echo 'selected'; ?>><?php echo t('villa'); ?></option>
-                    </optgroup>
-                    <optgroup label="<?php echo t('commercial'); ?>">
-                        <option value="Office" <?php if(isset($_GET['cat']) && $_GET['cat']=='Office') echo 'selected'; ?>><?php echo t('office'); ?></option>
-                        <option value="Shop" <?php if(isset($_GET['cat']) && $_GET['cat']=='Shop') echo 'selected'; ?>><?php echo t('shop'); ?></option>
-                        <option value="Warehouse" <?php if(isset($_GET['cat']) && $_GET['cat']=='Warehouse') echo 'selected'; ?>><?php echo t('warehouse'); ?></option>
-                    </optgroup>
-                </select>
-                <input type="text" name="kb" placeholder="<?php echo t('search_kebele'); ?>" value="<?php echo isset($_GET['kb']) ? htmlspecialchars($_GET['kb']) : ''; ?>">
-                <input type="number" name="max_pr" placeholder="<?php echo t('max_price'); ?>" value="<?php echo isset($_GET['max_pr']) ? htmlspecialchars($_GET['max_pr']) : ''; ?>">
-                <select name="sort">
-                    <option value="newest" <?php if(isset($_GET['sort']) && $_GET['sort']=='newest') echo 'selected'; ?>><?php echo t('newest_first'); ?></option>
-                    <option value="price_low" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_low') echo 'selected'; ?>><?php echo t('price_low'); ?></option>
-                    <option value="price_high" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_high') echo 'selected'; ?>><?php echo t('price_high'); ?></option>
-                </select>
-                <button type="submit" class="btn-search"><i class="fas fa-search"></i> <?php echo t('search_btn'); ?></button>
-                <a href="index.php" class="btn-reset"><?php echo t('reset_btn'); ?></a>
+                <div class="search-field">
+                    <i class="fas fa-tag"></i>
+                    <select name="cat">
+                        <option value=""><?php echo t('all_categories'); ?></option>
+                        <optgroup label="<?php echo t('residential'); ?>">
+                            <option value="Single Home" <?php if(isset($_GET['cat']) && $_GET['cat']=='Single Home') echo 'selected'; ?>><?php echo t('single_home'); ?></option>
+                            <option value="Apartment" <?php if(isset($_GET['cat']) && $_GET['cat']=='Apartment') echo 'selected'; ?>><?php echo t('apartment'); ?></option>
+                            <option value="Villa" <?php if(isset($_GET['cat']) && $_GET['cat']=='Villa') echo 'selected'; ?>><?php echo t('villa'); ?></option>
+                        </optgroup>
+                        <optgroup label="<?php echo t('commercial'); ?>">
+                            <option value="Office" <?php if(isset($_GET['cat']) && $_GET['cat']=='Office') echo 'selected'; ?>><?php echo t('office'); ?></option>
+                            <option value="Shop" <?php if(isset($_GET['cat']) && $_GET['cat']=='Shop') echo 'selected'; ?>><?php echo t('shop'); ?></option>
+                            <option value="Warehouse" <?php if(isset($_GET['cat']) && $_GET['cat']=='Warehouse') echo 'selected'; ?>><?php echo t('warehouse'); ?></option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-map-location-dot"></i>
+                    <input type="text" name="kb" placeholder="<?php echo t('search_kebele'); ?>" value="<?php echo isset($_GET['kb']) ? htmlspecialchars($_GET['kb']) : ''; ?>">
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-coins"></i>
+                    <input type="number" name="max_pr" placeholder="<?php echo t('max_price'); ?>" value="<?php echo isset($_GET['max_pr']) ? htmlspecialchars($_GET['max_pr']) : ''; ?>">
+                </div>
+                <div class="search-field search-field-sort">
+                    <i class="fas fa-arrow-down-wide-short"></i>
+                    <select name="sort">
+                        <option value="newest" <?php if(isset($_GET['sort']) && $_GET['sort']=='newest') echo 'selected'; ?>><?php echo t('newest_first'); ?></option>
+                        <option value="price_low" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_low') echo 'selected'; ?>><?php echo t('price_low'); ?></option>
+                        <option value="price_high" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_high') echo 'selected'; ?>><?php echo t('price_high'); ?></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-search"><i class="fas fa-search"></i><span><?php echo t('search_btn'); ?></span></button>
+                <a href="index.php" class="btn-reset" title="<?php echo t('reset_btn'); ?>"><i class="fas fa-rotate-left"></i></a>
             </form>
         </div>
     </div>

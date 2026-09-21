@@ -149,6 +149,8 @@ $T = [
 
     // Browse / index page
     'find_properties' => ['Find Properties in Adama', 'በአዳማ ውስጥ ንብረቶችን ያግኙ', 'Adaamaa keessatti Qabeenya Barbaadhu'],
+    'browse_eyebrow' => ['Rental Listings', 'የኪራይ ማስታወቂያዎች', 'Baallannoo Kireessa'],
+    'browse_sub' => ['Browse verified rental properties across Adama — from single homes to office spaces.', 'በአዳማ የተረጋገጡ የኪራይ ንብረቶችን ያስሱ — ከነጠላ ቤቶች እስከ ቢሮ ቦታዎች።', 'Qabeenya kireessaa mirkaneeffamee Adaamaa keessaa barbaadhaa — mana tokkoo hanga bakka offiisaa.'],
     'listings_count' => ['listings', 'ማስታወቂያዎች', 'baallannoo'],
     'all_categories' => ['All Categories', 'ሁሉም ምድቦች', 'Gosa Hunda'],
     'residential' => ['Residential', 'የመኖሪያ', 'Jireenya'],
