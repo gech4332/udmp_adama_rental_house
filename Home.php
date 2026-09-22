@@ -1,8 +1,8 @@
-﻿<?php include('includes/session_config.php'); session_start(); include('includes/db.php'); include('includes/lang.php');
+<?php include('includes/session_config.php'); session_start(); include('includes/db.php'); include('includes/lang.php');
 $total_houses  = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM houses"))[0];
 $total_landlords = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE is_admin=0"))[0];
 $total_kebeles = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(DISTINCT kebele) FROM houses"))[0];
-$total_tenants = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM requests WHERE status=0"))[0];
+$total_tenants = (int) mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(DISTINCT user_id) FROM rental_requests"))[0];
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang); ?>">
@@ -157,7 +157,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
         <div class="nav-brand-text">Adama<span>Rent</span></div>
     </a>
     <div class="nav-center">
-        <a href="index.php"><?php echo t('nav_home'); ?></a>
+        <a href="index.php"><?php echo t('nav_browse'); ?></a>
         <a href="#property-types"><?php echo t('nav_property_types'); ?></a>
         <a href="#how-it-works"><?php echo t('nav_how_it_works'); ?></a>
         <a href="#contact"><?php echo t('nav_contact'); ?></a>

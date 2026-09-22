@@ -1,4 +1,4 @@
-Git pullopencode-- AdamaRent Database Setup (structural only — NO auto admin account)
+-- AdamaRent Database Setup (structural only — NO auto admin account)
 -- Run this once after cloning, OR just visit setup.php in your browser.
 
 CREATE DATABASE IF NOT EXISTS rental_db;
@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS requests (
     user_id INT NOT NULL,
     house_id INT NOT NULL,
     status INT DEFAULT 0,
+    type VARCHAR(20) DEFAULT 'new',
+    changes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -70,6 +72,13 @@ CREATE TABLE IF NOT EXISTS rental_requests (
     status VARCHAR(20) DEFAULT 'pending',
     message TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    identifier VARCHAR(255) NOT NULL,
+    attempt_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_identifier_time (identifier, attempt_at)
 );
 
 CREATE TABLE IF NOT EXISTS notifications (

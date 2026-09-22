@@ -57,6 +57,10 @@ if($query && mysqli_num_rows($query) > 0){
         mysqli_stmt_bind_param($del_stmt, "i", $id);
         mysqli_stmt_execute($del_stmt);
 
+        $del_stmt = mysqli_prepare($conn, "DELETE FROM house_amenities WHERE house_id = ?");
+        mysqli_stmt_bind_param($del_stmt, "i", $id);
+        mysqli_stmt_execute($del_stmt);
+
         $del_stmt = mysqli_prepare($conn, "DELETE FROM houses WHERE id = ?");
         mysqli_stmt_bind_param($del_stmt, "i", $id);
         mysqli_stmt_execute($del_stmt);
