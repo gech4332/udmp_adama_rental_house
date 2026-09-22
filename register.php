@@ -30,8 +30,10 @@ if(isset($_POST['register'])){
     $password_raw = $_POST['password'];
     $setup_key = trim($_POST['setup_key'] ?? '');
 
-    // Server-side password validation
-    if (strlen($password_raw) < 6) {
+    // Server-side input validation
+    if (mb_strlen($name) < 2) {
+        $error = "Please enter your full name (at least 2 characters).";
+    } elseif (strlen($password_raw) < 6) {
         $error = "Password must be at least 6 characters.";
     } elseif (!validate_email_before_send($email_raw)['ok']) {
         $error = "That email address is not valid or its domain can't receive mail. Please double-check it and try again.";
