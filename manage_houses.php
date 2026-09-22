@@ -14,9 +14,9 @@ $current_user = $_SESSION['user_id'];
 
 $stmt = mysqli_prepare($conn, "SELECT 
     COUNT(*) as total,
-    SUM(CASE WHEN status='Available' THEN 1 ELSE 0 END) as available,
-    SUM(CASE WHEN status='Rented' THEN 1 ELSE 0 END) as rented,
-    SUM(CASE WHEN status='Pending' THEN 1 ELSE 0 END) as pending
+    SUM(CASE WHEN (status='Available' OR status='0') AND is_approved=1 THEN 1 ELSE 0 END) as available,
+    SUM(CASE WHEN (status='Rented' OR status='1') AND is_approved=1 THEN 1 ELSE 0 END) as rented,
+    SUM(CASE WHEN status='Pending' OR is_approved=0 OR is_approved IS NULL THEN 1 ELSE 0 END) as pending
     FROM houses WHERE user_id = ?");
 mysqli_stmt_bind_param($stmt, "i", $current_user);
 mysqli_stmt_execute($stmt);
@@ -329,13 +329,17 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
             if($result && mysqli_num_rows($result) > 0) {
                 while($row = mysqli_fetch_assoc($result)) {
                     $status = $row['status'] ?? 'Available';
-                    $badgeClass = 'badge-available';
-                    if(strcasecmp($status,'Rented')===0) $badgeClass = 'badge-rented';
-                    elseif(strcasecmp($status,'Pending')===0) $badgeClass = 'badge-pending';
-                    $statusLabel = $status;
-                    if(strcasecmp($status,'Available')===0) $statusLabel = t('stat_available');
-                    elseif(strcasecmp($status,'Rented')===0) $statusLabel = t('stat_rented');
-                    elseif(strcasecmp($status,'Pending')===0) $statusLabel = t('stat_pending');
+                    $is_pending = (strcasecmp($status, 'Pending') === 0 || (int)($row['is_approved'] ?? 1) === 0);
+                    if ($is_pending) {
+                        $badgeClass = 'badge-pending';
+                        $statusLabel = t('stat_pending');
+                    } elseif ($status === '1' || strcasecmp($status, 'Rented') === 0) {
+                        $badgeClass = 'badge-rented';
+                        $statusLabel = t('stat_rented');
+                    } else {
+                        $badgeClass = 'badge-available';
+                        $statusLabel = t('stat_available');
+                    }
             ?>
                 <div class="card">
                     <div class="card-img">
@@ -352,15 +356,15 @@ foreach($rental_reqs as $r){ if($r['req_status'] === 'pending') $pending_req_cou
                             <?php echo t('in_kebele'); ?> <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
                         </div>
                         <div class="card-actions">
-                            <?php if($status === 'Available' || strcasecmp($status,'Rented')===0): ?>
+                            <?php if(!$is_pending && ($status === 'Available' || $status === '0' || strcasecmp($status,'Rented')===0 || $status === '1')): ?>
                                 <form action="toggle_status.php" method="POST" style="display:contents">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
                                     <button type="submit" class="btn-toggle">
-                                        <i class="fas fa-sync-alt"></i> <?php echo ($status=='Available') ? t('mark_rented') : t('mark_available'); ?>
+                                        <i class="fas fa-sync-alt"></i> <?php echo ($status==='Available' || $status==='0') ? t('mark_rented') : t('mark_available'); ?>
                                     </button>
                                 </form>
-                            <?php elseif(strcasecmp($status,'Pending')===0): ?>
+                            <?php elseif($is_pending): ?>
                                 <span class="btn-toggle btn-disabled"><i class="fas fa-clock"></i> <?php echo t('awaiting_approval'); ?></span>
                             <?php else: ?>
                                 <span class="btn-toggle btn-disabled"><i class="fas fa-ban"></i> <?php echo t('not_available'); ?></span>

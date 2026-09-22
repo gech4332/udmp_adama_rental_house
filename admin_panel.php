@@ -8,18 +8,26 @@ if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1) {
     exit();
 }
 
-$landlords = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_admin = 0"));
-$admins    = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM users WHERE is_admin >= 1"));
-$total_h   = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM houses WHERE NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)"));
+$res_landlords = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE is_admin = 0");
+$landlords     = $res_landlords ? (int)mysqli_fetch_assoc($res_landlords)['total'] : 0;
+
+$res_admins    = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE is_admin >= 1");
+$admins        = $res_admins ? (int)mysqli_fetch_assoc($res_admins)['total'] : 0;
+
+$res_total_h   = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
+$total_h       = $res_total_h ? (int)mysqli_fetch_assoc($res_total_h)['total'] : 0;
 
 $res_active = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '0' OR status = 'Available') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
-$active_listings = $res_active ? mysqli_fetch_assoc($res_active)['total'] : 0;
+$active_listings = $res_active ? (int)mysqli_fetch_assoc($res_active)['total'] : 0;
 
 $res_rented = mysqli_query($conn, "SELECT COUNT(*) as total FROM houses WHERE (status = '1' OR status = 'Rented') AND NOT (status = 'Pending' OR is_approved = 0 OR is_approved IS NULL)");
-$occupied_units = $res_rented ? mysqli_fetch_assoc($res_rented)['total'] : 0;
+$occupied_units = $res_rented ? (int)mysqli_fetch_assoc($res_rented)['total'] : 0;
 
-$pending_req = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM requests WHERE status = 0"));
-$pending_edits = mysqli_num_rows(mysqli_query($conn, "SELECT DISTINCT house_id FROM requests WHERE status = 0 AND type = 'edit'"));
+$res_pending   = mysqli_query($conn, "SELECT COUNT(*) as total FROM requests WHERE status = 0");
+$pending_req   = $res_pending ? (int)mysqli_fetch_assoc($res_pending)['total'] : 0;
+
+$res_edits     = mysqli_query($conn, "SELECT COUNT(DISTINCT house_id) as total FROM requests WHERE status = 0 AND type = 'edit'");
+$pending_edits = $res_edits ? (int)mysqli_fetch_assoc($res_edits)['total'] : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
