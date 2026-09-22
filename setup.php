@@ -205,6 +205,7 @@ if (!$conn) {
     }
 
     @mkdir(__DIR__ . '/uploads', 0755, true);
+    @file_put_contents($lock_file, "Setup completed at " . date('Y-m-d H:i:s') . "\n");
 }
 ?>
 <!DOCTYPE html>
