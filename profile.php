@@ -24,6 +24,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     if($full_name === '' || $email === ''){
         $err = 'Full name and email are required.';
+    } elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+        $err = 'Please enter a valid email address.';
     } elseif($new_pass !== '' && strlen($new_pass) < 6){
         $err = 'New password must be at least 6 characters long.';
     } else {
