@@ -108,6 +108,19 @@ if ($res && ($user = mysqli_fetch_assoc($res))) {
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['user_name'] = $user['full_name'];
 session_regenerate_id(true);
+
+// Check for a pending admin invite for this user
+$uid = (int)$user['id'];
+$inv_stmt = mysqli_prepare($conn, "SELECT id FROM admin_invites WHERE user_id=? AND status='pending' LIMIT 1");
+mysqli_stmt_bind_param($inv_stmt, "i", $uid);
+mysqli_stmt_execute($inv_stmt);
+$check_invite = mysqli_stmt_get_result($inv_stmt);
+if($check_invite && mysqli_num_rows($check_invite) > 0){
+    $_SESSION['pending_admin_key'] = 1;
+    header("Location: admin_key.php");
+    exit();
+}
+
 if ((int)$user['is_admin'] >= 1) {
     $_SESSION['is_admin'] = (int)$user['is_admin'];
     header("Location: admin_panel.php");
