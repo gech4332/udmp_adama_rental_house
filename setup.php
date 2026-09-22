@@ -42,13 +42,20 @@ if (!$conn) {
         status INT DEFAULT 0,
         email_verified TINYINT(1) NOT NULL DEFAULT 0,
         verify_token VARCHAR(64) NULL,
-        verify_expires DATETIME NULL
+        verify_expires DATETIME NULL,
+        reset_token VARCHAR(64) NULL,
+        reset_expires DATETIME NULL
     )");
 
     $vcols = @mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'email_verified'");
     if (!$vcols || mysqli_num_rows($vcols) == 0) {
         mysqli_query($conn, "ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER status, ADD COLUMN verify_token VARCHAR(64) NULL, ADD COLUMN verify_expires DATETIME NULL");
         mysqli_query($conn, "UPDATE users SET email_verified=1");
+    }
+
+    $rcols = @mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'reset_token'");
+    if (!$rcols || mysqli_num_rows($rcols) == 0) {
+        mysqli_query($conn, "ALTER TABLE users ADD COLUMN reset_token VARCHAR(64) NULL, ADD COLUMN reset_expires DATETIME NULL");
     }
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS houses (

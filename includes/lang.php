@@ -32,6 +32,24 @@ $T = [
     'pw_placeholder_signup' => ['Create a strong password', 'ጠንካራ የይለፍ ቃል ይፍጠሩ', 'Jecha iccitii jabaa uumaa'],
     'remember_me' => ['Remember me', 'አስታውሰኝ', 'Na yaadadhu'],
     'forgot_password' => ['Forgot password?', 'የይለፍ ቃል ረስተዋል?', 'Jecha iccitii dagattee?'],
+    'resend_verify_link' => ['Resend verification email', 'የማረጋገጫ ኢሜይል እንደገና ላክ', 'Imaayelii mirkaneeffannaa deebi\'i ergi'],
+    'pw_too_short' => ['Password must be at least 6 characters.', 'የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።', 'Jecha iccitii, xiqqaattis warnaa 6 ta\'uu qaba.'],
+
+    // Forgot / reset password
+    'fp_title' => ['Forgot Password', 'የይለፍ ቃል ረስተዋል?', 'Jecha iccitii dagattanii?'],
+    'fp_subtitle' => ['Enter your account email and we\'ll send you a link to reset your password.', 'የመለያዎ ኢሜይል ያስገቡ፤ የይለፍ ቃልዎን ለመቀየር አገናኝ እንልክልዎታለን።', 'Imaayelii akkaawuntii keessanii seensaa; jecha iccitii keessan haaromsuuf liinkii isiniif ergina.'],
+    'fp_btn' => ['Send Reset Link', 'የመልሶ ማግኛ አገናኝ ላክ', 'Liinkii haaromsaa ergi'],
+    'fp_sent' => ['If an account exists for that email, a password reset link has been sent. Check your inbox.', 'ለመለያ ካለ፣ በዚያ ኢሜይል የይለፍ ቃል የመቀየር አገናኝ ተልኳል። የመልእክት ሳጥንዎን ይፈትሹ።', 'Akkaawuntiin yoo jiraate, liinkii jijjiirrannaa jecha iccitii imaayelii sanaan ergameera. Imaayelii keessan ilaalaa.'],
+    'fp_invalid_email' => ['Please enter a valid email address.', 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ።', 'Kadhattee teessoo imaayelii sirrii seensaa.'],
+    'fp_back' => ['Back to Sign In', 'ወደ መግቢያ ተመለስ', 'Gara Seensaatti deebi\'i'],
+    'rp_title' => ['Set a New Password', 'አዲስ የይለፍ ቃል ያስገቡ', 'Jecha Iccitii Haaraa Hirkisaa'],
+    'rp_subtitle' => ['Choose a new password for your AdamaRent account.', 'ለAdamaRent መለያዎ አዲስ የይለፍ ቃል ይምረጡ።', 'Akkaawuntii AdamaRent keessaniif jecha iccitii haaraa filadhaa.'],
+    'rp_new_pw_label' => ['New Password', 'አዲስ የይለፍ ቃል', 'Jecha Iccitii Haaraa'],
+    'rp_new_pw_ph' => ['Enter a new password (min 6 characters)', 'አዲስ የይለፍ ቃል ያስገቡ (ቢያንስ 6 ቁምፊ)', 'Jecha iccitii haaraa seensaa (warnaa 6 xiqqaattis)'],
+    'rp_btn' => ['Reset Password', 'የይለፍ ቃል ቀይር', 'Jecha Iccitii Haaromsi'],
+    'rp_invalid' => ['This reset link is invalid. Check the link in your email or request a new one.', 'ይህ የመልሶ ማግኛ አገናኝ የተሳሳተ ነው። እባክዎ አዲስ ይጠይቁ።', 'Liinkii haaromsaa kuni sirrii miti. Liinkii imaayelii keessan ilaalaa ykn haaraa gaafadhaa.'],
+    'rp_expired' => ['This reset link has expired. Please request a new one.', 'ይህ የመልሶ ማግኛ አገናኝ ጊዜው አልፏል። እባክዎ አዲስ ይጠይቁ።', 'Liinkii haaromsaa kuni meegaa darbe. Kadhattee haaraa gaafadhaa.'],
+    'rp_back' => ['Back to Sign In', 'ወደ መግቢያ ተመለስ', 'Gara Seensaatti deebi\'i'],
     'or_continue' => ['or continue with', 'ወይም በሌላ ቀጥል', 'yookiin itti fufi'],
     'continue_google' => ['Continue with Google', 'በGoogle ቀጥል', 'Google\'idhaan itti fufi'],
     'no_account' => ['Don\'t have an account?', 'መለያ የለዎትም?', 'Akkaawuntii hin qabdanii?'],
@@ -128,9 +146,25 @@ $T = [
     'footer_shops' => ['Shops', 'ሱቆች', 'Suuqii'],
     'footer_contact' => ['Contact', 'አግኙን', 'Quunnamuu'],
     'footer_rights' => ['All rights reserved.', 'ሁሉም መብቶች የተጠበቁ ናቸው።', 'Mirga hunda eegamaadha.'],
+    'footer_terms' => ['Terms of Service', 'የአገልግሎት ውሎች', 'Waltiiwwan Tajaajilaa'],
+    'footer_privacy' => ['Privacy Policy', 'የግላዊነት ፖሊሲ', 'Imaammata Icciitii'],
+    'footer_adama' => ['Adama, Oromia', 'አዳማ፣ ኦሮሚያ', 'Adaamaa, Oromiyaa'],
+    'footer_ethio' => ['Ethiopia', 'ኢትዮጵያ', 'Itoophiyaa'],
+    'footer_hours' => ['Open every day', 'በየቀኑ ክፍት', 'Guyyaa hunda banaa'],
+    'footer_reply' => ['We reply within 24h', 'በ24 ሰዓት ውስጥ እንመልሳለን', 'Sa\'aa 24 keessatti deebina'],
+    'stat_verified' => ['Verified Listings', 'የተረጋገጡ ማስታወቂያዎች', 'Baallannoo Mirkaneeffaman'],
+    'stat_direct' => ['Direct from Landlords', 'በቀጥታ ከቤት አከራዮች', 'Kallattiin Abbootii Manaa'],
+    'stat_free' => ['Free to List', 'በነጻ ለማስታወቅ', 'Kaffaltii Malee Baalladhu'],
 
     // Browse / index page
     'find_properties' => ['Find Properties in Adama', 'በአዳማ ውስጥ ንብረቶችን ያግኙ', 'Adaamaa keessatti Qabeenya Barbaadhu'],
+    'browse_eyebrow' => ['Rental Listings', 'የኪራይ ማስታወቂያዎች', 'Baallannoo Kireessa'],
+    'browse_sub' => ['Browse verified rental properties across Adama — from single homes to office spaces.', 'በአዳማ የተረጋገጡ የኪራይ ንብረቶችን ያስሱ — ከነጠላ ቤቶች እስከ ቢሮ ቦታዎች።', 'Qabeenya kireessaa mirkaneeffamee Adaamaa keessaa barbaadhaa — mana tokkoo hanga bakka offiisaa.'],
+    'popular' => ['Popular:', 'ታዋቂ፡', 'Beekamaa:'],
+    'lbl_category' => ['Category', 'ምድብ', 'Gosa'],
+    'lbl_location' => ['Location', 'አካባቢ', 'Iddoo'],
+    'lbl_price' => ['Max Price', 'ከፍተኛ ዋጋ', 'Gatii Olii'],
+    'lbl_sort' => ['Sort by', 'አደራደር', 'Filaannoo'],
     'listings_count' => ['listings', 'ማስታወቂያዎች', 'baallannoo'],
     'all_categories' => ['All Categories', 'ሁሉም ምድቦች', 'Gosa Hunda'],
     'residential' => ['Residential', 'የመኖሪያ', 'Jireenya'],
@@ -337,6 +371,7 @@ $T = [
 
 // Map known English messages -> [en, am, om]
 $ERR_MAP = [
+    'Invalid email or password.' => ['Invalid email or password.', 'የተሳሳተ ኢሜይል ወይም የይለፍ ቃል።', 'Imaayelii ykn jecha iccitii dogoggoraa.'],
     'Invalid password. Please try again.' => ['Invalid password. Please try again.', 'የይለፍ ቃሉ የተሳሳተ ነው። እባክዎ እንደገና ይሞክሩ።', 'Jecha iccitii dogoggoraa. Kadhattee amma yaali.'],
     'No account found with this email address.' => ['No account found with this email address.', 'በዚህ ኢሜይል አድራሻ መለያ አልተገኘም።', 'Akkaawuntii teessoo imaayelii kana wajjin hin argamne.'],
     'Sign-in with Google was cancelled.' => ['Sign-in with Google was cancelled.', 'በGoogle መግባት ተሰርዟል።', 'Seensi Google dhoofame.'],
@@ -348,6 +383,7 @@ $ERR_MAP = [
     'An admin account already exists. The setup key is no longer valid.' => ['An admin account already exists. The setup key is no longer valid.', 'የአስተዳዳሪ መለያ ቀድሞ አለ። የማዋቀሪያ ቁልፉ ከአሁን በኋላ የሚሰራ አይደለም።', 'Akkaawuntii abbaa taateessaa duraan jira. Furtuun sirnaa kanaan booda hin hojjatu.'],
     'Invalid admin setup key. Please check and try again.' => ['Invalid admin setup key. Please check and try again.', 'የተሳሳተ የአስተዳዳሪ የማዋቀሪያ ቁልፍ። እባክዎ አጣርተው እንደገና ይሞክሩ።', 'Furtuu sirnaa abbaa taateessaa dogoggoraa. Kadhattee ilaaliitii amma yaali.'],
     'Registration failed. Please try again.' => ['Registration failed. Please try again.', 'ምዝገባ አልተሳካም። እባክዎ እንደገና ይሞክሩ።', 'Galmeessuun hin milkanoofne. Kadhattee amma yaali.'],
+    'Your password has been reset. Please sign in.' => ['Your password has been reset. Please sign in.', 'የይለፍ ቃልዎ ተቀይሯል። እባክዎ ይግቡ።', 'Jecha iccitii keessan haaromfameera. Kadhattee seenaa.'],
 ];
 
 function lang_index() {

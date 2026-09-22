@@ -43,7 +43,11 @@ if(isset($_POST['register'])){
         $check_email = mysqli_stmt_get_result($stmt);
 
         if ($check_email && mysqli_num_rows($check_email) > 0) {
-            $error = "An account with this email already exists.";
+            // Anti-enumeration: respond identically to a successful sign-up so
+            // the server never reveals whether the email is already registered.
+            $_SESSION['verify_pending_email'] = $email_raw;
+            header("Location: verify_pending.php?email=" . urlencode($email_raw));
+            exit();
         } elseif ($setup_key !== '') {
             // Admin bootstrap — use a transaction to prevent TOCTOU race condition
             mysqli_begin_transaction($conn);
@@ -123,30 +127,34 @@ if(isset($_POST['register'])){
         body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:var(--bg)}
 
         /* LEFT BRAND PANEL */
-        .auth-left{flex:1.15;position:relative;display:flex;flex-direction:column;justify-content:center;padding:56px 64px;color:#fff;overflow:hidden;background:#0f172a}
-        .auth-left-bg{position:absolute;inset:0;background:url('images/IMG_7172.JPG') center/cover no-repeat;transform:scale(1.05)}
-        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(15,23,42,.95) 0%,rgba(15,23,42,.78) 40%,rgba(13,148,136,.55) 100%)}
+        .auth-left{flex:1.15;position:relative;display:flex;flex-direction:column;justify-content:center;padding:56px 64px 48px;color:#fff;overflow:hidden;background:#0b1420}
+        .auth-left-bg{position:absolute;inset:0;background:url('images/IMG_7172.JPG') center/cover no-repeat;transform:scale(1.08)}
+        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(165deg,rgba(8,15,27,.94) 0%,rgba(11,20,32,.82) 42%,rgba(13,148,136,.4) 100%)}
+        .auth-left::before{content:'';position:absolute;top:-180px;right:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.18),transparent 62%);pointer-events:none}
+        .auth-left::after{content:'';position:absolute;bottom:-200px;left:-160px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.14),transparent 62%);pointer-events:none}
         .auth-brand{position:relative;z-index:2;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:auto}
-        .auth-brand .brand-icon{width:42px;height:42px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 4px 18px rgba(13,148,136,.45)}
-        .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px}
+        .auth-brand .brand-icon{width:42px;height:42px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 6px 20px rgba(13,148,136,.5)}
+        .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc}
         .auth-brand .brand-name span{color:#2dd4bf}
-        .auth-left-content{position:relative;z-index:2;max-width:440px}
-        .eyebrow{display:inline-block;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:#5eead4;padding:6px 14px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:22px}
-        .auth-left-content h2{font-size:clamp(26px,2.6vw,36px);font-weight:800;line-height:1.2;letter-spacing:-.8px;margin-bottom:16px}
+        .auth-left-content{position:relative;z-index:2;max-width:460px;flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
+        .eyebrow{display:inline-flex;align-items:center;gap:9px;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:#5eead4;padding:7px 15px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
+        .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#5eead4;box-shadow:0 0 10px rgba(94,234,212,.9)}
+        .auth-left-content h2{font-size:clamp(28px,2.7vw,38px);font-weight:800;line-height:1.15;letter-spacing:-.9px;margin-bottom:18px;color:#f8fafc}
         .auth-left-content h2 span{color:#2dd4bf}
-        .auth-left-content>p{color:rgba(255,255,255,.65);font-size:15px;line-height:1.75;margin-bottom:38px}
-        .auth-left .features{display:grid;gap:16px}
-        .auth-left .features li{list-style:none;display:flex;gap:16px;align-items:flex-start}
-        .auth-left .features li>i{width:46px;height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#2dd4bf;background:rgba(13,148,136,.28);border:1px solid rgba(45,212,191,.2);border-radius:12px;font-size:18px}
-        .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:2px}
-        .auth-left .features li small{font-size:13px;color:rgba(255,255,255,.6);line-height:1.5}
-        .auth-quote{position:relative;z-index:2;margin-top:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:16px;padding:20px 24px;max-width:440px}
-        .auth-quote .quote-stars{color:#fbbf24;font-size:13px;letter-spacing:2px;margin-bottom:8px}
-        .auth-quote p{font-size:14px;line-height:1.7;color:rgba(255,255,255,.85)}
-        .auth-quote .quote-author{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px;font-weight:600}
+        .auth-left-content>p{color:rgba(255,255,255,.62);font-size:15px;line-height:1.8;margin-bottom:36px}
+        .auth-left .features{display:grid;gap:14px}
+        .auth-left .features li{list-style:none;display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;backdrop-filter:blur(8px);transition:all .25s}
+        .auth-left .features li:hover{background:rgba(255,255,255,.09);border-color:rgba(45,212,191,.35);transform:translateX(4px)}
+        .auth-left .features li>i{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5eead4;background:rgba(13,148,136,.22);border:1px solid rgba(45,212,191,.25);border-radius:11px;font-size:17px}
+        .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:3px}
+        .auth-left .features li small{font-size:12.5px;color:rgba(255,255,255,.58);line-height:1.55}
+        .auth-stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:26px;border-top:1px solid rgba(255,255,255,.14)}
+        .auth-stats .stat{display:flex;flex-direction:column;gap:10px}
+        .auth-stats .stat-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(13,148,136,.2);border:1px solid rgba(45,212,191,.26);color:#5eead4;font-size:15px}
+        .auth-stats .stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);line-height:1.35}
 
         /* RIGHT FORM PANEL */
-        .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 40px}
+        .auth-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
         .auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:40px 40px 36px;box-shadow:0 20px 50px rgba(15,23,42,.08)}
         .auth-card .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:28px;transition:color .2s}
         .auth-card .back-link:hover{color:var(--brand)}
@@ -163,6 +171,10 @@ if(isset($_POST['register'])){
         .form-group input{width:100%;padding:13px 44px;border:1.5px solid var(--line);border-radius:12px;font-size:14.5px;font-family:inherit;background:#f8fafc;color:#0f172a;transition:all .22s}
         .form-group input::placeholder{color:#a8b3c0}
         .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(13,148,136,.12)}
+        .form-group input:-webkit-autofill,.form-group input:-webkit-autofill:hover,.form-group input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-fill-color:#0f172a;border-color:var(--line)}
+        .input-wrapper:focus-within>i{color:var(--brand)}
+        @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .auth-card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both}
         .setup-hint{font-size:12px;color:#94a3b8;margin-top:7px;line-height:1.5}
         .setup-toggle-row{display:flex;align-items:center;justify-content:center;margin:4px 0 16px}
         .check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;line-height:1.5}
@@ -176,9 +188,10 @@ if(isset($_POST['register'])){
         .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
         .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;cursor:pointer;text-decoration:none;transition:all .2s}
         .btn-google:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.06)}
-        .auth-footer{text-align:center;margin-top:28px;font-size:14px;color:var(--muted)}
-        .auth-footer a{color:var(--brand);text-decoration:none;font-weight:700}
-        .auth-footer a:hover{text-decoration:underline}
+        .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
+        .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
+        .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
+        .auth-footer a.footer-link:hover{background:#f0fdfa;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(13,148,136,.12)}
         .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;color:#0f766e;font-size:12px;display:flex;align-items:center;gap:8px}
         .auth-card .secure-note i{font-size:15px}
         .lang-drop{position:fixed;top:20px;right:24px;z-index:1200}
@@ -197,11 +210,12 @@ if(isset($_POST['register'])){
         .mobile-brand{display:none;text-align:center;margin-bottom:30px}
         .mobile-brand .logo{width:54px;height:54px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;margin:0 auto 14px;box-shadow:0 6px 18px rgba(13,148,136,.35)}
         .mobile-brand h3{font-size:20px;font-weight:800;color:var(--ink)}
-        @media(max-width:1024px){.auth-left{display:none}}
-        @media(max-width:768px){
-            body{flex-direction:column;background:#f1f5f9}
+        @media(max-width:1024px){
             .auth-left{display:none}
             .mobile-brand{display:block}
+        }
+        @media(max-width:768px){
+            body{flex-direction:column;background:#f1f5f9}
             .auth-right{padding:24px 16px}
             .auth-card{padding:32px 24px;border-radius:16px}
         }
@@ -225,10 +239,19 @@ if(isset($_POST['register'])){
             <li><i class="fa-solid fa-user-shield"></i><span><strong><?php echo t('feat_free'); ?></strong><small><?php echo t('feat_free_s'); ?></small></span></li>
         </ul>
     </div>
-    <div class="auth-quote">
-        <div class="quote-stars">★★★★★</div>
-        <p><?php echo t('quote_text'); ?></p>
-        <div class="quote-author"><?php echo t('quote_author'); ?></div>
+    <div class="auth-stats">
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-shield-halved"></i></span>
+            <span class="stat-label"><?php echo t('stat_verified'); ?></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-handshake"></i></span>
+            <span class="stat-label"><?php echo t('stat_direct'); ?></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-circle-check"></i></span>
+            <span class="stat-label"><?php echo t('stat_free'); ?></span>
+        </div>
     </div>
 </div>
     <div class="auth-right">
@@ -251,21 +274,21 @@ if(isset($_POST['register'])){
                     <label><?php echo t('full_name'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="full_name" placeholder="<?php echo t('full_name_ph'); ?>" required>
+                        <input type="text" name="full_name" placeholder="<?php echo t('full_name_ph'); ?>" required autocomplete="name">
                     </div>
                 </div>
                 <div class="form-group">
                     <label><?php echo t('email_address'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required>
+                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required autocomplete="email">
                     </div>
                 </div>
                 <div class="form-group">
                     <label><?php echo t('password'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder_signup'); ?>" required minlength="6">
+                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder_signup'); ?>" required minlength="6" autocomplete="new-password">
                         <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password"><i class="fas fa-eye" id="pwIcon"></i></button>
                     </div>
                 </div>
@@ -300,7 +323,8 @@ if(isset($_POST['register'])){
             <?php endif; ?>
 
             <div class="auth-footer">
-                <?php echo t('has_account'); ?> <a href="login.php"><?php echo t('sign_in_link'); ?></a>
+                <p><?php echo t('has_account'); ?></p>
+                <a href="login.php" class="footer-link"><i class="fas fa-right-to-bracket"></i> <?php echo t('sign_in_link'); ?></a>
             </div>
             <div class="secure-note"><i class="fas fa-lock"></i> <?php echo t('secure_reg_note'); ?></div>
         </div>

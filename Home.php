@@ -53,11 +53,17 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
 .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
-        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
-        .user-dropdown-lang a.active{color:#2dd4bf}
-        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
-        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:12px 18px 8px;color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+        .user-dropdown-lang-title i{color:#2dd4bf;font-size:11px}
+        .user-dropdown-lang{padding:2px 8px 12px}
+        .user-dropdown-lang a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:600;transition:background .15s,color .15s}
+        .user-dropdown-lang a:hover{background:rgba(255,255,255,.07);color:#fff}
+        .user-dropdown-lang a .lg-badge{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;letter-spacing:.5px}
+        .user-dropdown-lang a .lg-radio{width:16px;height:16px;margin-left:auto;border-radius:50%;border:2px solid rgba(255,255,255,.28);position:relative;flex-shrink:0;transition:border-color .2s}
+        .user-dropdown-lang a.active{background:rgba(13,148,136,.22);color:#5eead4}
+        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 4px 10px rgba(13,148,136,.45)}
+        .user-dropdown-lang a.active .lg-radio{border-color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#2dd4bf}
 .lang-drop{position:relative;display:inline-flex}
 .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Poppins',sans-serif}
 .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
@@ -119,23 +125,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .step h3{font-size:18px;font-weight:700;margin-bottom:8px;color:#0f172a}
 .step p{font-size:14px;color:#64748b;line-height:1.6}
 
-/* FOOTER */
-.footer{background:#0f172a;color:rgba(255,255,255,.7);padding:60px 24px 30px}
-.footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
-.footer-brand h3{color:#fff;font-size:20px;font-weight:800;margin-bottom:12px}
-.footer-brand h3 span{color:#2dd4bf}
-.footer-brand p{font-size:14px;line-height:1.8;margin-bottom:20px}
-.footer-col h4{color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
-.footer-col a{display:block;color:rgba(255,255,255,.6);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s}
-.footer-col a:hover{color:#2dd4bf}
-.footer-social{display:flex;gap:10px}
-.footer-social a{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .3s;font-size:16px}
-.footer-social a.tg{background:rgba(0,136,204,.2);color:#0088cc}
-.footer-social a.fb{background:rgba(24,119,242,.2);color:#1877f2}
-.footer-social a.ig{background:rgba(225,48,108,.2);color:#e1306c}
-.footer-social a.em{background:rgba(234,67,53,.2);color:#ea4335}
-.footer-social a:hover{transform:translateY(-3px)}
-.footer-bottom{max-width:1100px;margin:40px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);text-align:center;font-size:13px;color:rgba(255,255,255,.4)}
+/* FOOTER (shared includes/footer.php) */
 
 @media(max-width:768px){
 .navbar{padding:12px 20px}
@@ -144,7 +134,6 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
 .stats-grid{grid-template-columns:repeat(2,1fr);gap:16px}
 .cat-grid{grid-template-columns:1fr}
 .steps-grid{grid-template-columns:1fr}
-.footer-grid{grid-template-columns:1fr 1fr}
 .hero-content h1{font-size:32px}
 }
 </style>
@@ -189,7 +178,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
                     <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
                     <div class="user-dropdown-lang">
                         <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
-                        <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+<a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><span class="lg-name"><?php echo $lname; ?></span><span class="lg-radio"></span></a>
                         <?php } ?>
                     </div>
                     <div class="user-dropdown-divider"></div>
@@ -275,42 +264,7 @@ body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1e293b;overfl
     </div>
 </section>
 
-<footer class="footer" id="contact">
-    <div class="footer-grid">
-        <div class="footer-brand">
-            <h3>Adama<span>Rent</span></h3>
-            <p><?php echo t('footer_tagline'); ?></p>
-            <div class="footer-social">
-                <a href="https://t.me/Get_dope" target="_blank" class="tg"><i class="fab fa-telegram-plane"></i></a>
-                <a href="https://facebook.com/Getdope" target="_blank" class="fb"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://instagram.com/get_dope_men" target="_blank" class="ig"><i class="fab fa-instagram"></i></a>
-                <a href="mailto:getahun930@gmail.com" class="em"><i class="fas fa-envelope"></i></a>
-            </div>
-        </div>
-        <div class="footer-col">
-            <h4><?php echo t('footer_quick'); ?></h4>
-            <a href="index.php"><?php echo t('footer_browse'); ?></a>
-            <a href="<?php echo isset($_SESSION['user_id']) ? 'post_house.php' : 'register.php'; ?>"><?php echo t('btn_list_property'); ?></a>
-            <a href="login.php"><?php echo t('footer_signin'); ?></a>
-        </div>
-        <div class="footer-col">
-            <h4><?php echo t('footer_categories'); ?></h4>
-            <a href="index.php?cat=Single+Home"><?php echo t('cat_single'); ?></a>
-            <a href="index.php?cat=Apartment"><?php echo t('footer_apartments'); ?></a>
-            <a href="index.php?cat=Villa"><?php echo t('footer_villas'); ?></a>
-            <a href="index.php?cat=Shop"><?php echo t('footer_shops'); ?></a>
-        </div>
-        <div class="footer-col">
-            <h4><?php echo t('footer_contact'); ?></h4>
-            <a href="#"><i class="fas fa-location-dot"></i> Adama, Oromia, Ethiopia</a>
-            <a href="tel:+251910407721"><i class="fas fa-phone"></i> +251 910 407 721</a>
-            <a href="tel:+251938272728"><i class="fas fa-phone"></i> +251 938 272 728</a>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        &copy; <?php echo date("Y"); ?> AdamaRent. <?php echo t('footer_rights'); ?>
-    </div>
-</footer>
+<?php include(__DIR__ . '/includes/footer.php'); ?>
 
 <script>
 window.addEventListener('scroll',()=>{
