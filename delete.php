@@ -20,7 +20,7 @@ $current_user = (int)$_SESSION['user_id'];
 
 $status = ['type' => 'error', 'message' => 'Something went wrong. Please try again.', 'title' => 'Error', 'redirect' => 'manage_houses.php'];
 
-$stmt = mysqli_prepare($conn, "SELECT image FROM houses WHERE id = ? AND user_id = ?");
+$stmt = mysqli_prepare($conn, "SELECT image, video_file FROM houses WHERE id = ? AND user_id = ?");
 mysqli_stmt_bind_param($stmt, "ii", $id, $current_user);
 mysqli_stmt_execute($stmt);
 $query = mysqli_stmt_get_result($stmt);
@@ -30,6 +30,9 @@ if($query && mysqli_num_rows($query) > 0){
 
     if(!empty($data['image']) && file_exists("uploads/" . $data['image'])){
         unlink("uploads/" . $data['image']);
+    }
+    if(!empty($data['video_file']) && file_exists("uploads/" . $data['video_file'])){
+        @unlink("uploads/" . $data['video_file']);
     }
         $stmt2 = mysqli_prepare($conn, "SELECT filename FROM house_images WHERE house_id = ?");
         mysqli_stmt_bind_param($stmt2, "i", $id);

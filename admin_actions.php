@@ -71,6 +71,9 @@ switch($action){
         $stmt = mysqli_prepare($conn, "UPDATE houses SET status='Available', is_approved=1 WHERE id=?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
+        $stmt_r = mysqli_prepare($conn, "UPDATE requests SET status=1 WHERE house_id=? AND status=0");
+        mysqli_stmt_bind_param($stmt_r, "i", $id);
+        mysqli_stmt_execute($stmt_r);
         notifyOwner($conn, $id, 'Listing approved', 'Your listing was approved and is now live on the marketplace.');
         header("Location: admin_manage_requests.php?msg=approved");
         break;
@@ -79,6 +82,9 @@ switch($action){
         $stmt = mysqli_prepare($conn, "UPDATE houses SET status='Rejected', is_approved=0 WHERE id=?");
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
+        $stmt_r = mysqli_prepare($conn, "UPDATE requests SET status=2 WHERE house_id=? AND status=0");
+        mysqli_stmt_bind_param($stmt_r, "i", $id);
+        mysqli_stmt_execute($stmt_r);
         notifyOwner($conn, $id, 'Listing rejected', 'Your listing was rejected. Please review and resubmit.');
         header("Location: admin_manage_requests.php?msg=rejected");
         break;
