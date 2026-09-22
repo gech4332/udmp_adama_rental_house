@@ -6,14 +6,22 @@ include('includes/security.php');
 
 // Tenant "rent request" action — requires login.
 $isAjax = (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest') || isset($_GET['ajax']);
+$target_house = (int)($_POST['house'] ?? $_GET['house'] ?? 0);
+
 if(!isset($_SESSION['user_id'])){
-    $redir = "login.php?redirect=" . urlencode('rent_request.php?house=' . (int)($_GET['house'] ?? 0));
+    $redir = "login.php?redirect=" . urlencode('rent_request.php?house=' . $target_house);
     if($isAjax){
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['type' => 'login_needed', 'message' => 'You need to sign in to request this property.', 'title' => 'Sign in required', 'redirect' => $redir]);
         exit();
     }
     header("Location: " . $redir);
+    exit();
+}
+
+// If returned from login via GET, redirect directly to the listing page to finalize request
+if($_SERVER['REQUEST_METHOD'] === 'GET' && $target_house > 0){
+    header("Location: house_detail.php?id=" . $target_house . "#rent");
     exit();
 }
 
