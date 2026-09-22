@@ -67,8 +67,17 @@ function process_upload($file, $upload_dir, $allowed){
     }
     if(in_array($ext, ['heic', 'heif'], true)){
         $jpgName = preg_replace('/\.(heic|heif)$/i', '', $fname) . '.jpg';
-        $out = shell_exec("/usr/bin/sips -s format jpeg " . escapeshellarg($target) . " --out " . escapeshellarg($upload_dir . '/' . $jpgName) . " 2>&1");
-        if($out !== null && file_exists($upload_dir . '/' . $jpgName) && filesize($upload_dir . '/' . $jpgName) > 0){
+        $dst = $upload_dir . '/' . $jpgName;
+        if (file_exists('/usr/bin/sips')) {
+            shell_exec("/usr/bin/sips -s format jpeg " . escapeshellarg($target) . " --out " . escapeshellarg($dst) . " 2>&1");
+        } elseif (shell_exec('which magick 2>/dev/null')) {
+            shell_exec("magick " . escapeshellarg($target) . " " . escapeshellarg($dst) . " 2>&1");
+        } elseif (shell_exec('which convert 2>/dev/null')) {
+            shell_exec("convert " . escapeshellarg($target) . " " . escapeshellarg($dst) . " 2>&1");
+        } elseif (shell_exec('which heif-convert 2>/dev/null')) {
+            shell_exec("heif-convert " . escapeshellarg($target) . " " . escapeshellarg($dst) . " 2>&1");
+        }
+        if(file_exists($dst) && filesize($dst) > 0){
             @unlink($target);
             $fname = $jpgName;
         } else {
