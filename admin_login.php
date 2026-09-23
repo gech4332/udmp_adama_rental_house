@@ -6,10 +6,13 @@ include('includes/security.php');
 
 if(isset($_POST['login'])){
     csrf_validate();
-    $email = $_POST['email'];
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email=? AND is_admin >= 1 LIMIT 1");
+    if (login_locked_out($email)) {
+        $err = login_lockout_message();
+    } else {
+        $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE email=? AND is_admin >= 1 LIMIT 1");
     mysqli_stmt_bind_param($stmt, "s", $email);
     mysqli_stmt_execute($stmt);
     $res = mysqli_stmt_get_result($stmt);
@@ -17,14 +20,22 @@ if(isset($_POST['login'])){
     if($res && mysqli_num_rows($res) == 1){
         $user = mysqli_fetch_assoc($res);
         if(password_verify($password, $user['password'])){
+            clear_login_failures($email);
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
             $_SESSION['is_admin'] = (int)$user['is_admin']; 
             header("Location: admin_panel.php");
             exit();
-        } else { $err = "Invalid password. Please try again."; }
-    } else { $err = "Access denied. No admin account found with this email."; }
+        } else {
+            record_login_failure($email);
+            $err = "Invalid password. Please try again.";
+        }
+    } else {
+        record_login_failure($email);
+        $err = "Access denied. No admin account found with this email.";
+    }
+    }
 }
 ?>
 <!DOCTYPE html>

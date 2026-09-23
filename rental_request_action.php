@@ -88,9 +88,15 @@ if($action === 'accept'){
     mysqli_stmt_execute($stmt4);
 
     $notif_msg = "Your request to rent the property in Kebele $kebele was accepted. Open the property to call the owner.";
+<<<<<<< HEAD
     $house_detail_link = 'house_detail.php?house=' . $house_id;
     $stmt5 = mysqli_prepare($conn, "INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, 'rent_request', 'Rental request accepted', ?, ?)");
     mysqli_stmt_bind_param($stmt5, "iss", $tenant_id, $notif_msg, $house_detail_link);
+=======
+    $notif_link = "house_detail.php?house=" . $house_id;
+    $stmt5 = mysqli_prepare($conn, "INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, 'rent_request', 'Rental request accepted', ?, ?)");
+    mysqli_stmt_bind_param($stmt5, "iss", $tenant_id, $notif_msg, $notif_link);
+>>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
     mysqli_stmt_execute($stmt5);
     header("Location: manage_houses.php?msg=accepted");
 } else {

@@ -29,6 +29,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         die('Only Super Admins can edit other admin accounts.');
     }
 
+    if($full_name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)){
+        die('Invalid name or email address.');
+    }
+
+    $dup_stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE email=? AND id<>?");
+    mysqli_stmt_bind_param($dup_stmt, "si", $email, $target_id);
+    mysqli_stmt_execute($dup_stmt);
+    $dup_res = mysqli_stmt_get_result($dup_stmt);
+    if($dup_res && mysqli_num_rows($dup_res) > 0){
+        die('An account with this email address already exists.');
+    }
+
     $stmt2 = mysqli_prepare($conn, "UPDATE users SET full_name=?, email=? WHERE id=?");
     mysqli_stmt_bind_param($stmt2, "ssi", $full_name, $email, $target_id);
     mysqli_stmt_execute($stmt2);

@@ -78,7 +78,7 @@ if($house){
 }
 $rentHref  = isset($_SESSION['user_id'])
     ? '#rent'
-    : 'login.php?redirect=' . urlencode('rent_request.php?house=' . $id);
+    : 'login.php?redirect=' . urlencode('house_detail.php?house=' . $id);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang); ?>">
@@ -136,11 +136,25 @@ $rentHref  = isset($_SESSION['user_id'])
         .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+<<<<<<< HEAD
         .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
         .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
         .user-dropdown-lang a.active{color:#2dd4bf}
         .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
         .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+=======
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:12px 18px 8px;color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+        .user-dropdown-lang-title i{color:#2dd4bf;font-size:11px}
+        .user-dropdown-lang{padding:2px 8px 12px}
+        .user-dropdown-lang a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:600;transition:background .15s,color .15s}
+        .user-dropdown-lang a:hover{background:rgba(255,255,255,.07);color:#fff}
+        .user-dropdown-lang a .lg-badge{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;letter-spacing:.5px}
+        .user-dropdown-lang a .lg-radio{width:16px;height:16px;margin-left:auto;border-radius:50%;border:2px solid rgba(255,255,255,.28);position:relative;flex-shrink:0;transition:border-color .2s}
+        .user-dropdown-lang a.active{background:rgba(13,148,136,.22);color:#5eead4}
+        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 4px 10px rgba(13,148,136,.45)}
+        .user-dropdown-lang a.active .lg-radio{border-color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#2dd4bf}
+>>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
 
         /* LAYOUT */
         .page{max-width:1150px;margin:0 auto;width:100%;padding:20px 24px 60px;flex:1}
@@ -258,7 +272,11 @@ $rentHref  = isset($_SESSION['user_id'])
                         <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
                         <div class="user-dropdown-lang">
                             <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+<<<<<<< HEAD
                             <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+=======
+                            <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><span class="lg-name"><?php echo $lname; ?></span><span class="lg-radio"></span></a>
+>>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
                             <?php } ?>
                         </div>
                         <div class="user-dropdown-divider"></div>
@@ -325,11 +343,17 @@ $rentHref  = isset($_SESSION['user_id'])
                 </div>
 
                 <div class="actions">
+<<<<<<< HEAD
                     <?php if($callState === 'call'): ?>
                         <a href="tel:<?php echo htmlspecialchars($ownerPhone); ?>" id="callOwnerBtn" class="btn-action btn-call" data-phone="<?php echo htmlspecialchars($ownerPhone); ?>"><i class="fas fa-phone"></i> <?php echo t('hd_call_owner'); ?></a>
                         <div class="rented-note rented-ok"><i class="fas fa-check-circle"></i> <?php echo t('hd_accepted_note'); ?></div>
                     <?php elseif($isAvail): ?>
                         <a href="<?php echo htmlspecialchars($rentHref); ?>" id="rentBtn" class="btn-action btn-rent"><i class="fas <?php echo $pendingReqId ? 'fa-xmark' : 'fa-hand-holding-heart'; ?>"></i> <?php echo $pendingReqId ? t('hd_cancel_request') : t('hd_request_rent'); ?></a>
+=======
+                    <?php if($isAvail): ?>
+                        <a href="<?php echo htmlspecialchars($rentHref); ?>" id="rentBtn" class="btn-action btn-rent"><i class="fas <?php echo $pendingReqId ? 'fa-xmark' : 'fa-hand-holding-heart'; ?>"></i> <?php echo $pendingReqId ? t('hd_cancel_request') : t('hd_request_rent'); ?></a>
+                        <button type="button" id="callOwnerBtn" class="btn-action btn-call" data-phone="<?php echo htmlspecialchars($house['phone'] ?? ''); ?>"><i class="fas fa-phone"></i> <?php echo t('hd_call_owner'); ?></button>
+>>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
                     <?php else: ?>
                         <div class="rented-note"><i class="fas fa-lock"></i> <?php echo t('hd_rented_note'); ?></div>
                     <?php endif; ?>
@@ -497,7 +521,11 @@ $rentHref  = isset($_SESSION['user_id'])
             callOwnerBtn.addEventListener('click', function(e){
                 e.preventDefault();
                 var state = <?php echo json_encode($callState); ?>;
+<<<<<<< HEAD
                 var phone = <?php echo json_encode($ownerPhone); ?>;
+=======
+                var phone = this.getAttribute('data-phone') || <?php echo json_encode($house['phone'] ?? ''); ?>;
+>>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
                 if(state === 'call'){
                     showToast(hdCalling, 'success', hdCallingOwner);
                     window.location.href = 'tel:' + phone;

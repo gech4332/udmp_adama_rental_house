@@ -42,13 +42,20 @@ if (!$conn) {
         status INT DEFAULT 0,
         email_verified TINYINT(1) NOT NULL DEFAULT 0,
         verify_token VARCHAR(64) NULL,
-        verify_expires DATETIME NULL
+        verify_expires DATETIME NULL,
+        reset_token VARCHAR(64) NULL,
+        reset_expires DATETIME NULL
     )");
 
     $vcols = @mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'email_verified'");
     if (!$vcols || mysqli_num_rows($vcols) == 0) {
         mysqli_query($conn, "ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER status, ADD COLUMN verify_token VARCHAR(64) NULL, ADD COLUMN verify_expires DATETIME NULL");
         mysqli_query($conn, "UPDATE users SET email_verified=1");
+    }
+
+    $rcols = @mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'reset_token'");
+    if (!$rcols || mysqli_num_rows($rcols) == 0) {
+        mysqli_query($conn, "ALTER TABLE users ADD COLUMN reset_token VARCHAR(64) NULL, ADD COLUMN reset_expires DATETIME NULL");
     }
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS houses (
@@ -66,8 +73,7 @@ if (!$conn) {
         video_file VARCHAR(255),
         status VARCHAR(50) DEFAULT 'Pending',
         is_approved INT DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        delete_key VARCHAR(50)
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS requests (
@@ -120,6 +126,13 @@ if (!$conn) {
         status VARCHAR(20) DEFAULT 'pending',
         message TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS login_attempts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        identifier VARCHAR(255) NOT NULL,
+        attempt_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_identifier_time (identifier, attempt_at)
     )");
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS amenities (
@@ -199,6 +212,7 @@ if (!$conn) {
     }
 
     @mkdir(__DIR__ . '/uploads', 0755, true);
+    @file_put_contents($lock_file, "Setup completed at " . date('Y-m-d H:i:s') . "\n");
 }
 ?>
 <!DOCTYPE html>

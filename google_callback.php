@@ -51,7 +51,7 @@ if ($tok_code < 200 || $tok_code >= 300 || empty($tok['id_token'])) {
     google_redirect('login.php?google=token');
 }
 
-// Validate the ID token with Google (issuer, audience, expiry, email)
+// Validate the ID token with Google (issuer, audience, expiry, email, verified)
 $info_body = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($tok['id_token']));
 $info = json_decode((string)$info_body, true);
 if (empty($info['email']) || ($info['aud'] ?? '') !== GOOGLE_CLIENT_ID) {
@@ -59,6 +59,13 @@ if (empty($info['email']) || ($info['aud'] ?? '') !== GOOGLE_CLIENT_ID) {
 }
 if (isset($info['exp']) && (int)$info['exp'] < time()) {
     google_redirect('login.php?google=expired');
+}
+$valid_iss = ['accounts.google.com', 'https://accounts.google.com'];
+if (!in_array($info['iss'] ?? '', $valid_iss, true)) {
+    google_redirect('login.php?google=invalid');
+}
+if ((int)($info['email_verified'] ?? 0) !== 1) {
+    google_redirect('login.php?google=unverified');
 }
 
 $g_email = $info['email'];
@@ -101,6 +108,19 @@ if ($res && ($user = mysqli_fetch_assoc($res))) {
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['user_name'] = $user['full_name'];
 session_regenerate_id(true);
+
+// Check for a pending admin invite for this user
+$uid = (int)$user['id'];
+$inv_stmt = mysqli_prepare($conn, "SELECT id FROM admin_invites WHERE user_id=? AND status='pending' LIMIT 1");
+mysqli_stmt_bind_param($inv_stmt, "i", $uid);
+mysqli_stmt_execute($inv_stmt);
+$check_invite = mysqli_stmt_get_result($inv_stmt);
+if($check_invite && mysqli_num_rows($check_invite) > 0){
+    $_SESSION['pending_admin_key'] = 1;
+    header("Location: admin_key.php");
+    exit();
+}
+
 if ((int)$user['is_admin'] >= 1) {
     $_SESSION['is_admin'] = (int)$user['is_admin'];
     header("Location: admin_panel.php");

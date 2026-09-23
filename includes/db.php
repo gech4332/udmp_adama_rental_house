@@ -18,6 +18,19 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS login_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    identifier VARCHAR(255) NOT NULL,
+    attempt_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_identifier_time (identifier, attempt_at)
+)");
+
+// Idempotent migration: add password-reset columns if this install predates them.
+$reset_col = @mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'reset_token'");
+if ($reset_col && mysqli_num_rows($reset_col) == 0) {
+    mysqli_query($conn, "ALTER TABLE users ADD COLUMN reset_token VARCHAR(64) NULL, ADD COLUMN reset_expires DATETIME NULL");
+}
+
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS amenities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

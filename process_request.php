@@ -4,8 +4,7 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
-// Security check[cite: 5]
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 2) die("Denied");
+if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1) die("Denied");
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
     csrf_validate();
@@ -14,6 +13,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
     switch($action) {
         case 'approve_user':
+            if($_SESSION['is_admin'] < 2) die("Denied");
             $stmt = mysqli_prepare($conn, "UPDATE users SET status = 1 WHERE id = ?");
             mysqli_stmt_bind_param($stmt, "i", $id);
             mysqli_stmt_execute($stmt);
@@ -21,6 +21,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             break;
             
         case 'delete_user':
+            if($_SESSION['is_admin'] < 2) die("Denied");
             if($id != $_SESSION['user_id']){
                 $stmt = mysqli_prepare($conn, "DELETE FROM users WHERE id = ?");
                 mysqli_stmt_bind_param($stmt, "i", $id);
@@ -64,6 +65,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             mysqli_stmt_execute($del);
 
             $del = mysqli_prepare($conn, "DELETE FROM house_images WHERE house_id = ?");
+            mysqli_stmt_bind_param($del, "i", $id);
+            mysqli_stmt_execute($del);
+
+            $del = mysqli_prepare($conn, "DELETE FROM house_amenities WHERE house_id = ?");
             mysqli_stmt_bind_param($del, "i", $id);
             mysqli_stmt_execute($del);
 
