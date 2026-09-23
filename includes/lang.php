@@ -32,8 +32,6 @@ $T = [
     'pw_placeholder_signup' => ['Create a strong password', 'ጠንካራ የይለፍ ቃል ይፍጠሩ', 'Jecha iccitii jabaa uumaa'],
     'remember_me' => ['Remember me', 'አስታውሰኝ', 'Na yaadadhu'],
     'forgot_password' => ['Forgot password?', 'የይለፍ ቃል ረስተዋል?', 'Jecha iccitii dagattee?'],
-<<<<<<< HEAD
-=======
     'resend_verify_link' => ['Resend verification email', 'የማረጋገጫ ኢሜይል እንደገና ላክ', 'Imaayelii mirkaneeffannaa deebi\'i ergi'],
     'pw_too_short' => ['Password must be at least 6 characters.', 'የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።', 'Jecha iccitii, xiqqaattis warnaa 6 ta\'uu qaba.'],
 
@@ -52,7 +50,6 @@ $T = [
     'rp_invalid' => ['This reset link is invalid. Check the link in your email or request a new one.', 'ይህ የመልሶ ማግኛ አገናኝ የተሳሳተ ነው። እባክዎ አዲስ ይጠይቁ።', 'Liinkii haaromsaa kuni sirrii miti. Liinkii imaayelii keessan ilaalaa ykn haaraa gaafadhaa.'],
     'rp_expired' => ['This reset link has expired. Please request a new one.', 'ይህ የመልሶ ማግኛ አገናኝ ጊዜው አልፏል። እባክዎ አዲስ ይጠይቁ።', 'Liinkii haaromsaa kuni meegaa darbe. Kadhattee haaraa gaafadhaa.'],
     'rp_back' => ['Back to Sign In', 'ወደ መግቢያ ተመለስ', 'Gara Seensaatti deebi\'i'],
->>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
     'or_continue' => ['or continue with', 'ወይም በሌላ ቀጥል', 'yookiin itti fufi'],
     'continue_google' => ['Continue with Google', 'በGoogle ቀጥል', 'Google\'idhaan itti fufi'],
     'no_account' => ['Don\'t have an account?', 'መለያ የለዎትም?', 'Akkaawuntii hin qabdanii?'],
@@ -149,11 +146,6 @@ $T = [
     'footer_shops' => ['Shops', 'ሱቆች', 'Suuqii'],
     'footer_contact' => ['Contact', 'አግኙን', 'Quunnamuu'],
     'footer_rights' => ['All rights reserved.', 'ሁሉም መብቶች የተጠበቁ ናቸው።', 'Mirga hunda eegamaadha.'],
-<<<<<<< HEAD
-
-    // Browse / index page
-    'find_properties' => ['Find Properties in Adama', 'በአዳማ ውስጥ ንብረቶችን ያግኙ', 'Adaamaa keessatti Qabeenya Barbaadhu'],
-=======
     'footer_terms' => ['Terms of Service', 'የአገልግሎት ውሎች', 'Waltiiwwan Tajaajilaa'],
     'footer_privacy' => ['Privacy Policy', 'የግላዊነት ፖሊሲ', 'Imaammata Icciitii'],
     'footer_adama' => ['Adama, Oromia', 'አዳማ፣ ኦሮሚያ', 'Adaamaa, Oromiyaa'],
@@ -173,7 +165,6 @@ $T = [
     'lbl_location' => ['Location', 'አካባቢ', 'Iddoo'],
     'lbl_price' => ['Max Price', 'ከፍተኛ ዋጋ', 'Gatii Olii'],
     'lbl_sort' => ['Sort by', 'አደራደር', 'Filaannoo'],
->>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
     'listings_count' => ['listings', 'ማስታወቂያዎች', 'baallannoo'],
     'all_categories' => ['All Categories', 'ሁሉም ምድቦች', 'Gosa Hunda'],
     'residential' => ['Residential', 'የመኖሪያ', 'Jireenya'],
@@ -331,10 +322,7 @@ $T = [
     'hd_request_rent' => ['Request to Rent', 'ለመከራየት ጥያቄ ይጠይቁ', 'Kireeffachuuf gaafadhu'],
     'hd_cancel_request' => ['Cancel Request', 'ጥያቄ ሰርዝ', 'Gaaffii Haqi'],
     'hd_call_owner' => ['Call Owner', 'ባለቤቱን ይደውሉ', 'Abbicha Bilbili'],
-<<<<<<< HEAD
     'hd_accepted_note' => ['Your rental request was accepted. Press <strong>Call Owner</strong> to call the landlord directly.', 'የኪራይ ጥያቄዎ ተቀብሏል። ባለቤቱን በቀጥታ ለመደወል <strong>ባለቤቱን ይደውሉ</strong> የሚለውን ይጫኑ።', 'Gaaffiin kireeffamaa keessan fudhatameera. Abbaan manaa kallattiin bilbilluuf <strong>Call Owner</strong> cuqaasaa.'],
-=======
->>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
     'hd_rented_note' => ['This property is currently rented and cannot be reserved.', 'ይህ ንብረት በአሁኑ ጊዜ ተከራይቷል እና ማስያዝ አይቻልም።', 'Qabeenyi kun amma kireeffamee jira; kaa\'achuun hin danda\'amu.'],
     'hd_view_map' => ['View on Map', 'በካርታ ይመልከቱ', 'Kaartaan ilaali'],
     'hd_property_owner' => ['Property Owner', 'የንብረት ባለቤት', 'Abbaa Qabeenyaa'],
@@ -384,10 +372,7 @@ $T = [
 
 // Map known English messages -> [en, am, om]
 $ERR_MAP = [
-<<<<<<< HEAD
-=======
     'Invalid email or password.' => ['Invalid email or password.', 'የተሳሳተ ኢሜይል ወይም የይለፍ ቃል።', 'Imaayelii ykn jecha iccitii dogoggoraa.'],
->>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
     'Invalid password. Please try again.' => ['Invalid password. Please try again.', 'የይለፍ ቃሉ የተሳሳተ ነው። እባክዎ እንደገና ይሞክሩ።', 'Jecha iccitii dogoggoraa. Kadhattee amma yaali.'],
     'No account found with this email address.' => ['No account found with this email address.', 'በዚህ ኢሜይል አድራሻ መለያ አልተገኘም።', 'Akkaawuntii teessoo imaayelii kana wajjin hin argamne.'],
     'Sign-in with Google was cancelled.' => ['Sign-in with Google was cancelled.', 'በGoogle መግባት ተሰርዟል።', 'Seensi Google dhoofame.'],
@@ -399,10 +384,7 @@ $ERR_MAP = [
     'An admin account already exists. The setup key is no longer valid.' => ['An admin account already exists. The setup key is no longer valid.', 'የአስተዳዳሪ መለያ ቀድሞ አለ። የማዋቀሪያ ቁልፉ ከአሁን በኋላ የሚሰራ አይደለም።', 'Akkaawuntii abbaa taateessaa duraan jira. Furtuun sirnaa kanaan booda hin hojjatu.'],
     'Invalid admin setup key. Please check and try again.' => ['Invalid admin setup key. Please check and try again.', 'የተሳሳተ የአስተዳዳሪ የማዋቀሪያ ቁልፍ። እባክዎ አጣርተው እንደገና ይሞክሩ።', 'Furtuu sirnaa abbaa taateessaa dogoggoraa. Kadhattee ilaaliitii amma yaali.'],
     'Registration failed. Please try again.' => ['Registration failed. Please try again.', 'ምዝገባ አልተሳካም። እባክዎ እንደገና ይሞክሩ።', 'Galmeessuun hin milkanoofne. Kadhattee amma yaali.'],
-<<<<<<< HEAD
-=======
     'Your password has been reset. Please sign in.' => ['Your password has been reset. Please sign in.', 'የይለፍ ቃልዎ ተቀይሯል። እባክዎ ይግቡ።', 'Jecha iccitii keessan haaromfameera. Kadhattee seenaa.'],
->>>>>>> 3f10b6d90b1e90908beaa844e0795334d41f1bc4
 ];
 
 function lang_index() {
