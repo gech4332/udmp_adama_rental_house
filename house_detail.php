@@ -2,15 +2,16 @@
 include('includes/session_config.php');
 session_start();
 include('includes/db.php');
+include('includes/lang.php');
 include('includes/security.php');
 if(!isset($_SESSION['csrf_token'])) csrf_token();
 
 function dTimeAgo($datetime){
     $diff = time() - strtotime($datetime);
-    if($diff < 60) return 'Just now';
-    if($diff < 3600) return floor($diff/60) . ' min ago';
-    if($diff < 86400) return floor($diff/3600) . ' hr ago';
-    if($diff < 604800) return floor($diff/86400) . ' d ago';
+    if($diff < 60) return t('time_just_now');
+    if($diff < 3600) return sprintf(t('time_min_ago'), floor($diff/60));
+    if($diff < 86400) return sprintf(t('time_hr_ago'), floor($diff/3600));
+    if($diff < 604800) return sprintf(t('time_d_ago'), floor($diff/86400));
     return date('M j, Y', strtotime($datetime));
 }
 
@@ -80,11 +81,11 @@ $rentHref  = isset($_SESSION['user_id'])
     : 'login.php?redirect=' . urlencode('rent_request.php?house=' . $id);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $notFound ? 'Listing Not Found' : 'Property in Kebele ' . htmlspecialchars($house['kebele']) . ' - AdamaRent'; ?></title>
+    <title><?php echo $notFound ? htmlspecialchars(t('hd_notfound_title')) : htmlspecialchars(t('hd_title_kebele')) . htmlspecialchars($house['kebele']) . ' - AdamaRent'; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -108,6 +109,38 @@ $rentHref  = isset($_SESSION['user_id'])
         .nav-right .btn-accent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
         .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
+        .lang-drop{position:relative;display:inline-flex}
+        .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 14px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Inter',sans-serif}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
+        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .user-avatar-wrap{position:relative}
+        .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
+        .user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
+        .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:230px;background:#1e293b;border-radius:12px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;z-index:1001}
+        .user-avatar-wrap:hover .user-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+        .user-dropdown-header{padding:16px;display:flex;align-items:center;gap:10px}
+        .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+        .user-dropdown-name{color:#f1f5f9;font-size:13px;font-weight:600}
+        .user-dropdown-role{color:#94a3b8;font-size:11px}
+        .user-dropdown-divider{height:1px;background:rgba(255,255,255,.08)}
+        .user-dropdown a{display:flex;align-items:center;gap:8px;padding:10px 16px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;transition:all .15s}
+        .user-dropdown a:hover{background:rgba(255,255,255,.05);color:#fff}
+        .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
+        .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
+        .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:10px 16px 4px;color:#64748b;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+        .user-dropdown-lang a .lg-badge{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+        .user-dropdown-lang a.active{color:#2dd4bf}
+        .user-dropdown-lang a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
+        .user-dropdown-lang .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
 
         /* LAYOUT */
         .page{max-width:1150px;margin:0 auto;width:100%;padding:20px 24px 60px;flex:1}
@@ -207,11 +240,33 @@ $rentHref  = isset($_SESSION['user_id'])
         </a>
         <div class="nav-right">
             <?php if(isset($_SESSION['user_id'])): ?>
-                <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> New Posts</a>
-                <a href="profile.php"><i class="fas fa-user-circle"></i> Profile</a>
-                <a href="manage_houses.php"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> <?php echo t('new_posts'); ?></a>
+                <a href="profile.php"><i class="fas fa-user-circle"></i> <?php echo t('nav_profile'); ?></a>
+                <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                <div class="user-avatar-wrap">
+                    <div class="user-avatar"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
+                    <div class="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-avatar-sm"><?php echo htmlspecialchars(strtoupper(substr($_SESSION['user_name'] ?? 'U', 0, 1))); ?></div>
+                            <div><div class="user-dropdown-name"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?></div>
+                            <div class="user-dropdown-role"><?php echo isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1 ? t('role_admin') : t('role_landlord'); ?></div></div>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="manage_houses.php"><i class="fas fa-th-large"></i> <?php echo t('nav_dashboard'); ?></a>
+                        <a href="profile.php"><i class="fas fa-user"></i> <?php echo t('nav_profile'); ?></a>
+                        <div class="user-dropdown-divider"></div>
+                        <div class="user-dropdown-lang-title"><i class="fas fa-globe"></i> <?php echo t('lang_label'); ?></div>
+                        <div class="user-dropdown-lang">
+                            <?php $languages = ['en' => 'English', 'am' => 'አማርኛ', 'om' => 'Afaan Oromoo']; $codes = ['en' => 'EN', 'am' => 'አማ', 'om' => 'OM']; foreach($languages as $lcode => $lname) { ?>
+                            <a href="<?php echo lang_switch_url($lcode); ?>" class="<?php echo $lang === $lcode ? 'active' : ''; ?>"><span class="lg-badge"><?php echo $codes[$lcode]; ?></span><?php echo $lname; ?><?php if($lang === $lcode) { ?><i class="fas fa-check lg-check"></i><?php } ?></a>
+                            <?php } ?>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="logout.php" class="logout"><i class="fas fa-right-from-bracket"></i> <?php echo t('nav_signout'); ?></a>
+                    </div>
+                </div>
             <?php else: ?>
-                <a href="login.php"><i class="fas fa-right-to-bracket"></i> Login</a>
+                <a href="login.php"><i class="fas fa-right-to-bracket"></i> <?php echo t('nav_login'); ?></a>
             <?php endif; ?>
         </div>
     </nav>
@@ -219,9 +274,9 @@ $rentHref  = isset($_SESSION['user_id'])
     <?php if($notFound): ?>
         <div class="notfound">
             <i class="fas fa-house-circle-xmark"></i>
-            <h1>Listing unavailable</h1>
-            <p>This property is either pending approval, rented, or no longer listed. Browse other available properties in Adama.</p>
-            <a href="index.php"><i class="fas fa-arrow-left"></i> Back to Listings</a>
+            <h1><?php echo t('hd_notfound_h'); ?></h1>
+            <p><?php echo t('hd_notfound_p'); ?></p>
+            <a href="index.php"><i class="fas fa-arrow-left"></i> <?php echo t('hd_back_listings'); ?></a>
         </div>
     <?php else: ?>
     <div class="page">
@@ -229,17 +284,17 @@ $rentHref  = isset($_SESSION['user_id'])
             <!-- GALLERY -->
             <div class="gallery">
                 <div class="g-main">
-                    <img id="mainImg" src="uploads/<?php echo htmlspecialchars($photos[0]); ?>" alt="Property photo">
+                    <img id="mainImg" src="uploads/<?php echo htmlspecialchars($photos[0]); ?>" alt="<?php echo htmlspecialchars(t('hd_photo_alt')); ?>">
                     <?php if(count($photos) > 1): ?>
-                        <button class="g-nav prev" onclick="stepPhoto(-1)" aria-label="Previous photo"><i class="fas fa-chevron-left"></i></button>
-                        <button class="g-nav next" onclick="stepPhoto(1)" aria-label="Next photo"><i class="fas fa-chevron-right"></i></button>
+                        <button class="g-nav prev" onclick="stepPhoto(-1)" aria-label="<?php echo htmlspecialchars(t('hd_prev_photo')); ?>"><i class="fas fa-chevron-left"></i></button>
+                        <button class="g-nav next" onclick="stepPhoto(1)" aria-label="<?php echo htmlspecialchars(t('hd_next_photo')); ?>"><i class="fas fa-chevron-right"></i></button>
                         <span class="g-count" id="photoCount">1 / <?php echo count($photos); ?></span>
                     <?php endif; ?>
                 </div>
                 <?php if(count($photos) > 1): ?>
                 <div class="g-thumbs">
                     <?php foreach($photos as $i => $p): ?>
-                        <img src="uploads/<?php echo htmlspecialchars($p); ?>" class="<?php echo $i === 0 ? 'on' : ''; ?>" data-idx="<?php echo $i; ?>" onclick="gotoPhoto(<?php echo $i; ?>)" alt="Thumbnail">
+                        <img src="uploads/<?php echo htmlspecialchars($p); ?>" class="<?php echo $i === 0 ? 'on' : ''; ?>" data-idx="<?php echo $i; ?>" onclick="gotoPhoto(<?php echo $i; ?>)" alt="<?php echo htmlspecialchars(t('hd_photo_alt')); ?>">
                     <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
@@ -248,46 +303,46 @@ $rentHref  = isset($_SESSION['user_id'])
             <!-- INFO -->
             <div class="info">
                 <div class="info-head">
-                    <span class="chip <?php echo $isAvail ? 'chip-avail' : 'chip-rented'; ?>"><i class="fas fa-circle" style="font-size:6px"></i> <?php echo htmlspecialchars($status); ?></span>
+                    <span class="chip <?php echo $isAvail ? 'chip-avail' : 'chip-rented'; ?>"><i class="fas fa-circle" style="font-size:6px"></i> <?php echo htmlspecialchars(t_status($status)); ?></span>
                     <span class="chip chip-cat"><?php echo htmlspecialchars($house['category']); ?></span>
                 </div>
-                <div class="info-price"><?php echo number_format((int)$house['amount']); ?> <span>ETB / month</span></div>
-                <div class="info-loc"><i class="fas fa-location-dot"></i> Kebele <?php echo htmlspecialchars($house['kebele']); ?><?php echo !empty($house['street']) ? ', ' . htmlspecialchars($house['street']) : ''; ?></div>
+                <div class="info-price"><?php echo number_format((int)$house['amount']); ?> <span><?php echo t('etb_month'); ?></span></div>
+                <div class="info-loc"><i class="fas fa-location-dot"></i> <?php echo t('ph_kebele'); ?> <?php echo htmlspecialchars($house['kebele']); ?><?php echo !empty($house['street']) ? ', ' . htmlspecialchars($house['street']) : ''; ?></div>
 
                 <?php if(!empty($house['description'])): ?>
-                    <div class="info-title">About this property</div>
+                    <div class="info-title"><?php echo t('hd_about'); ?></div>
                     <p class="info-desc"><?php echo nl2br(htmlspecialchars($house['description'])); ?></p>
                 <?php endif; ?>
 
-                <div class="info-title">Quick facts</div>
+                <div class="info-title"><?php echo t('hd_quick_facts'); ?></div>
                 <div class="facts">
-                    <div class="fact"><div class="k">Kebele</div><div class="v"><?php echo htmlspecialchars($house['kebele']); ?></div></div>
-                    <div class="fact"><div class="k">Street</div><div class="v"><?php echo htmlspecialchars($house['street']); ?></div></div>
+                    <div class="fact"><div class="k"><?php echo t('ph_kebele'); ?></div><div class="v"><?php echo htmlspecialchars($house['kebele']); ?></div></div>
+                    <div class="fact"><div class="k"><?php echo t('hd_street'); ?></div><div class="v"><?php echo htmlspecialchars($house['street']); ?></div></div>
                     <?php if(!empty($house['house_number'])): ?>
-                        <div class="fact"><div class="k">House No.</div><div class="v"><?php echo htmlspecialchars($house['house_number']); ?></div></div>
+                        <div class="fact"><div class="k"><?php echo t('hd_house_no'); ?></div><div class="v"><?php echo htmlspecialchars($house['house_number']); ?></div></div>
                     <?php endif; ?>
-                    <div class="fact"><div class="k">Category</div><div class="v"><?php echo htmlspecialchars($house['category']); ?></div></div>
+                    <div class="fact"><div class="k"><?php echo t('ph_category'); ?></div><div class="v"><?php echo htmlspecialchars($house['category']); ?></div></div>
                 </div>
 
                 <div class="actions">
                     <?php if($callState === 'call'): ?>
-                        <a href="tel:<?php echo htmlspecialchars($ownerPhone); ?>" id="callOwnerBtn" class="btn-action btn-call" data-phone="<?php echo htmlspecialchars($ownerPhone); ?>"><i class="fas fa-phone"></i> Call Owner</a>
-                        <div class="rented-note rented-ok"><i class="fas fa-check-circle"></i> Your rental request was accepted. Press <strong>Call Owner</strong> to call the landlord directly.</div>
+                        <a href="tel:<?php echo htmlspecialchars($ownerPhone); ?>" id="callOwnerBtn" class="btn-action btn-call" data-phone="<?php echo htmlspecialchars($ownerPhone); ?>"><i class="fas fa-phone"></i> <?php echo t('hd_call_owner'); ?></a>
+                        <div class="rented-note rented-ok"><i class="fas fa-check-circle"></i> <?php echo t('hd_accepted_note'); ?></div>
                     <?php elseif($isAvail): ?>
-                        <a href="<?php echo htmlspecialchars($rentHref); ?>" id="rentBtn" class="btn-action btn-rent"><i class="fas <?php echo $pendingReqId ? 'fa-xmark' : 'fa-hand-holding-heart'; ?>"></i> <?php echo $pendingReqId ? 'Cancel Request' : 'Request to Rent'; ?></a>
+                        <a href="<?php echo htmlspecialchars($rentHref); ?>" id="rentBtn" class="btn-action btn-rent"><i class="fas <?php echo $pendingReqId ? 'fa-xmark' : 'fa-hand-holding-heart'; ?>"></i> <?php echo $pendingReqId ? t('hd_cancel_request') : t('hd_request_rent'); ?></a>
                     <?php else: ?>
-                        <div class="rented-note"><i class="fas fa-lock"></i> This property is currently rented and cannot be reserved.</div>
+                        <div class="rented-note"><i class="fas fa-lock"></i> <?php echo t('hd_rented_note'); ?></div>
                     <?php endif; ?>
                     <?php if(!empty($house['map_link'])): ?>
-                        <a href="<?php echo htmlspecialchars($house['map_link']); ?>" target="_blank" rel="noopener" class="btn-action btn-map"><i class="fas fa-map-location-dot"></i> View on Map</a>
+                        <a href="<?php echo htmlspecialchars($house['map_link']); ?>" target="_blank" rel="noopener" class="btn-action btn-map"><i class="fas fa-map-location-dot"></i> <?php echo t('hd_view_map'); ?></a>
                     <?php endif; ?>
                 </div>
 
                 <div class="owner">
                     <div class="owner-av"><?php echo htmlspecialchars(strtoupper(substr($house['full_name'] ?? 'O', 0, 1))); ?></div>
                     <div>
-                        <div class="owner-name"><?php echo htmlspecialchars($house['full_name'] ?? 'Property Owner'); ?></div>
-                        <div class="owner-sub"><i class="fas fa-clock" style="margin-right:4px"></i>Listed <?php echo dTimeAgo($house['created_at']); ?></div>
+                        <div class="owner-name"><?php echo htmlspecialchars($house['full_name'] ?? t('hd_property_owner')); ?></div>
+                        <div class="owner-sub"><i class="fas fa-clock" style="margin-right:4px"></i><?php echo t('hd_listed'); ?><?php echo dTimeAgo($house['created_at']); ?></div>
                     </div>
                 </div>
             </div>
@@ -295,7 +350,7 @@ $rentHref  = isset($_SESSION['user_id'])
             <?php if(!empty($amenities)): ?>
             <div class="gallery">
                 <div class="amenity-card">
-                    <div class="info-title">Amenities</div>
+                    <div class="info-title"><?php echo t('ph_amenities'); ?></div>
                     <div class="detail-amenities">
                         <?php foreach($amenities as $a): ?>
                             <span class="detail-amenity"><i class="<?php echo htmlspecialchars($a['icon']); ?>"></i> <?php echo htmlspecialchars($a['name']); ?></span>
@@ -311,6 +366,33 @@ $rentHref  = isset($_SESSION['user_id'])
     <?php endif; ?>
 
     <script>
+        var hdSigninTitle = <?php echo json_encode(t('hd_signin_required')); ?>;
+        var hdSigninMsg = <?php echo json_encode(t('hd_signin_msg')); ?>;
+        var hdGoLogin = <?php echo json_encode(t('hd_go_login')); ?>;
+        var hdCancelReqTitle = <?php echo json_encode(t('hd_cancel_req_title')); ?>;
+        var hdCancelReqMsg = <?php echo json_encode(t('hd_cancel_req_msg')); ?>;
+        var hdCancelRequest = <?php echo json_encode(t('hd_cancel_request')); ?>;
+        var hdRequestRent = <?php echo json_encode(t('hd_request_rent')); ?>;
+        var hdReqMsg = <?php echo json_encode(t('hd_req_msg')); ?>;
+        var hdSendReq = <?php echo json_encode(t('hd_send_req')); ?>;
+        var hdSrvError = <?php echo json_encode(t('hd_srv_error')); ?>;
+        var hdError = <?php echo json_encode(t('hd_error')); ?>;
+        var hdCalling = <?php echo json_encode(t('hd_calling')); ?>;
+        var hdCallingOwner = <?php echo json_encode(t('hd_calling_owner')); ?>;
+        var hdWaitApproved = <?php echo json_encode(t('hd_wait_approved')); ?>;
+        var hdReqPending = <?php echo json_encode(t('hd_req_pending')); ?>;
+        var hdAskFirst = <?php echo json_encode(t('hd_ask_first')); ?>;
+        var hdReqRequired = <?php echo json_encode(t('hd_req_required')); ?>;
+        function toggleLangMenu(btn){
+            var drop = btn.closest('.lang-drop');
+            var isOpen = drop.classList.contains('open');
+            document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+            if(!isOpen) drop.classList.add('open');
+        }
+        document.addEventListener('click', function(e){
+            if(e.target.closest('.lang-drop')) return;
+            document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+        });
         <?php if(!$notFound && count($photos) > 1): ?>
         var gallery = <?php echo json_encode($photos); ?>;
         var gIdx = 0;
@@ -339,9 +421,9 @@ $rentHref  = isset($_SESSION['user_id'])
                 var link = this;
                 <?php if(!isset($_SESSION['user_id'])): ?>
                 adamaConfirm({
-                    title: 'Sign in required',
-                    message: 'You need to sign in before requesting this property.',
-                    confirmText: 'Go to Login',
+                    title: hdSigninTitle,
+                    message: hdSigninMsg,
+                    confirmText: hdGoLogin,
                     onConfirm: function(){ window.location = link.href; }
                 });
                 <?php else: ?>
@@ -349,9 +431,9 @@ $rentHref  = isset($_SESSION['user_id'])
                 var havingRequest = reqId > 0;
                 if(havingRequest){
                     adamaConfirm({
-                        title: 'Cancel rental request',
-                        message: 'Do you want to withdraw your request to rent this property?',
-                        confirmText: 'Cancel Request',
+                        title: hdCancelReqTitle,
+                        message: hdCancelReqMsg,
+                        confirmText: hdCancelRequest,
                         onConfirm: function(){
                             var btn = link;
                             btn.disabled = true;
@@ -366,20 +448,20 @@ $rentHref  = isset($_SESSION['user_id'])
                                     btn.disabled = false;
                                     if(data.type === 'success'){
                                         havingRequest = false;
-                                        btn.innerHTML = '<i class="fas fa-hand-holding-heart"></i> Request to Rent';
+                                        btn.innerHTML = '<i class="fas fa-hand-holding-heart"></i> ' + hdRequestRent;
                                     }
                                 })
                                 .catch(function(){
                                     btn.disabled = false;
-                                    showToast('Could not reach the server. Please try again.', 'error', 'Error');
+                                    showToast(hdSrvError, 'error', hdError);
                                 });
                         }
                     });
                 } else {
                     adamaConfirm({
-                        title: 'Request to Rent',
-                        message: 'Send a rental request to the owner of this property? The owner will be notified immediately.',
-                        confirmText: 'Send Request',
+                        title: hdRequestRent,
+                        message: hdReqMsg,
+                        confirmText: hdSendReq,
                         onConfirm: function(){
                             var btn = link;
                             btn.disabled = true;
@@ -395,12 +477,12 @@ $rentHref  = isset($_SESSION['user_id'])
                                     if(data.type === 'success' || (data.type === 'info' && data.request_id)){
                                         reqId = data.request_id || reqId;
                                         havingRequest = true;
-                                        btn.innerHTML = '<i class="fas fa-xmark"></i> Cancel Request';
+                                        btn.innerHTML = '<i class="fas fa-xmark"></i> ' + hdCancelRequest;
                                     }
                                 })
                                 .catch(function(){
                                     btn.disabled = false;
-                                    showToast('Could not reach the server. Please try again.', 'error', 'Error');
+                                    showToast(hdSrvError, 'error', hdError);
                                 });
                         }
                     });
@@ -414,12 +496,19 @@ $rentHref  = isset($_SESSION['user_id'])
         if(callOwnerBtn){
             callOwnerBtn.addEventListener('click', function(e){
                 e.preventDefault();
-                var phone = this.getAttribute('data-phone') || '';
-                if(phone) window.location.href = 'tel:' + phone;
+                var state = <?php echo json_encode($callState); ?>;
+                var phone = <?php echo json_encode($ownerPhone); ?>;
+                if(state === 'call'){
+                    showToast(hdCalling, 'success', hdCallingOwner);
+                    window.location.href = 'tel:' + phone;
+                } else if(state === 'wait'){
+                    showToast(hdWaitApproved, 'info', hdReqPending);
+                } else {
+                    showToast(hdAskFirst, 'info', hdReqRequired);
+                }
             });
         }
-
-        </script>
+    </script>
     <?php include(__DIR__ . '/includes/popup.php'); ?>
 </body>
 </html>
