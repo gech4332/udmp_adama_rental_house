@@ -122,141 +122,72 @@ if(isset($_POST['register'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - EthioRent</title>
+    <title>Admin Sign Up - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root{--brand:#078930;--brand2:#0da344;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#eef2f7}
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:var(--bg)}
-
-        /* LEFT BRAND PANEL */
-        .auth-left{flex:1.15;position:relative;display:flex;flex-direction:column;justify-content:center;padding:56px 64px 48px;color:#fff;overflow:hidden;background:#0b1420}
-        .auth-left-bg{position:absolute;inset:0;background:url('images/IMG_7172.JPG') center/cover no-repeat;transform:scale(1.08)}
-        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(165deg,rgba(8,15,27,.94) 0%,rgba(11,20,32,.82) 42%,rgba(7,137,48,.4) 100%)}
-        .auth-left::before{content:'';position:absolute;top:-180px;right:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.18),transparent 62%);pointer-events:none}
-        .auth-left::after{content:'';position:absolute;bottom:-200px;left:-160px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.14),transparent 62%);pointer-events:none}
-        .auth-brand{position:relative;z-index:2;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:auto}
-        .auth-brand .brand-icon{width:42px;height:42px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:0 6px 20px rgba(7,137,48,.5)}
-        .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc}
-        .auth-brand .brand-name span{color:#FCDD09}
-        .auth-left-content{position:relative;z-index:2;max-width:460px;flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
-        .eyebrow{display:inline-flex;align-items:center;gap:9px;background:rgba(252,221,9,.12);border:1px solid rgba(252,221,9,.3);color:#FDE68A;padding:7px 15px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
-        .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#FDE68A;box-shadow:0 0 10px rgba(94,234,212,.9)}
-        .auth-left-content h2{font-size:clamp(28px,2.7vw,38px);font-weight:800;line-height:1.15;letter-spacing:-.9px;margin-bottom:18px;color:#f8fafc}
-        .auth-left-content h2 span{color:#FCDD09}
-        .auth-left-content>p{color:rgba(255,255,255,.62);font-size:15px;line-height:1.8;margin-bottom:36px}
-        .auth-left .features{display:grid;gap:14px}
-        .auth-left .features li{list-style:none;display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;backdrop-filter:blur(8px);transition:all .25s}
-        .auth-left .features li:hover{background:rgba(255,255,255,.09);border-color:rgba(252,221,9,.35);transform:translateX(4px)}
-        .auth-left .features li>i{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#FDE68A;background:rgba(7,137,48,.22);border:1px solid rgba(252,221,9,.25);border-radius:11px;font-size:17px}
-        .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:3px}
-        .auth-left .features li small{font-size:12.5px;color:rgba(255,255,255,.58);line-height:1.55}
-        .auth-stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:26px;border-top:1px solid rgba(255,255,255,.14)}
-        .auth-stats .stat{display:flex;flex-direction:column;gap:10px}
-        .auth-stats .stat-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(7,137,48,.2);border:1px solid rgba(252,221,9,.26);color:#FDE68A;font-size:15px}
-        .auth-stats .stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);line-height:1.35}
-
-        /* RIGHT FORM PANEL */
-        .auth-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
-        .auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:40px 40px 36px;box-shadow:0 20px 50px rgba(15,23,42,.08)}
-        .auth-card h1{font-size:26px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.5px}
-        .auth-card .subtitle{color:var(--muted);font-size:14px;margin-bottom:30px;line-height:1.6}
+        body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:#f8fafc}
+        .auth-left{flex:1;background:linear-gradient(135deg,#0f172a 0%,#052e16 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;color:#fff;position:relative;overflow:hidden}
+        .auth-left::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(7,137,48,.15);top:-80px;right:-80px}
+        .auth-left::after{content:'';position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(7,137,48,.1);bottom:-40px;left:-40px}
+        .auth-left-content{position:relative;z-index:2;text-align:center;max-width:400px}
+        .auth-left-content .logo{width:60px;height:60px;background:#078930;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 24px}
+        .auth-left-content h2{font-size:28px;font-weight:800;margin-bottom:12px}
+        .auth-left-content p{color:rgba(255,255,255,.7);font-size:15px;line-height:1.7}
+        .auth-left .features{margin-top:40px;text-align:left}
+        .auth-left .features li{list-style:none;padding:10px 0;color:rgba(255,255,255,.8);font-size:14px;display:flex;align-items:center;gap:12px}
+        .auth-left .features li i{color:#FCDD09;font-size:16px}
+        .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
+        .auth-card{width:100%;max-width:400px}
+        .auth-card h1{font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-.5px}
+        .auth-card .subtitle{color:#64748b;font-size:15px;margin-bottom:32px}
         .error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
         .error-msg i{font-size:16px}
-        .form-group{margin-bottom:18px}
-        .form-group label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:7px;text-transform:uppercase;letter-spacing:.4px}
+        .form-group{margin-bottom:20px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
         .input-wrapper{position:relative}
-        .input-wrapper>i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px;pointer-events:none;transition:color .2s}
-        .input-wrapper .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:transparent;color:#94a3b8;cursor:pointer;border-radius:8px;font-size:15px;transition:all .2s}
-        .input-wrapper .pw-toggle:hover{color:var(--brand);background:rgba(7,137,48,.08)}
-        .form-group input{width:100%;padding:13px 44px;border:1.5px solid var(--line);border-radius:12px;font-size:14.5px;font-family:inherit;background:#f8fafc;color:#0f172a;transition:all .22s}
-        .form-group input::placeholder{color:#a8b3c0}
-        .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(7,137,48,.12)}
-        .form-group input:-webkit-autofill,.form-group input:-webkit-autofill:hover,.form-group input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-fill-color:#0f172a;border-color:var(--line)}
-        .input-wrapper:focus-within>i{color:var(--brand)}
-        @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-        .auth-card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both}
+        .input-wrapper i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:16px}
+        .form-group input{width:100%;padding:14px 14px 14px 44px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:15px;font-family:inherit;transition:all .2s;background:#fff}
+        .form-group input:focus{outline:none;border-color:#078930;box-shadow:0 0 0 3px rgba(7,137,48,.1)}
+        .input-wrapper .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:transparent;color:#9ca3af;cursor:pointer;border-radius:8px;font-size:15px;transition:all .2s}
+        .input-wrapper .pw-toggle:hover{color:#078930;background:rgba(7,137,48,.08)}
         .setup-hint{font-size:12px;color:#94a3b8;margin-top:7px;line-height:1.5}
-        .setup-toggle-row{display:flex;align-items:center;justify-content:center;margin:4px 0 16px}
-        .check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;line-height:1.5}
-        .check input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin:0}
-        .check a{color:var(--brand);font-weight:600;text-decoration:none}
-        .check a:hover{text-decoration:underline}
-        .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;box-shadow:0 6px 18px rgba(7,137,48,.3);display:flex;align-items:center;justify-content:center;gap:9px}
-        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(7,137,48,.4)}
-        .btn-submit:active{transform:translateY(0)}
-        .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
-        .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
-        .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
-        .auth-footer a.footer-link:hover{background:#FEFCE8;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(7,137,48,.12)}
-        .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;color:#05642a;font-size:12px;display:flex;align-items:center;gap:8px}
-        .auth-card .secure-note i{font-size:15px}
-        .lang-drop{position:fixed;top:20px;right:24px;z-index:1200}
-        .lang-pill{display:inline-flex;align-items:center;gap:8px;color:#fff;background:#0f172a;border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.2)}
-        .lang-pill:hover{background:#1e293b;border-color:rgba(252,221,9,.4)}
-        .lang-pill .lg-code{color:#FCDD09}
-        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
-        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
-        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
-        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
-        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
-        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
-        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
-        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
-        .mobile-brand{display:none;text-align:center;margin-bottom:30px}
-        .mobile-brand .logo{width:54px;height:54px;background:#078930;border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 14px;box-shadow:0 6px 18px rgba(7,137,48,.4)}
-        .mobile-brand h3{font-size:20px;font-weight:800;color:var(--ink)}
-        @media(max-width:1024px){
+        label.check{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:400;color:#64748b;cursor:pointer;user-select:none;line-height:1.5;margin-bottom:0}
+        label.check input{width:16px;height:16px;accent-color:#078930;cursor:pointer;flex-shrink:0;margin:0}
+        label.check a{color:#078930;font-weight:600;text-decoration:none}
+        label.check a:hover{text-decoration:underline}
+        .btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#05642a,#078930);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;margin-top:8px}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(7,137,48,.4)}
+        .mobile-brand{display:none;text-align:center;margin-bottom:32px}
+        .mobile-brand .logo{width:48px;height:48px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 12px}
+        .mobile-brand h3{font-size:18px;font-weight:800;color:#0f172a}
+        @media(max-width:768px){
+            body{flex-direction:column}
             .auth-left{display:none}
             .mobile-brand{display:block}
-        }
-        @media(max-width:768px){
-            body{flex-direction:column;background:#f1f5f9}
-            .auth-right{padding:24px 16px}
-            .auth-card{padding:32px 24px;border-radius:16px}
+            .auth-right{padding:24px}
         }
     </style>
 </head>
 <body>
     <div class="auth-left">
-    <div class="auth-left-bg"></div>
-    <div class="auth-left-overlay"></div>
-    <div class="auth-brand">
-        <div class="brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
-        <div class="brand-name">Ethio<span>Rent</span></div>
-    </div>
-    <div class="auth-left-content">
-        <div class="eyebrow">ADMIN</div>
-        <h2>Create Admin <span>Account</span></h2>
-        <p>Set up a separate administrator account for the EthioRent admin portal.</p>
-        <ul class="features">
-            <li><i class="fa-solid fa-user-shield"></i><span><strong>Restricted Access</strong><small>Only authorized administrators</small></span></li>
-            <li><i class="fa-solid fa-chart-pie"></i><span><strong>Admin Dashboard</strong><small>Manage users, listings &amp; requests</small></span></li>
-            <li><i class="fa-solid fa-key"></i><span><strong>Requires Setup Key</strong><small>Use a valid admin setup key</small></span></li>
-        </ul>
-    </div>
-    <div class="auth-stats">
-        <div class="stat">
-            <span class="stat-icon"><i class="fas fa-shield-halved"></i></span>
-            <span class="stat-label"><?php echo t('stat_verified'); ?></span>
-        </div>
-        <div class="stat">
-            <span class="stat-icon"><i class="fas fa-handshake"></i></span>
-            <span class="stat-label"><?php echo t('stat_direct'); ?></span>
-        </div>
-        <div class="stat">
-            <span class="stat-icon"><i class="fas fa-circle-check"></i></span>
-            <span class="stat-label"><?php echo t('stat_free'); ?></span>
+        <div class="auth-left-content">
+            <div class="logo"><i class="fas fa-shield-halved"></i></div>
+            <h2>Admin Portal</h2>
+            <p>Secure access to the EthioRent administration console. Manage users, listings, and approvals.</p>
+            <ul class="features">
+                <li><i class="fas fa-check-circle"></i> Manage users and permissions</li>
+                <li><i class="fas fa-check-circle"></i> Approve property listings</li>
+                <li><i class="fas fa-check-circle"></i> View analytics and reports</li>
+            </ul>
         </div>
     </div>
-</div>
     <div class="auth-right">
         <div class="auth-card">
             <div class="mobile-brand">
-                <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
-                <h3>EthioRent</h3>
+                <div class="logo"><i class="fas fa-shield-halved"></i></div>
+                <h3>Admin Portal</h3>
             </div>
             <h1>Create Admin Account</h1>
             <p class="subtitle">Create a separate administrator account</p>
@@ -268,24 +199,24 @@ if(isset($_POST['register'])){
             <form method="POST">
                 <?php echo csrf_field(); ?>
                 <div class="form-group">
-                    <label><?php echo t('full_name'); ?></label>
+                    <label>Full Name</label>
                     <div class="input-wrapper">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="full_name" placeholder="<?php echo t('full_name_ph'); ?>" required autocomplete="name">
+                        <input type="text" name="full_name" placeholder="Your full name" required autocomplete="name">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><?php echo t('email_address'); ?></label>
+                    <label>Admin Email</label>
                     <div class="input-wrapper">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required autocomplete="email">
+                        <input type="email" name="email" placeholder="admin@ethiorent.com" required autocomplete="email">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><?php echo t('password'); ?></label>
+                    <label>Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder_signup'); ?>" required minlength="6" autocomplete="new-password">
+                        <input type="password" name="password" id="password" placeholder="Create a strong password" required minlength="6" autocomplete="new-password">
                         <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password"><i class="fas fa-eye" id="pwIcon"></i></button>
                     </div>
                 </div>
@@ -297,27 +228,24 @@ if(isset($_POST['register'])){
                     </div>
                 </div>
                 <div class="form-group" id="setupKeyGroup">
-                    <label><?php echo t('admin_setup_key'); ?></label>
+                    <label>Admin Setup Key</label>
                     <div class="input-wrapper">
                         <i class="fas fa-key"></i>
-                        <input type="text" name="setup_key" placeholder="<?php echo t('admin_key_ph'); ?>">
+                        <input type="text" name="setup_key" placeholder="Paste admin setup key here">
                     </div>
-                    <div class="setup-hint"><?php echo t('admin_key_hint'); ?></div>
+                    <div class="setup-hint">Only needed if you want this account to become the first administrator.</div>
                 </div>
                 <div class="form-group">
                     <label class="check">
                         <input type="checkbox" name="agree_terms" required>
-                        <?php echo t('agree_terms'); ?><a href="terms.php" target="_blank"><?php echo t('terms_service'); ?></a><?php echo t('agree_terms2'); ?><a href="privacy.php" target="_blank"><?php echo t('privacy_policy'); ?></a><?php echo t('agree_terms_suffix'); ?>
+                        I agree to the <a href="terms.php" target="_blank">Terms of Service</a> and <a href="privacy.php" target="_blank">Privacy Policy</a>.
                     </label>
                 </div>
-                <button type="submit" name="register" class="btn-submit"><i class="fas fa-user-plus"></i> <?php echo t('reg_btn'); ?></button>
+                <button type="submit" name="register" class="btn-submit"><i class="fas fa-user-plus"></i> Create Account</button>
             </form>
-
-            <div class="auth-footer">
-                <p><?php echo t('has_account'); ?></p>
-                <a href="admin_login.php" class="footer-link"><i class="fas fa-right-to-bracket"></i> Sign in</a>
-            </div>
-            <div class="secure-note"><i class="fas fa-lock"></i> <?php echo t('secure_reg_note'); ?></div>
+            <p class="subtitle" style="margin-top:20px;text-align:center">
+                <a href="admin_login.php" style="color:#078930;font-weight:700;text-decoration:none"><i class="fas fa-right-to-bracket"></i> Already have an account? Sign in</a>
+            </p>
         </div>
     </div>
     <script>
@@ -329,16 +257,6 @@ if(isset($_POST['register'])){
         icon.classList.toggle('fa-eye-slash', show);
         icon.classList.toggle('fa-eye', !show);
     }
-    function toggleLangMenu(btn){
-        var drop = btn.closest('.lang-drop');
-        var isOpen = drop.classList.contains('open');
-        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
-        if(!isOpen) drop.classList.add('open');
-    }
-    document.addEventListener('click', function(e){
-        if(e.target.closest('.lang-drop')) return;
-        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
-    });
     </script>
 </body>
 </html>
