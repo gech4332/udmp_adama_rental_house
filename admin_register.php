@@ -25,9 +25,10 @@ $google_enabled = defined('GOOGLE_CLIENT_ID') && GOOGLE_CLIENT_ID !== '';
 
 if(isset($_POST['register'])){
     csrf_validate();
-    $name  = trim($_POST['full_name']);
+    $name = trim($_POST['full_name']);
     $email_raw = trim($_POST['email']);
     $password_raw = $_POST['password'];
+    $confirm_raw = $_POST['confirm_password'] ?? '';
     $setup_key = trim($_POST['setup_key'] ?? '');
 
     // Server-side input validation
@@ -35,6 +36,8 @@ if(isset($_POST['register'])){
         $error = "Please enter your full name (at least 2 characters).";
     } elseif (strlen($password_raw) < 6) {
         $error = "Password must be at least 6 characters.";
+    } elseif ($confirm_raw !== $password_raw) {
+        $error = "Passwords do not match.";
     } elseif (!validate_email_before_send($email_raw)['ok']) {
         $error = "That email address is not valid or its domain can't receive mail. Please double-check it and try again.";
     } else {
@@ -294,18 +297,20 @@ if(isset($_POST['register'])){
                         <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password"><i class="fas fa-eye" id="pwIcon"></i></button>
                     </div>
                 </div>
-                <div class="form-group" id="setupKeyGroup" style="display:none">
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm your password" required minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="form-group" id="setupKeyGroup">
                     <label><?php echo t('admin_setup_key'); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-key"></i>
                         <input type="text" name="setup_key" placeholder="<?php echo t('admin_key_ph'); ?>">
                     </div>
                     <div class="setup-hint"><?php echo t('admin_key_hint'); ?></div>
-                </div>
-                <div class="setup-toggle-row">
-                    <label class="check">
-                        <input type="checkbox" id="setupKeyToggle"> <?php echo t('im_admin'); ?>
-                    </label>
                 </div>
                 <div class="form-group">
                     <label class="check">
@@ -332,9 +337,6 @@ if(isset($_POST['register'])){
         </div>
     </div>
     <script>
-    document.getElementById('setupKeyToggle').addEventListener('change', function(){
-        document.getElementById('setupKeyGroup').style.display = this.checked ? 'block' : 'none';
-    });
     function togglePassword(){
         var pw = document.getElementById('password');
         var icon = document.getElementById('pwIcon');
