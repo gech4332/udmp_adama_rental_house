@@ -9,14 +9,15 @@ if(!isset($current_page)) $current_page = basename($_SERVER['PHP_SELF']);
 /* Header row: brand left, toggle right */
 .sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 12px;border-bottom:1px solid rgba(255,255,255,.06);min-height:64px}
 .sidebar-brand{display:flex;align-items:center;gap:10px;border-bottom:none;padding:0;min-height:auto;user-select:none}
-.sidebar-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;flex-shrink:0}
+.sidebar-brand-icon{width:36px;height:36px;background:#078930;border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;color:#fff;font-weight:900;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.45);flex-shrink:0}
+.sidebar-brand-icon .brand-mark{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1}
 .sidebar-brand-icon .brand-toggle-icon{display:none;font-size:15px;line-height:1}
 .sidebar-brand-text{color:#fff;font-size:17px;font-weight:800;letter-spacing:-.3px;opacity:1;transition:opacity .2s}
-.sidebar-brand-text span{color:#2dd4bf}
+.sidebar-brand-text span{color:#FCDD09}
 
 /* Toggle button — inside header, right side */
 .sidebar-toggle{margin-left:8px;width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);box-shadow:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .28s cubic-bezier(.4,0,.2,1);color:rgba(255,255,255,.75);font-size:15px;flex-shrink:0}
-.sidebar-toggle:hover{background:rgba(255,255,255,.12);border-color:#0d9488;color:#2dd4bf;box-shadow:0 2px 12px rgba(13,148,136,.2)}
+.sidebar-toggle:hover{background:rgba(255,255,255,.12);border-color:#078930;color:#FCDD09;box-shadow:0 2px 12px rgba(7,137,48,.2)}
 .sidebar-toggle i{transition:transform .25s}
 
 .sidebar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;padding:20px 16px 8px;opacity:1;transition:opacity .2s}
@@ -24,7 +25,7 @@ if(!isset($current_page)) $current_page = basename($_SERVER['PHP_SELF']);
 .sidebar .nav-link i{width:20px;text-align:center;font-size:15px;opacity:.6;flex-shrink:0;transition:opacity .2s}
 .sidebar .nav-link span{opacity:1;transition:opacity .2s}
 .sidebar .nav-link:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.9)}
-.sidebar .nav-link.active{background:rgba(13,148,136,.1);color:#2dd4bf;border-left-color:#0d9488}
+.sidebar .nav-link.active{background:rgba(7,137,48,.1);color:#FCDD09;border-left-color:#078930}
 .sidebar .nav-link.active i{opacity:1}
 .sidebar-section-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;padding:24px 16px 8px;opacity:1;transition:opacity .2s}
 .sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
@@ -40,7 +41,7 @@ body.sidebar-collapsed .sidebar{width:72px;padding:0;overflow:visible;transition
 body.sidebar-collapsed .sidebar-header{justify-content:center;padding:16px 0;gap:0;min-height:auto;border-bottom-color:transparent}
 body.sidebar-collapsed .sidebar-brand{width:100%;justify-content:center;cursor:pointer}
 body.sidebar-collapsed .sidebar-brand-icon{width:28px;height:28px;font-size:12px;border-radius:8px;transition:all .2s}
-body.sidebar-collapsed .sidebar-brand:hover .sidebar-brand-icon{background:rgba(255,255,255,.12);color:#2dd4bf;box-shadow:0 2px 10px rgba(13,148,136,.25)}
+body.sidebar-collapsed .sidebar-brand:hover .sidebar-brand-icon{background:rgba(255,255,255,.12);color:#FCDD09;box-shadow:0 2px 10px rgba(7,137,48,.25)}
 body.sidebar-collapsed .sidebar-brand:hover .brand-mark{display:none}
 body.sidebar-collapsed .sidebar-brand:hover .brand-toggle-icon{display:block}
 body.sidebar-collapsed .sidebar-toggle{display:none}
@@ -50,7 +51,7 @@ body.sidebar-collapsed .sidebar .sidebar-section-label{display:none}
 body.sidebar-collapsed .sidebar .nav-link{width:52px;height:44px;margin:2px auto;padding:0;justify-content:center;align-items:center;border-left:none;border-radius:12px;position:relative}
 body.sidebar-collapsed .sidebar .nav-link i{margin:0;opacity:.75}
 body.sidebar-collapsed .sidebar .nav-link:hover{background:rgba(255,255,255,.08);transform:none;color:#fff}
-body.sidebar-collapsed .sidebar .nav-link.active{background:linear-gradient(135deg,rgba(13,148,136,.35),rgba(13,148,136,.15));color:#2dd4bf;box-shadow:0 2px 10px rgba(13,148,136,.25)}
+body.sidebar-collapsed .sidebar .nav-link.active{background:linear-gradient(135deg,rgba(7,137,48,.35),rgba(7,137,48,.15));color:#FCDD09;box-shadow:0 2px 10px rgba(7,137,48,.25)}
 body.sidebar-collapsed .sidebar .nav-link.active i{opacity:1}
 body.sidebar-collapsed .sidebar-footer{padding:16px 0;margin-top:auto}
 body.sidebar-collapsed .sidebar-footer a{width:52px;height:44px;margin:2px auto;padding:0;justify-content:center;border-radius:12px;position:relative}
@@ -99,10 +100,10 @@ body.sidebar-collapsed .main{margin-left:72px;width:calc(100% - 72px)}
     <div class="sidebar-header">
         <div class="sidebar-brand">
             <div class="sidebar-brand-icon">
-                <span class="brand-mark">AR</span>
+                <span class="brand-mark">ER<?php include(__DIR__ . '/logo_mark.php'); ?></span>
                 <i class="fas fa-bars brand-toggle-icon"></i>
             </div>
-            <div class="sidebar-brand-text">Adama<span>Rent</span></div>
+            <div class="sidebar-brand-text">Ethio<span>Rent</span></div>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
     </div>
@@ -127,6 +128,12 @@ body.sidebar-collapsed .main{margin-left:72px;width:calc(100% - 72px)}
     </a>
     <a href="admin_manage_requests.php" class="nav-link <?= ($current_page=='admin_manage_requests.php') ? 'active' : '' ?>">
         <i class="fas fa-inbox"></i> <span>Requests</span>
+    </a>
+    <a href="admin_manage_ads.php" class="nav-link <?= ($current_page=='admin_manage_ads.php') ? 'active' : '' ?>">
+        <i class="fas fa-bullhorn"></i> <span>Advertising</span>
+    </a>
+    <a href="admin_manage_payments.php" class="nav-link <?= ($current_page=='admin_manage_payments.php') ? 'active' : '' ?>">
+        <i class="fas fa-money-bill-transfer"></i> <span>Payments</span>
     </a>
 
     <div class="sidebar-footer">

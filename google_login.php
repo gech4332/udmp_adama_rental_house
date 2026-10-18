@@ -7,7 +7,7 @@ if (GOOGLE_CLIENT_ID === '' || GOOGLE_CLIENT_SECRET === '') {
     ?>
     <!DOCTYPE html>
     <html lang="en">
-    <head><meta charset="UTF-8"><title>Google Sign-In - AdamaRent</title>
+    <head><meta charset="UTF-8"><title>Google Sign-In - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
@@ -16,7 +16,7 @@ if (GOOGLE_CLIENT_ID === '' || GOOGLE_CLIENT_SECRET === '') {
         .icon{width:64px;height:64px;border-radius:50%;background:#fffbeb;color:#d97706;border:2px solid #fde68a;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 20px}
         h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:10px}
         p{color:#64748b;font-size:14px;line-height:1.7}
-        .btn{display:inline-block;margin-top:18px;padding:12px 30px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px}
+        .btn{display:inline-block;margin-top:18px;padding:12px 30px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px}
     </style>
     </head>
     <body>

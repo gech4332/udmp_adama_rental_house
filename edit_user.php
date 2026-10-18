@@ -4,11 +4,11 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+if(!admin_meets_level(1)){
     die('Access Denied');
 }
 
-$my_level = (int)($_SESSION['is_admin'] ?? 0);
+$my_level = auth_db_admin_level();
 $my_id = (int)($_SESSION['user_id'] ?? 0);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -61,7 +61,7 @@ $user = mysqli_fetch_assoc($res);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User - AdamaRent Admin</title>
+    <title>Edit User - EthioRent Admin</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
 </head>
 <body>

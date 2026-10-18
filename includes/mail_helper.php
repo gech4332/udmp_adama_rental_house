@@ -5,7 +5,7 @@ if (file_exists(__DIR__ . '/../config/config_secrets.php')) {
 }
 if (!defined('BREVO_API_KEY'))        define('BREVO_API_KEY', '');
 if (!defined('BREVO_FROM_EMAIL'))     define('BREVO_FROM_EMAIL', '');
-if (!defined('BREVO_FROM_NAME'))      define('BREVO_FROM_NAME', 'AdamaRent');
+if (!defined('BREVO_FROM_NAME'))      define('BREVO_FROM_NAME', 'EthioRent');
 if (!defined('GOOGLE_CLIENT_ID'))     define('GOOGLE_CLIENT_ID', '');
 if (!defined('GOOGLE_CLIENT_SECRET')) define('GOOGLE_CLIENT_SECRET', '');
 
@@ -188,15 +188,15 @@ function send_mail_brevo($toEmail, $toName, $subject, $htmlBody, $textBody = '')
 // (dev mode) — never when a real email is sent, so tokens can't leak from logs.
 function send_verification_email($email, $name, $token) {
     $link = app_base_url() . '/verify_email.php?token=' . urlencode($token);
-    $subject = 'Verify your AdamaRent email address';
+    $subject = 'Verify your EthioRent email address';
     $html = '<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto">'
-        . '<h2 style="color:#0f172a">Welcome to AdamaRent, ' . htmlspecialchars($name) . '!</h2>'
-        . '<p style="font-size:15px;color:#475569">Please confirm this email address to activate your account and start using AdamaRent.</p>'
-        . '<p style="text-align:center"><a href="' . $link . '" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Verify my email</a></p>'
+        . '<h2 style="color:#0f172a">Welcome to EthioRent, ' . htmlspecialchars($name) . '!</h2>'
+        . '<p style="font-size:15px;color:#475569">Please confirm this email address to activate your account and start using EthioRent.</p>'
+        . '<p style="text-align:center"><a href="' . $link . '" style="display:inline-block;background:#078930;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Verify my email</a></p>'
         . '<p style="font-size:13px;color:#94a3b8">Or copy this link into your browser: <br>' . $link . '</p>'
-        . '<p style="font-size:12px;color:#cbd5e1">This link expires in 24 hours. If you didn\'t sign up on AdamaRent, you can ignore this email.</p>'
+        . '<p style="font-size:12px;color:#cbd5e1">This link expires in 24 hours. If you didn\'t sign up on EthioRent, you can ignore this email.</p>'
         . '</div>';
-    $res = send_mail_brevo($email, $name, $subject, $html, "Verify your AdamaRent email: $link");
+    $res = send_mail_brevo($email, $name, $subject, $html, "Verify your EthioRent email: $link");
     if ($res['ok']) {
         log_mail_dev($subject, $email, 'kept private in inbox', 'sent via Brevo');
     } else {
@@ -210,15 +210,15 @@ function send_verification_email($email, $name, $token) {
 // (dev mode) — never when a real email is sent, so tokens can't leak from logs.
 function send_password_reset_email($email, $name, $token) {
     $link = app_base_url() . '/reset_password.php?email=' . urlencode($email) . '&token=' . urlencode($token);
-    $subject = 'Reset your AdamaRent password';
+    $subject = 'Reset your EthioRent password';
     $html = '<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto">'
         . '<h2 style="color:#0f172a">Password reset, ' . htmlspecialchars($name) . '</h2>'
-        . '<p style="font-size:15px;color:#475569">We received a request to reset your AdamaRent password. Click the button below to choose a new one.</p>'
-        . '<p style="text-align:center"><a href="' . $link . '" style="display:inline-block;background:#0d9488;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Reset my password</a></p>'
+        . '<p style="font-size:15px;color:#475569">We received a request to reset your EthioRent password. Click the button below to choose a new one.</p>'
+        . '<p style="text-align:center"><a href="' . $link . '" style="display:inline-block;background:#078930;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Reset my password</a></p>'
         . '<p style="font-size:13px;color:#94a3b8">Or copy this link into your browser: <br>' . $link . '</p>'
         . '<p style="font-size:12px;color:#cbd5e1">This link expires in 1 hour. If you didn\'t request a password reset, you can safely ignore this email.</p>'
         . '</div>';
-    $res = send_mail_brevo($email, $name, $subject, $html, "Reset your AdamaRent password: $link");
+    $res = send_mail_brevo($email, $name, $subject, $html, "Reset your EthioRent password: $link");
     if ($res['ok']) {
         log_mail_dev($subject, $email, 'kept private in inbox', 'sent via Brevo');
     } else {

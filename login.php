@@ -88,39 +88,39 @@ if(isset($_GET['google'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - AdamaRent</title>
+    <title>Login - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root{--brand:#0d9488;--brand2:#14b8a6;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#eef2f7}
+        :root{--brand:#078930;--brand2:#0da344;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#eef2f7}
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:var(--bg)}
 
         /* LEFT BRAND PANEL */
         .auth-left{flex:1.15;position:relative;display:flex;flex-direction:column;justify-content:center;padding:56px 64px 48px;color:#fff;overflow:hidden;background:#0b1420}
         .auth-left-bg{position:absolute;inset:0;background:url('images/IMG_7172.JPG') center/cover no-repeat;transform:scale(1.08)}
-        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(165deg,rgba(8,15,27,.94) 0%,rgba(11,20,32,.82) 42%,rgba(13,148,136,.4) 100%)}
-        .auth-left::before{content:'';position:absolute;top:-180px;right:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.18),transparent 62%);pointer-events:none}
-        .auth-left::after{content:'';position:absolute;bottom:-200px;left:-160px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(45,212,191,.14),transparent 62%);pointer-events:none}
+        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(165deg,rgba(8,15,27,.94) 0%,rgba(11,20,32,.82) 42%,rgba(7,137,48,.4) 100%)}
+        .auth-left::before{content:'';position:absolute;top:-180px;right:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.18),transparent 62%);pointer-events:none}
+        .auth-left::after{content:'';position:absolute;bottom:-200px;left:-160px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.14),transparent 62%);pointer-events:none}
         .auth-brand{position:relative;z-index:2;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:auto}
-        .auth-brand .brand-icon{width:42px;height:42px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 6px 20px rgba(13,148,136,.5)}
+        .auth-brand .brand-icon{width:42px;height:42px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:0 6px 20px rgba(7,137,48,.5)}
         .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc}
-        .auth-brand .brand-name span{color:#2dd4bf}
+        .auth-brand .brand-name span{color:#FCDD09}
         .auth-left-content{position:relative;z-index:2;max-width:460px;flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
-        .eyebrow{display:inline-flex;align-items:center;gap:9px;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:#5eead4;padding:7px 15px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
-        .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#5eead4;box-shadow:0 0 10px rgba(94,234,212,.9)}
+        .eyebrow{display:inline-flex;align-items:center;gap:9px;background:rgba(252,221,9,.12);border:1px solid rgba(252,221,9,.3);color:#FDE68A;padding:7px 15px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
+        .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#FDE68A;box-shadow:0 0 10px rgba(94,234,212,.9)}
         .auth-left-content h2{font-size:clamp(28px,2.7vw,38px);font-weight:800;line-height:1.15;letter-spacing:-.9px;margin-bottom:18px;color:#f8fafc}
-        .auth-left-content h2 span{color:#2dd4bf}
+        .auth-left-content h2 span{color:#FCDD09}
         .auth-left-content>p{color:rgba(255,255,255,.62);font-size:15px;line-height:1.8;margin-bottom:36px}
         .auth-left .features{display:grid;gap:14px}
         .auth-left .features li{list-style:none;display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;backdrop-filter:blur(8px);transition:all .25s}
-        .auth-left .features li:hover{background:rgba(255,255,255,.09);border-color:rgba(45,212,191,.35);transform:translateX(4px)}
-        .auth-left .features li>i{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5eead4;background:rgba(13,148,136,.22);border:1px solid rgba(45,212,191,.25);border-radius:11px;font-size:17px}
+        .auth-left .features li:hover{background:rgba(255,255,255,.09);border-color:rgba(252,221,9,.35);transform:translateX(4px)}
+        .auth-left .features li>i{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#FDE68A;background:rgba(7,137,48,.22);border:1px solid rgba(252,221,9,.25);border-radius:11px;font-size:17px}
         .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:3px}
         .auth-left .features li small{font-size:12.5px;color:rgba(255,255,255,.58);line-height:1.55}
         .auth-stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:26px;border-top:1px solid rgba(255,255,255,.14)}
         .auth-stats .stat{display:flex;flex-direction:column;gap:10px}
-        .auth-stats .stat-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(13,148,136,.2);border:1px solid rgba(45,212,191,.26);color:#5eead4;font-size:15px}
+        .auth-stats .stat-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(7,137,48,.2);border:1px solid rgba(252,221,9,.26);color:#FDE68A;font-size:15px}
         .auth-stats .stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);line-height:1.35}
 
         /* RIGHT FORM PANEL */
@@ -142,10 +142,10 @@ if(isset($_GET['google'])){
         .input-wrapper{position:relative}
         .input-wrapper>i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px;pointer-events:none;transition:color .2s}
         .input-wrapper .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:transparent;color:#94a3b8;cursor:pointer;border-radius:8px;font-size:15px;transition:all .2s}
-        .input-wrapper .pw-toggle:hover{color:var(--brand);background:rgba(13,148,136,.08)}
+        .input-wrapper .pw-toggle:hover{color:var(--brand);background:rgba(7,137,48,.08)}
         .form-group input{width:100%;padding:13px 44px;border:1.5px solid var(--line);border-radius:12px;font-size:14.5px;font-family:inherit;background:#f8fafc;color:#0f172a;transition:all .22s}
         .form-group input::placeholder{color:#a8b3c0}
-        .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(13,148,136,.12)}
+        .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(7,137,48,.12)}
         .form-group input:-webkit-autofill,.form-group input:-webkit-autofill:hover,.form-group input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-fill-color:#0f172a;border-color:var(--line)}
         .input-wrapper:focus-within>i{color:var(--brand)}
         @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -155,8 +155,8 @@ if(isset($_GET['google'])){
         .check input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin:0}
         .form-row a{color:var(--brand);font-size:13px;font-weight:600;text-decoration:none}
         .form-row a:hover{text-decoration:underline}
-        .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;box-shadow:0 6px 18px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:9px}
-        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(13,148,136,.4)}
+        .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;box-shadow:0 6px 18px rgba(7,137,48,.3);display:flex;align-items:center;justify-content:center;gap:9px}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(7,137,48,.4)}
         .btn-submit:active{transform:translateY(0)}
         .divider{display:flex;align-items:center;gap:14px;margin:26px 0;color:#94a3b8;font-size:12px;font-weight:500}
         .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
@@ -165,27 +165,27 @@ if(isset($_GET['google'])){
         .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
         .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
         .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
-        .auth-footer a.footer-link:hover{background:#f0fdfa;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(13,148,136,.12)}
-        .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;color:#0f766e;font-size:12px;display:flex;align-items:center;gap:8px}
+        .auth-footer a.footer-link:hover{background:#FEFCE8;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(7,137,48,.12)}
+        .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;color:#05642a;font-size:12px;display:flex;align-items:center;gap:8px}
         .auth-card .secure-note i{font-size:15px}
         .resend-line{text-align:center;margin-top:16px;font-size:12.5px}
         .resend-line a{color:#94a3b8;text-decoration:none;font-weight:600;transition:color .2s}
         .resend-line a:hover{color:var(--brand)}
         .lang-drop{position:fixed;top:20px;right:24px;z-index:1200}
         .lang-pill{display:inline-flex;align-items:center;gap:8px;color:#fff;background:#0f172a;border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.2)}
-        .lang-pill:hover{background:#1e293b;border-color:rgba(45,212,191,.4)}
-        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill:hover{background:#1e293b;border-color:rgba(252,221,9,.4)}
+        .lang-pill .lg-code{color:#FCDD09}
         .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
         .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
         .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
         .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
         .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
-        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
         .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
-        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
+        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
         .mobile-brand{display:none;text-align:center;margin-bottom:30px}
-        .mobile-brand .logo{width:54px;height:54px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;margin:0 auto 14px;box-shadow:0 6px 18px rgba(13,148,136,.35)}
+        .mobile-brand .logo{width:54px;height:54px;background:#078930;border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 14px;box-shadow:0 6px 18px rgba(7,137,48,.4)}
         .mobile-brand h3{font-size:20px;font-weight:800;color:var(--ink)}
         @media(max-width:1024px){
             .auth-left{display:none}
@@ -203,8 +203,8 @@ if(isset($_GET['google'])){
     <div class="auth-left-bg"></div>
     <div class="auth-left-overlay"></div>
     <div class="auth-brand">
-        <div class="brand-icon">AR</div>
-        <div class="brand-name">Adama<span>Rent</span></div>
+        <div class="brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+        <div class="brand-name">Ethio<span>Rent</span></div>
     </div>
     <div class="auth-left-content">
         <div class="eyebrow"><?php echo t('eyebrow'); ?></div>
@@ -234,8 +234,8 @@ if(isset($_GET['google'])){
     <div class="auth-right">
         <div class="auth-card">
             <div class="mobile-brand">
-                <div class="logo">AR</div>
-                <h3>AdamaRent</h3>
+                <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+                <h3>EthioRent</h3>
             </div>
             <a href="Home.php" class="back-link"><i class="fas fa-arrow-left"></i> <?php echo t('back_home'); ?></a>
             <h1><?php echo t('login_title'); ?></h1>

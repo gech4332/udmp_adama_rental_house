@@ -63,6 +63,10 @@ if (!$conn) {
         kebele VARCHAR(100) NOT NULL,
         street VARCHAR(255) NOT NULL,
         house_number VARCHAR(50),
+        region VARCHAR(100) NOT NULL DEFAULT '',
+        city VARCHAR(100) NOT NULL DEFAULT '',
+        latitude DECIMAL(9,6) NULL,
+        longitude DECIMAL(9,6) NULL,
         category VARCHAR(50) NOT NULL,
         amount INT NOT NULL,
         phone VARCHAR(50) NOT NULL,
@@ -75,6 +79,22 @@ if (!$conn) {
         is_approved INT DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
+
+$hregcols = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'region'");
+    if (!$hregcols || mysqli_num_rows($hregcols) == 0) {
+        mysqli_query($conn, "ALTER TABLE houses ADD COLUMN region VARCHAR(100) NOT NULL DEFAULT '' AFTER house_number, ADD COLUMN city VARCHAR(100) NOT NULL DEFAULT '' AFTER region");
+    }
+    $hcitycols = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'city'");
+    if (!$hcitycols || mysqli_num_rows($hcitycols) == 0) {
+        $hcountrycols = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'country'");
+        if ($hcountrycols && mysqli_num_rows($hcountrycols) > 0) {
+            mysqli_query($conn, "ALTER TABLE houses CHANGE COLUMN country city VARCHAR(100) NOT NULL DEFAULT ''");
+        }
+    }
+    $hlatcols = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'latitude'");
+    if (!$hlatcols || mysqli_num_rows($hlatcols) == 0) {
+        mysqli_query($conn, "ALTER TABLE houses ADD COLUMN latitude DECIMAL(9,6) NULL AFTER city, ADD COLUMN longitude DECIMAL(9,6) NULL AFTER latitude");
+    }
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS requests (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -108,6 +128,39 @@ if (!$conn) {
         config_key VARCHAR(100) PRIMARY KEY,
         config_value TEXT
     )");
+
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS advertisements (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NULL,
+        image_path VARCHAR(255) NOT NULL,
+        video_path VARCHAR(255) NULL,
+        target_url VARCHAR(500) NULL,
+        start_datetime DATETIME NOT NULL,
+        end_datetime DATETIME NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'draft',
+        created_by INT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_ad_status_window (status, start_datetime, end_datetime),
+        KEY idx_ad_created_by (created_by),
+        CONSTRAINT fk_adverts_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+    // Visitor statistics for advertisements: 'view' = the card was really seen,
+    // 'click' = the card/CTA was clicked. visitor_hash = sha256(salt|IP) so the
+    // raw IP address is never stored. Deleting an ad deletes its history.
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS advertisement_views (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        ad_id INT NOT NULL,
+        event_type VARCHAR(16) NOT NULL DEFAULT 'view',
+        visitor_hash CHAR(64) NOT NULL,
+        viewed_at DATETIME NOT NULL,
+        INDEX idx_adv_views_ad (ad_id, viewed_at),
+        INDEX idx_adv_views_hash (visitor_hash),
+        INDEX idx_adv_views_kind (event_type, viewed_at),
+        CONSTRAINT fk_adv_views_ad FOREIGN KEY (ad_id) REFERENCES advertisements(id) ON DELETE CASCADE ON UPDATE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS admin_invites (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -220,17 +273,17 @@ if (!$conn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setup - AdamaRent</title>
+    <title>Setup - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body{font-family:'Inter',sans-serif;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}
         .card{background:#fff;border-radius:16px;padding:40px;max-width:520px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06);text-align:center}
-        .logo{width:56px;height:56px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;margin:0 auto 24px}
+        .logo{width:56px;height:56px;background:#078930;border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 24px}
         h1{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:16px}
         .msg{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:16px;border-radius:10px;font-size:14px;line-height:1.8;margin-bottom:24px;text-align:left}
         .key{background:#fefce8;border:1px solid #fde047;color:#854d0e;padding:12px 16px;border-radius:10px;font-family:monospace;font-size:13px;font-weight:700;word-break:break-all;margin-bottom:16px}
-        .btn{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;transition:all .2s;border:none;cursor:pointer;margin:4px}
-        .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,148,136,.4)}
+        .btn{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;transition:all .2s;border:none;cursor:pointer;margin:4px}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(7,137,48,.4)}
         .btn-ghost{background:#f1f5f9;color:#334155}
         .note{margin-top:20px;font-size:12px;color:#94a3b8;line-height:1.6}
         .note code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px}
@@ -239,8 +292,8 @@ if (!$conn) {
 </head>
 <body>
     <div class="card">
-        <div class="logo">AR</div>
-        <h1>AdamaRent Setup</h1>
+        <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+        <h1>EthioRent Setup</h1>
         <?php if (isset($fatal)): ?>
             <div class="msg fatal"><?php echo $fatal; ?></div>
         <?php else: ?>

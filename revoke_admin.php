@@ -5,7 +5,7 @@ include('includes/db.php');
 include('includes/security.php');
 
 // Only super admin can revoke admin roles
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 2){
+if(!admin_meets_level(2)){
     header("Location: login.php");
     exit();
 }

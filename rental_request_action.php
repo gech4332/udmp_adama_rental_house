@@ -3,6 +3,7 @@ include('includes/session_config.php');
 session_start();
 include('includes/db.php');
 include('includes/security.php');
+include_once('includes/payments.php');
 
 if(!isset($_SESSION['user_id'])){
     header("Location: login.php");
@@ -75,23 +76,47 @@ $tenant_id = (int)$rr['user_id'];
 $house_id = (int)$rr['house_id'];
 
 if($action === 'accept'){
-    $stmt2 = mysqli_prepare($conn, "UPDATE rental_requests SET status='accepted' WHERE id=?");
-    mysqli_stmt_bind_param($stmt2, "i", $id);
-    mysqli_stmt_execute($stmt2);
+    // A request can only be accepted after the owner's 2% service fee for
+    // THIS request has been verified. Paying does not auto-accept.
+    if(!payment_verified_unlocks($conn, $id)){
+        header("Location: manage_houses.php?msg=payment_required");
+        exit();
+    }
 
-    $stmt3 = mysqli_prepare($conn, "UPDATE houses SET status='Rented' WHERE id=?");
-    mysqli_stmt_bind_param($stmt3, "i", $house_id);
-    mysqli_stmt_execute($stmt3);
+    // All acceptance writes happen atomically so a double-submit / race can
+    // never leave a half-accepted state (e.g. house rented with no notification).
+    mysqli_begin_transaction($conn);
+    try {
+        $stmt2 = mysqli_prepare($conn, "UPDATE rental_requests SET status='accepted', accepted_at=NOW() WHERE id=? AND status='pending'");
+        mysqli_stmt_bind_param($stmt2, "i", $id);
+        mysqli_stmt_execute($stmt2);
+        if(mysqli_stmt_affected_rows($stmt2) < 1){
+            // Already accepted elsewhere (double submit / race) — no duplicate work.
+            mysqli_rollback($conn);
+            header("Location: manage_houses.php?msg=accepted");
+            exit();
+        }
 
-    $stmt4 = mysqli_prepare($conn, "UPDATE rental_requests SET status='rejected' WHERE house_id=? AND id<>? AND status='pending'");
-    mysqli_stmt_bind_param($stmt4, "ii", $house_id, $id);
-    mysqli_stmt_execute($stmt4);
+        $stmt3 = mysqli_prepare($conn, "UPDATE houses SET status='Rented' WHERE id=?");
+        mysqli_stmt_bind_param($stmt3, "i", $house_id);
+        mysqli_stmt_execute($stmt3);
 
-    $notif_msg = "Your request to rent the property in Kebele $kebele was accepted. Open the property to call the owner.";
-    $house_detail_link = 'house_detail.php?house=' . $house_id;
-    $stmt5 = mysqli_prepare($conn, "INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, 'rent_request', 'Rental request accepted', ?, ?)");
-    mysqli_stmt_bind_param($stmt5, "iss", $tenant_id, $notif_msg, $house_detail_link);
-    mysqli_stmt_execute($stmt5);
+        $stmt4 = mysqli_prepare($conn, "UPDATE rental_requests SET status='rejected' WHERE house_id=? AND id<>? AND status='pending'");
+        mysqli_stmt_bind_param($stmt4, "ii", $house_id, $id);
+        mysqli_stmt_execute($stmt4);
+
+        $notif_msg = "Your request to rent the property in Kebele $kebele was accepted. The owner's contact details are now visible on the property page.";
+        $house_detail_link = 'house_detail.php?house=' . $house_id;
+        $stmt5 = mysqli_prepare($conn, "INSERT INTO notifications (user_id, type, title, message, link) VALUES (?, 'rent_request', 'Rental request accepted', ?, ?)");
+        mysqli_stmt_bind_param($stmt5, "iss", $tenant_id, $notif_msg, $house_detail_link);
+        mysqli_stmt_execute($stmt5);
+
+        mysqli_commit($conn);
+    } catch (\Throwable $e) {
+        mysqli_rollback($conn);
+        header("Location: manage_houses.php?msg=pay_error");
+        exit();
+    }
     header("Location: manage_houses.php?msg=accepted");
 } else {
     $stmt2 = mysqli_prepare($conn, "UPDATE rental_requests SET status='rejected' WHERE id=?");

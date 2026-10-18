@@ -4,7 +4,7 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+if(!admin_meets_level(1)){
     header("Location: login.php");
     exit();
 }

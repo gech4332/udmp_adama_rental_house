@@ -31,6 +31,27 @@ if ($reset_col && mysqli_num_rows($reset_col) == 0) {
     mysqli_query($conn, "ALTER TABLE users ADD COLUMN reset_token VARCHAR(64) NULL, ADD COLUMN reset_expires DATETIME NULL");
 }
 
+// Idempotent migration: add region/city columns if this install predates them.
+$region_col = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'region'");
+if ($region_col && mysqli_num_rows($region_col) == 0) {
+    mysqli_query($conn, "ALTER TABLE houses ADD COLUMN region VARCHAR(100) NOT NULL DEFAULT '', ADD COLUMN city VARCHAR(100) NOT NULL DEFAULT ''");
+}
+
+// Earlier builds shipped a `country` column before it became `city`.
+$city_col = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'city'");
+if (!$city_col || mysqli_num_rows($city_col) == 0) {
+    $country_col = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'country'");
+    if ($country_col && mysqli_num_rows($country_col) > 0) {
+        mysqli_query($conn, "ALTER TABLE houses CHANGE COLUMN country city VARCHAR(100) NOT NULL DEFAULT ''");
+    }
+}
+
+// Idempotent migration: add map coordinates if this install predates them.
+$lat_col = @mysqli_query($conn, "SHOW COLUMNS FROM houses LIKE 'latitude'");
+if ($lat_col && mysqli_num_rows($lat_col) == 0) {
+    mysqli_query($conn, "ALTER TABLE houses ADD COLUMN latitude DECIMAL(9,6) NULL, ADD COLUMN longitude DECIMAL(9,6) NULL");
+}
+
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS amenities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -71,4 +92,12 @@ if ($amenity_count == 0) {
         mysqli_query($conn, "INSERT INTO amenities (name, icon, sort_order) VALUES ('$name', '$icon', {$s[2]})");
     }
 }
+
+// Idempotent migration: advertisements table (admin advertising feature).
+include_once __DIR__ . '/ads.php';
+ads_ensure_schema($conn);
+
+// Idempotent migration: owner service-fee payments (secure rental acceptance).
+include_once __DIR__ . '/payments.php';
+payments_ensure_schema($conn);
 

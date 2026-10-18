@@ -28,7 +28,7 @@ if (isset($_GET['token']) && $_GET['token'] !== '') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email - AdamaRent</title>
+    <title>Verify Email - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -41,8 +41,8 @@ if (isset($_GET['token']) && $_GET['token'] !== '') {
         .icon.warn{background:#fffbeb;color:#d97706;border:2px solid #fde68a}
         h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:10px}
         p{color:#64748b;font-size:14px;line-height:1.7;margin-bottom:8px}
-        .btn{display:inline-block;margin-top:18px;padding:12px 30px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;transition:all .2s}
-        .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,148,136,.4)}
+        .btn{display:inline-block;margin-top:18px;padding:12px 30px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;transition:all .2s}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(7,137,48,.4)}
         .btn-line{display:inline-block;margin-top:14px;padding:12px 30px;background:#f1f5f9;color:#334155;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin-left:6px}
     </style>
 </head>
@@ -51,7 +51,7 @@ if (isset($_GET['token']) && $_GET['token'] !== '') {
         <div class="card">
             <div class="icon ok"><i class="fas fa-check"></i></div>
             <h1>Email verified!</h1>
-            <p>Your email has been confirmed. You can now sign in to your AdamaRent account.</p>
+            <p>Your email has been confirmed. You can now sign in to your EthioRent account.</p>
             <a href="login.php" class="btn">Go to Sign In</a>
         </div>
     <?php elseif ($status === 'already'): ?>

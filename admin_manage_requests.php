@@ -4,7 +4,7 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+if(!admin_meets_level(1)){
     header('Location: login.php');
     exit();
 }
@@ -43,14 +43,14 @@ $msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pending Approvals - AdamaRent Admin</title>
+    <title>Pending Approvals - EthioRent Admin</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
     <style>
         .request-card{position:relative;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin-bottom:16px;display:flex;gap:22px;align-items:stretch;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:box-shadow .25s ease,transform .25s ease,border-color .25s ease}
         .request-card:hover{border-color:#cbd5e1;box-shadow:0 10px 28px rgba(15,23,42,.08);transform:translateY(-2px)}
-        .request-card.card-edit{border-color:rgba(139,92,246,.35);background:linear-gradient(180deg,#fff 0%,rgba(139,92,246,.03) 100%)}
-        .edit-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,.12);color:#7c3aed;border:1px solid rgba(139,92,246,.25);font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;margin-bottom:10px}
-        .edit-badge.new-badge{background:rgba(13,148,136,.1);color:#0d9488;border-color:rgba(13,148,136,.2)}
+        .request-card.card-edit{border-color:rgba(7,137,48,.35);background:linear-gradient(180deg,#fff 0%,rgba(7,137,48,.03) 100%)}
+        .edit-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(7,137,48,.12);color:#078930;border:1px solid rgba(7,137,48,.25);font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;margin-bottom:10px}
+        .edit-badge.new-badge{background:rgba(7,137,48,.1);color:#078930;border-color:rgba(7,137,48,.2)}
         .req-badge-margin{margin-top:-2px}
         .req-img{flex:0 0 220px;position:relative;border-radius:12px;overflow:hidden;background:#f1f5f9;align-self:center}
         .req-img img{width:220px;height:150px;object-fit:cover;display:block}
@@ -61,13 +61,13 @@ $msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
         .req-body h3{font-size:16px;font-weight:700;color:#0f172a;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .req-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0}
         .req-meta span{display:inline-flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #eef2f7;color:#475569;font-size:13px;font-weight:500;padding:7px 13px;border-radius:9px}
-        .req-meta span i{color:#0d9488;font-size:12px}
+        .req-meta span i{color:#078930;font-size:12px}
         .req-meta strong{color:#0f172a;font-weight:700}
-        .req-meta span.chip-price{border-color:rgba(13,148,136,.18);background:rgba(13,148,136,.06);color:#0d9488;font-weight:700}
-        .req-meta span.chip-price i{color:#0d9488}
+        .req-meta span.chip-price{border-color:rgba(7,137,48,.18);background:rgba(7,137,48,.06);color:#078930;font-weight:700}
+        .req-meta span.chip-price i{color:#078930}
         .req-actions{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding-left:22px;border-left:1px solid #f1f5f9}
-        .req-actions a.btn{background:#0d9488;color:#fff;border-radius:10px;font-weight:600;font-size:13px;padding:10px 22px;justify-content:center;border:none;box-shadow:0 3px 0 rgba(13,148,136,.15)}
-        .req-actions a.btn:hover{background:#0f9c8f;box-shadow:0 6px 16px rgba(13,148,136,.3);transform:translateY(-1px)}
+        .req-actions a.btn{background:#078930;color:#fff;border-radius:10px;font-weight:600;font-size:13px;padding:10px 22px;justify-content:center;border:none;box-shadow:0 3px 0 rgba(7,137,48,.15)}
+        .req-actions a.btn:hover{background:#0da344;box-shadow:0 6px 16px rgba(7,137,48,.3);transform:translateY(-1px)}
         @media(max-width:768px){
             .request-card{flex-direction:column;gap:14px}
             .req-img,.req-img img,.req-img .no-img{width:100%;height:180px;flex:0 0 auto}

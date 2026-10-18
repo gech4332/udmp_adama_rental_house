@@ -35,26 +35,37 @@ $post = http_build_query([
     'redirect_uri'  => $redirect_uri,
     'grant_type'    => 'authorization_code',
 ]);
-$ch = curl_init('https://oauth2.googleapis.com/token');
-curl_setopt_array($ch, [
+$usedSslFallback = false;
+list($tok_body, $tok_code, $tok_err) = curl_post_with_ssl_fallback([
+    CURLOPT_URL => 'https://oauth2.googleapis.com/token',
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST => true,
     CURLOPT_POSTFIELDS => $post,
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
     CURLOPT_TIMEOUT => 20,
-]);
-$tok_body = curl_exec($ch);
-$tok_code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+], $usedSslFallback);
 $tok = json_decode((string)$tok_body, true);
 if ($tok_code < 200 || $tok_code >= 300 || empty($tok['id_token'])) {
     google_redirect('login.php?google=token');
 }
 
-// Validate the ID token with Google (issuer, audience, expiry, email, verified)
-$info_body = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($tok['id_token']));
+// Validate the ID token with Google (issuer, audience, expiry, email, verified).
+// POST the token to tokeninfo instead of file_get_contents so it works even when
+// allow_url_fopen is disabled and on hosts without a CA bundle (XAMPP fallback).
+$usedSslFallback = false;
+list($info_body, $info_code, $info_err) = curl_post_with_ssl_fallback([
+    CURLOPT_URL => 'https://oauth2.googleapis.com/tokeninfo',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => http_build_query(['id_token' => $tok['id_token']]),
+    CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+    CURLOPT_TIMEOUT => 20,
+], $usedSslFallback);
 $info = json_decode((string)$info_body, true);
-if (empty($info['email']) || ($info['aud'] ?? '') !== GOOGLE_CLIENT_ID) {
+if ($info_code < 200 || $info_code >= 300 || empty($info['email'])) {
+    google_redirect('login.php?google=invalid');
+}
+if (($info['aud'] ?? '') !== GOOGLE_CLIENT_ID) {
     google_redirect('login.php?google=invalid');
 }
 if (isset($info['exp']) && (int)$info['exp'] < time()) {
@@ -64,7 +75,10 @@ $valid_iss = ['accounts.google.com', 'https://accounts.google.com'];
 if (!in_array($info['iss'] ?? '', $valid_iss, true)) {
     google_redirect('login.php?google=invalid');
 }
-if ((int)($info['email_verified'] ?? 0) !== 1) {
+// tokeninfo returns email_verified as the string "true"/"false", so cast carefully.
+$ev = $info['email_verified'] ?? false;
+$verified = ($ev === true) || (is_string($ev) && strtolower($ev) === 'true');
+if (!$verified) {
     google_redirect('login.php?google=unverified');
 }
 

@@ -43,26 +43,26 @@ if(isset($_POST['login'])){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - AdamaRent</title>
+    <title>Admin Login - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:#f8fafc}
-        .auth-left{flex:1;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;color:#fff;position:relative;overflow:hidden}
-        .auth-left::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(99,102,241,.15);top:-80px;right:-80px}
-        .auth-left::after{content:'';position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(139,92,246,.1);bottom:-40px;left:-40px}
+        .auth-left{flex:1;background:linear-gradient(135deg,#0f172a 0%,#052e16 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;color:#fff;position:relative;overflow:hidden}
+        .auth-left::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(7,137,48,.15);top:-80px;right:-80px}
+        .auth-left::after{content:'';position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(7,137,48,.1);bottom:-40px;left:-40px}
         .auth-left-content{position:relative;z-index:2;text-align:center;max-width:400px}
-        .auth-left-content .logo{width:60px;height:60px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;margin:0 auto 24px}
+        .auth-left-content .logo{width:60px;height:60px;background:#078930;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 24px}
         .auth-left-content h2{font-size:28px;font-weight:800;margin-bottom:12px}
         .auth-left-content p{color:rgba(255,255,255,.7);font-size:15px;line-height:1.7}
         .auth-left .features{margin-top:40px;text-align:left}
         .auth-left .features li{list-style:none;padding:10px 0;color:rgba(255,255,255,.8);font-size:14px;display:flex;align-items:center;gap:12px}
-        .auth-left .features li i{color:#a78bfa;font-size:16px}
+        .auth-left .features li i{color:#FCDD09;font-size:16px}
         .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
         .auth-card{width:100%;max-width:400px}
         .auth-card .back-link{display:inline-flex;align-items:center;gap:6px;color:#64748b;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:24px;transition:color .2s}
-        .auth-card .back-link:hover{color:#6366f1}
+        .auth-card .back-link:hover{color:#078930}
         .auth-card h1{font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-.5px}
         .auth-card .subtitle{color:#64748b;font-size:15px;margin-bottom:32px}
         .error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
@@ -72,11 +72,11 @@ if(isset($_POST['login'])){
         .input-wrapper{position:relative}
         .input-wrapper i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:16px}
         .form-group input{width:100%;padding:14px 14px 14px 44px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:15px;font-family:inherit;transition:all .2s;background:#fff}
-        .form-group input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
-        .btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#4338ca,#6366f1);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;margin-top:8px}
-        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
+        .form-group input:focus{outline:none;border-color:#078930;box-shadow:0 0 0 3px rgba(7,137,48,.1)}
+        .btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#05642a,#078930);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;margin-top:8px}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(7,137,48,.4)}
         .mobile-brand{display:none;text-align:center;margin-bottom:32px}
-        .mobile-brand .logo{width:48px;height:48px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;margin:0 auto 12px}
+        .mobile-brand .logo{width:48px;height:48px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 12px}
         .mobile-brand h3{font-size:18px;font-weight:800;color:#0f172a}
         @media(max-width:768px){
             body{flex-direction:column}
@@ -91,7 +91,7 @@ if(isset($_POST['login'])){
         <div class="auth-left-content">
             <div class="logo"><i class="fas fa-shield-halved"></i></div>
             <h2>Admin Portal</h2>
-            <p>Secure access to the AdamaRent administration console. Manage users, listings, and approvals.</p>
+            <p>Secure access to the EthioRent administration console. Manage users, listings, and approvals.</p>
             <ul class="features">
                 <li><i class="fas fa-check-circle"></i> Manage users and permissions</li>
                 <li><i class="fas fa-check-circle"></i> Approve property listings</li>
@@ -119,7 +119,7 @@ if(isset($_POST['login'])){
                     <label>Admin Email</label>
                     <div class="input-wrapper">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="admin@adamaRent.com" required>
+                        <input type="email" name="email" placeholder="admin@ethiorent.com" required>
                     </div>
                 </div>
                 <div class="form-group">

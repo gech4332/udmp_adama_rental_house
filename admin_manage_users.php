@@ -4,7 +4,7 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+if(!admin_meets_level(1)){
     header("Location: login.php");
     exit();
 }
@@ -43,7 +43,7 @@ $msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?> - AdamaRent Admin</title>
+    <title><?php echo $page_title; ?> - EthioRent Admin</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
 </head>
 <body>

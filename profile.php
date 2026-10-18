@@ -69,7 +69,7 @@ if(!$user){ header("Location: logout.php"); exit(); }
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - AdamaRent</title>
+    <title>My Profile - EthioRent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -80,45 +80,45 @@ if(!$user){ header("Location: logout.php"); exit(); }
         /* NAVBAR */
         .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}
+        .nav-brand-icon{width:36px;height:36px;background:#078930;border-radius:9px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;color:#fff;font-weight:900;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.45)}
         .nav-brand-text{color:#fff;font-size:18px;font-weight:800}
-        .nav-brand-text span{color:#2dd4bf}
+        .nav-brand-text span{color:#FCDD09}
         .nav-right{display:flex;align-items:center;gap:6px}
         .nav-right a{position:relative;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .25s cubic-bezier(.4,0,.2,1),color .25s}
-        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#2dd4bf,#14b8a6);transition:width .3s cubic-bezier(.4,0,.2,1)}
+        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#FCDD09,#0da344);transition:width .3s cubic-bezier(.4,0,.2,1)}
         .nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
         .nav-right a:hover::after{width:calc(100% - 28px)}
         .nav-right a i{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
         .nav-right a:hover i{transform:translateX(3px)}
-        .nav-right .btn-accent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
-        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
+        .nav-right .btn-accent{background:linear-gradient(135deg,#078930,#0da344);color:#fff;font-weight:600}
+        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(7,137,48,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
         .lang-drop{position:relative;display:inline-flex;margin-right:4px}
         .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Poppins',sans-serif}
-        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
-        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(252,221,9,.4)}
+        .lang-pill .lg-code{color:#FCDD09}
         .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
         .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
         .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
         .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
         .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
-        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
         .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
-        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
+        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
 
         .page{max-width:820px;margin:0 auto;width:100%;padding:30px 24px 60px;flex:1}
         .profile-head{display:flex;align-items:center;gap:16px;margin-bottom:24px}
-        .profile-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;flex-shrink:0}
+        .profile-av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;flex-shrink:0}
         .profile-head h1{font-size:22px;font-weight:800;color:#0f172a}
         .profile-head p{font-size:13px;color:#64748b;margin-top:3px}
         .profile-head .role-chip{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
         .role-chip.admin{background:rgba(59,130,246,.12);color:#2563eb}
-        .role-chip.landlord{background:rgba(13,148,136,.12);color:#0d9488}
+        .role-chip.landlord{background:rgba(7,137,48,.12);color:#078930}
 
         .card{background:#fff;border-radius:18px;border:1px solid #f1f5f9;padding:28px;box-shadow:0 2px 14px rgba(0,0,0,.04);margin-bottom:20px}
         .card h3{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-        .card h3 i{color:#0d9488}
+        .card h3 i{color:#078930}
         .card .card-sub{font-size:13px;color:#94a3b8;margin-bottom:18px}
 
         .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -127,10 +127,10 @@ if(!$user){ header("Location: logout.php"); exit(); }
         .input-wrap{position:relative}
         .input-wrap > i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px}
         .form-group input{width:100%;padding:12px 14px 12px 42px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;transition:all .2s;background:#fff;color:#0f172a}
-        .form-group input:focus{outline:none;border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+        .form-group input:focus{outline:none;border-color:#078930;box-shadow:0 0 0 3px rgba(7,137,48,.1)}
         .form-hint{font-size:12px;color:#94a3b8;margin-top:5px}
-        .btn-save{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .25s}
-        .btn-save:hover{box-shadow:0 6px 20px rgba(13,148,136,.4);transform:translateY(-1px)}
+        .btn-save{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .25s}
+        .btn-save:hover{box-shadow:0 6px 20px rgba(7,137,48,.4);transform:translateY(-1px)}
 
         .err-box{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
 
@@ -146,8 +146,8 @@ if(!$user){ header("Location: logout.php"); exit(); }
     <?php include(__DIR__ . '/pending_invite_notice.php'); ?>
     <nav class="navbar">
         <a href="Home.php" class="nav-brand">
-            <div class="nav-brand-icon">AR</div>
-            <div class="nav-brand-text">Adama<span>Rent</span></div>
+            <div class="nav-brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+            <div class="nav-brand-text">Ethio<span>Rent</span></div>
         </a>
         <div class="nav-right">
             <a href="post_house.php" class="btn-accent"><i class="fas fa-plus"></i> <?php echo t('new_posts'); ?></a>

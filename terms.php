@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Service - AdamaRent</title>
+<title>Terms of Service - EthioRent</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
@@ -12,7 +12,7 @@
 body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
 .page-wrap{max-width:800px;margin:0 auto;padding:60px 24px;flex:1}
 .back-link{display:inline-flex;align-items:center;gap:6px;color:#64748b;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:24px;transition:color .2s}
-.back-link:hover{color:#0d9488}
+.back-link:hover{color:#078930}
 h1{font-size:32px;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.5px}
 .updated{font-size:13px;color:#94a3b8;margin-bottom:32px}
 h2{font-size:18px;font-weight:700;color:#0f172a;margin:28px 0 10px}
@@ -29,10 +29,10 @@ li{margin-bottom:6px}
     <div class="updated">Last updated: September 2026</div>
 
     <h2>1. Acceptance of Terms</h2>
-    <p>By creating an account and using AdamaRent, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the platform.</p>
+    <p>By creating an account and using EthioRent, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the platform.</p>
 
     <h2>2. Description of Service</h2>
-    <p>AdamaRent is an online marketplace that connects landlords and tenants in Adama City. Landlords may list rental properties, and tenants may search for and contact landlords about available properties.</p>
+    <p>EthioRent is an online marketplace that connects landlords and tenants in Ethiopia. Landlords may list rental properties, and tenants may search for and contact landlords about available properties.</p>
 
     <h2>3. Account Responsibilities</h2>
     <ul>
@@ -53,10 +53,10 @@ li{margin-bottom:6px}
     </ul>
 
     <h2>6. No Guarantee of Transactions</h2>
-    <p>AdamaRent facilitates connections between parties but does not guarantee the completion of any rental agreement. All agreements are made directly between landlords and tenants at their own risk.</p>
+    <p>EthioRent facilitates connections between parties but does not guarantee the completion of any rental agreement. All agreements are made directly between landlords and tenants at their own risk.</p>
 
     <h2>7. Limitation of Liability</h2>
-    <p>AdamaRent is not liable for any direct, indirect, incidental, or consequential damages arising from the use of the platform, including disputes between landlords and tenants.</p>
+    <p>EthioRent is not liable for any direct, indirect, incidental, or consequential damages arising from the use of the platform, including disputes between landlords and tenants.</p>
 
     <h2>8. Termination</h2>
     <p>We reserve the right to suspend or terminate any account that violates these terms or engages in abusive behavior.</p>
@@ -64,6 +64,6 @@ li{margin-bottom:6px}
     <h2>9. Changes to These Terms</h2>
     <p>We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the revised terms.</p>
 </div>
-<div class="footer">&copy; <?php echo date("Y"); ?> AdamaRent. All rights reserved.</div>
+<div class="footer">&copy; <?php echo date("Y"); ?> EthioRent. All rights reserved.</div>
 </body>
 </html>

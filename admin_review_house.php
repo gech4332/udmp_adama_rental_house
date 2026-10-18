@@ -3,8 +3,9 @@ include('includes/session_config.php');
 session_start();
 include('includes/db.php');
 include('includes/security.php');
+include('includes/locations.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1){
+if(!admin_meets_level(1)){
     header('Location: login.php');
     exit();
 }
@@ -23,6 +24,14 @@ $house = $q ? mysqli_fetch_assoc($q) : null;
 if(!$house){
     header('Location: admin_manage_requests.php');
     exit();
+}
+
+$hasCoords = $house['latitude'] !== null && $house['longitude'] !== null && $house['latitude'] !== '' && $house['longitude'] !== '';
+$mapHref = '';
+if(!empty($house['map_link'])){
+    $mapHref = $house['map_link'];
+} elseif($hasCoords){
+    $mapHref = 'https://www.google.com/maps?q=' . (float)$house['latitude'] . ',' . (float)$house['longitude'];
 }
 
 $imgs = [];
@@ -79,22 +88,23 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Listing #<?php echo $house['id']; ?> - AdamaRent Admin</title>
+    <title>Review Listing #<?php echo $house['id']; ?> - EthioRent Admin</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
+    <?php echo locations_map_assets(); ?>
     <style>
         .review-wrap{max-width:980px;margin:0 auto}
         .review-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
         .review-head .back{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;color:#475569;text-decoration:none;font-size:13px;font-weight:600;padding:9px 14px;border-radius:9px;transition:all .2s}
-        .review-head .back:hover{border-color:#0d9488;color:#0d9488}
+        .review-head .back:hover{border-color:#078930;color:#078930}
         .review-head .h1{font-size:20px;font-weight:800;color:#0f172a}
         .review-head .badge-st{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px}
         .badge-st.bs-avail{background:rgba(16,185,129,.14);color:#059669}
-        .badge-st.bs-rent{background:rgba(99,102,241,.14);color:#4f46e5}
+        .badge-st.bs-rent{background:rgba(7,137,48,.14);color:#4f46e5}
         .badge-st.bs-pend{background:rgba(245,158,11,.14);color:#d97706}
         .badge-st.bs-rej{background:rgba(239,68,68,.14);color:#dc2626}
         .rv-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;margin-bottom:16px}
         .rv-title{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:#0f172a;margin-bottom:16px}
-        .rv-title i{color:#0d9488}
+        .rv-title i{color:#078930}
         .rv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
         .rv-field{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px}
         .rv-field .rv-label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
@@ -102,7 +112,7 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
         .rv-field.full{grid-column:1 / -1}
         .rv-desc{font-size:14px;color:#475569;line-height:1.7;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;white-space:pre-wrap}
         .rv-amenities{display:flex;flex-wrap:wrap;gap:8px}
-        .rv-amenity{display:inline-flex;align-items:center;gap:7px;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600}
+        .rv-amenity{display:inline-flex;align-items:center;gap:7px;background:#FEFCE8;color:#05642a;border:1px solid #FDE68A;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600}
         .rv-photos{display:flex;flex-direction:column;gap:12px}
         .rv-photos img{width:100%;height:auto;border-radius:10px;border:1px solid #e2e8f0;cursor:zoom-in}
         .rvactions{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
@@ -117,7 +127,7 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
         .lb-dark.open{display:flex}
         .lb-dark img{max-width:94vw;max-height:92vh;border-radius:8px}
         .rv-changes{display:flex;flex-direction:column;gap:10px}
-        .rv-change{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #8b5cf6;border-radius:10px;padding:12px 14px}
+        .rv-change{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #0da344;border-radius:10px;padding:12px 14px}
         .rv-change-field{font-size:12px;font-weight:800;color:#6d28d9;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:7px}
         .rv-change-field i{font-size:11px;opacity:.7}
         .rv-change-body{display:flex;flex-wrap:wrap;align-items:center;gap:9px;font-size:13px}
@@ -132,6 +142,8 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
         .rv-tag-add{background:rgba(16,185,129,.12);color:#047857;border:1px solid rgba(16,185,129,.25)}
         .rv-tag-del{background:rgba(239,68,68,.1);color:#b91c1c;border:1px solid rgba(239,68,68,.22)}
         .rv-change-line{display:flex;align-items:center;gap:9px}
+        .rv-map{height:340px;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;margin-top:6px;z-index:0}
+        .rv-map .leaflet-control-attribution{font-size:9px}
     </style>
 </head>
 <body>
@@ -146,7 +158,7 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
         </div>
 
         <?php if($is_edited): ?>
-        <div style="display:flex;align-items:center;gap:12px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);color:#6d28d9;padding:14px 18px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(7,137,48,.08);border:1px solid rgba(7,137,48,.25);color:#6d28d9;padding:14px 18px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:16px">
             <i class="fas fa-pen-to-square" style="font-size:18px"></i>
             This listing was previously approved and has been edited by the owner. Review the changes below before re-approving.
         </div>
@@ -159,7 +171,7 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
                 return $v;
             };
         ?>
-        <div class="rv-card" style="border-color:rgba(139,92,246,.3)">
+        <div class="rv-card" style="border-color:rgba(7,137,48,.3)">
             <div class="rv-title"><i class="fas fa-code-compare"></i> Changes Made vs. Previously Approved (<?php echo count($changes); ?>)</div>
             <div class="rv-changes">
                 <?php foreach($changes as $ch):
@@ -250,14 +262,22 @@ if($anq){ while($a = mysqli_fetch_assoc($anq)) $amenity_names[(int)$a['id']] = $
                 <div class="rv-field full">
                     <div class="rv-label">Map Link</div>
                     <div class="rv-value">
-                        <?php if(!empty($house['map_link'])): ?>
-                            <a href="<?php echo htmlspecialchars($house['map_link']); ?>" target="_blank" rel="noopener" style="color:#0d9488;font-weight:700"><?php echo htmlspecialchars($house['map_link']); ?> <i class="fas fa-up-right-from-square" style="font-size:11px"></i></a>
+                        <?php if($mapHref !== ''): ?>
+                            <a href="<?php echo htmlspecialchars($mapHref); ?>" target="_blank" rel="noopener" style="color:#078930;font-weight:700"><?php echo htmlspecialchars($mapHref); ?> <i class="fas fa-up-right-from-square" style="font-size:11px"></i></a>
                         <?php else: ?> N/A <?php endif; ?>
                     </div>
                 </div>
                 <div class="rv-field full"><div class="rv-label">Description</div><div class="rv-desc"><?php echo htmlspecialchars($house['description'] ?: 'No description provided.'); ?></div></div>
             </div>
         </div>
+
+        <?php if($hasCoords): ?>
+        <div class="rv-card">
+            <div class="rv-title"><i class="fas fa-map-location-dot"></i> Pinned Location</div>
+            <div id="rvMap" class="rv-map"></div>
+            <div class="rv-muted" style="margin-top:8px"><?php echo (float)$house['latitude']; ?>, <?php echo (float)$house['longitude']; ?></div>
+        </div>
+        <?php endif; ?>
 
         <?php if(count($amenities) > 0): ?>
         <div class="rv-card">
@@ -318,6 +338,21 @@ function closeZoom(){
 document.addEventListener('keydown', function(e){
     if(e.key === 'Escape') closeZoom();
 });
+<?php if($hasCoords): ?>
+(function(){
+    var el = document.getElementById('rvMap');
+    if(!el || typeof L === 'undefined') return;
+    var lat = <?php echo json_encode((float)$house['latitude']); ?>;
+    var lng = <?php echo json_encode((float)$house['longitude']); ?>;
+    var map = L.map(el, { scrollWheelZoom: false }).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([lat, lng]).addTo(map);
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+})();
+<?php endif; ?>
 </script>
 </body>
 </html>

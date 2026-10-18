@@ -5,7 +5,7 @@ include('includes/db.php');
 include('includes/security.php');
 
 // Only super admin can invite
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 2){
+if(!admin_meets_level(2)){
     header("Location: login.php");
     exit();
 }
@@ -73,7 +73,7 @@ $invites = mysqli_query($conn, "SELECT ai.*, u.full_name, u.is_admin FROM admin_
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invite Admin - AdamaRent</title>
+    <title>Invite Admin - EthioRent</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
 </head>
 <body>

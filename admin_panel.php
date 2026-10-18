@@ -2,9 +2,10 @@
 include('includes/session_config.php');
 session_start();
 include('includes/db.php');
+include('includes/security.php');
 
-if(!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] < 1) {
-    header("Location: login.php"); 
+if(!admin_meets_level(1)) {
+    header("Location: login.php");
     exit();
 }
 
@@ -34,7 +35,7 @@ $pending_edits = $res_edits ? (int)mysqli_fetch_assoc($res_edits)['total'] : 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AdamaRent Admin</title>
+    <title>Dashboard - EthioRent Admin</title>
     <?php include(__DIR__ . '/includes/header.php'); ?>
 </head>
 <body>

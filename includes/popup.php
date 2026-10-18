@@ -4,7 +4,7 @@
 <style>
     /* Toast notifications */
     .pd-toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:12px;max-width:380px}
-    .pd-toast{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.15);border:1px solid #f1f5f9;border-left:4px solid #0d9488;animation:pdToastIn .3s cubic-bezier(.34,1.56,.64,1);min-width:280px}
+    .pd-toast{display:flex;align-items:flex-start;gap:12px;background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.15);border:1px solid #f1f5f9;border-left:4px solid #078930;animation:pdToastIn .3s cubic-bezier(.34,1.56,.64,1);min-width:280px}
     .pd-toast.removing{animation:pdToastOut .25s ease forwards}
     @keyframes pdToastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     @keyframes pdToastOut{to{opacity:0;transform:translateX(30px)}}
@@ -155,6 +155,15 @@ window.confirmListingDelete = function(id){
         message: "Delete this listing permanently? This cannot be undone.",
         confirmText: "Delete",
         onConfirm: function(){ var f = document.getElementById('del-house-' + id); if(f) f.submit(); }
+    });
+};
+// Advertisement helpers (admin advertising — must survive AJAX content swaps)
+window.confirmAdDelete = function(id){
+    adamaConfirm({
+        title: "Delete advertisement",
+        message: "Delete this advertisement permanently? Its banner image is removed too. This cannot be undone.",
+        confirmText: "Delete",
+        onConfirm: function(){ var f = document.getElementById('del-ad-' + id); if(f) f.submit(); }
     });
 };
 </script>

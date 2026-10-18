@@ -4,6 +4,7 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 include('includes/lang.php');
+include('includes/locations.php');
 if(!isset($_SESSION['csrf_token'])) csrf_token(); 
 
 header("Cache-Control: no-cache, no-store, must-revalidate"); 
@@ -54,10 +55,24 @@ function buildListingQuery($conn) {
         $types .= 's';
         $params[] = $_GET['cat'];
     }
+    // Location is deliberately forgiving: it matches either the kebele or the
+    // street, and ignores case, so "bole" finds "Bole Road".
     if(!empty($_GET['kb'])) {
-        $where .= " AND houses.kebele LIKE ?";
+        $where .= " AND (LOWER(houses.kebele) LIKE ? OR LOWER(houses.street) LIKE ?)";
+        $types .= 'ss';
+        $like = '%' . mb_strtolower(trim($_GET['kb'])) . '%';
+        $params[] = $like;
+        $params[] = $like;
+    }
+    if(!empty($_GET['region'])) {
+        $where .= " AND houses.region = ?";
         $types .= 's';
-        $params[] = '%' . $_GET['kb'] . '%';
+        $params[] = $_GET['region'];
+    }
+    if(!empty($_GET['city'])) {
+        $where .= " AND houses.city = ?";
+        $types .= 's';
+        $params[] = $_GET['city'];
     }
     if(!empty($_GET['max_pr'])) {
         $where .= " AND houses.amount <= ?";
@@ -70,7 +85,7 @@ function buildListingQuery($conn) {
         'where'  => $where,
         'types'  => $types,
         'params' => $params,
-        'sql'    => "SELECT houses.*, users.full_name FROM houses LEFT JOIN users ON houses.user_id = users.id WHERE $where ORDER BY $order"
+        'sql'    => "SELECT houses.* FROM houses WHERE $where ORDER BY $order"
     ];
 }
 
@@ -95,9 +110,17 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
                     <?php endif; ?>
                     <div class="card-body">
                         <div class="card-price"><?php echo number_format($row['amount']); ?><span class="card-price-cur"> <?php echo t('etb_month'); ?></span></div>
-                        <div class="card-location">
-                            <i class="fas fa-location-dot"></i>
-                            Kebele <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
+<div class="card-location">
+                             <i class="fas fa-location-dot"></i>
+                             Kebele <?php echo htmlspecialchars($row['kebele']); ?>, <?php echo htmlspecialchars($row['street']); ?>
+                             <?php
+                             $rc = [];
+                             if(!empty($row['region']))  $rc[] = htmlspecialchars($row['region']);
+                             if(!empty($row['city']))    $rc[] = htmlspecialchars($row['city']);
+                             ?>
+                             <?php if($rc): ?>
+                             <span class="card-region-city"><i class="fas fa-location-dot"></i> <?php echo implode(', ', $rc); ?></span>
+                             <?php endif; ?>
                         </div>
                         <div class="card-desc"><?php echo nl2br(htmlspecialchars($row['description'])); ?></div>
                         <?php if(!empty($house_amenities[$row['id']])): ?>
@@ -110,7 +133,7 @@ function renderPropertyCard($row, $all_amenities, $house_amenities, $house_image
                         </div>
                         <?php endif; ?>
                         <div class="card-meta">
-                            <div class="card-owner"><span class="owner-dot"></span> <?php echo htmlspecialchars($row['full_name'] ?? 'Private'); ?></div>
+                            <div class="card-owner"><span class="owner-dot"></span> <?php echo t('listing_private_owner'); ?></div>
                             <span class="card-view"><i class="fas fa-circle-arrow-right"></i></span>
                         </div>
                     </div>
@@ -145,6 +168,7 @@ function loadHouseImages($conn, array $ids = []) {
 if(isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     header('Content-Type: text/html; charset=UTF-8');
     $q = buildListingQuery($conn);
+
     $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : 0;
     $limit = isset($_GET['limit']) ? min(50, max(1, (int)$_GET['limit'])) : $LISTING_LIMIT;
 
@@ -179,6 +203,31 @@ if(isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
 $q = buildListingQuery($conn);
 
+$filterRegions = ethio_regions_merged($conn);
+
+$selRegion = isset($_GET['region']) ? trim((string)$_GET['region']) : '';
+$selCity   = isset($_GET['city']) ? trim((string)$_GET['city']) : '';
+
+$cityGroups = [];
+foreach($filterRegions as $rname => $rcities) {
+    if($selRegion === '' || $rname === $selRegion) $cityGroups[$rname] = $rcities;
+}
+/* Keep the active filter visible even if the stored value is not in the merged
+   map (e.g. an old bookmark), so no selected town ever disappears. */
+if($selCity !== '') {
+    $cityFound = false;
+    foreach($cityGroups as $rc) {
+        foreach($rc as $c) { if($c === $selCity) { $cityFound = true; break 2; } }
+    }
+    if(!$cityFound) {
+        $gkey = $selRegion !== '' ? $selRegion : 'Other';
+        $cityGroups[$gkey][] = $selCity;
+    }
+}
+$regionFound = false;
+foreach(array_keys($filterRegions) as $rname) { if($rname === $selRegion) { $regionFound = true; break; } }
+if($selRegion !== '' && !$regionFound) $filterRegions[$selRegion] = [];
+
 $count_stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM houses WHERE " . $q['where']);
 if($q['types']) {
     mysqli_stmt_bind_param($count_stmt, $q['types'], ...$q['params']);
@@ -186,13 +235,24 @@ if($q['types']) {
 mysqli_stmt_execute($count_stmt);
 $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
 
+$cat_labels = [
+    'Single Home' => t('single_home'),
+    'Apartment'   => t('apartment'),
+    'Villa'       => t('villa'),
+    'Office'      => t('office'),
+    'Shop'        => t('shop'),
+    'Warehouse'   => t('warehouse'),
+];
+$page_title = (isset($_GET['cat']) && isset($cat_labels[$_GET['cat']]))
+    ? $cat_labels[$_GET['cat']] . ' for rent in Ethiopia- EthioRent'
+    : t('find_properties') . ' - EthioRent';
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Properties - AdamaRent</title>
+    <title><?php echo htmlspecialchars($page_title); ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -205,39 +265,39 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         /* NAVBAR */
         .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 24px -16px rgba(0,0,0,.5)}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;box-shadow:0 4px 14px rgba(13,148,136,.35)}
+        .nav-brand-icon{width:36px;height:36px;background:#078930;border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;color:#fff;font-weight:900;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:0 4px 14px rgba(7,137,48,.4)}
         .nav-brand-text{color:#fff;font-size:18px;font-weight:800;letter-spacing:-.3px}
-        .nav-brand-text span{color:#2dd4bf}
+        .nav-brand-text span{color:#FCDD09}
         .nav-right{display:flex;align-items:center;gap:6px}
         .nav-right a{position:relative;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .25s cubic-bezier(.4,0,.2,1),color .25s}
-        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#2dd4bf,#14b8a6);transition:width .3s cubic-bezier(.4,0,.2,1)}
+        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#FCDD09,#0da344);transition:width .3s cubic-bezier(.4,0,.2,1)}
         .nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
         .nav-right a:hover::after{width:calc(100% - 28px)}
         .nav-right a i{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
         .nav-right a:hover i{transform:translateX(3px)}
-        .nav-right .btn-accent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
-        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
+        .nav-right .btn-accent{background:linear-gradient(135deg,#078930,#0da344);color:#fff;font-weight:600}
+        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(7,137,48,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
         .lang-drop{position:relative;display:inline-flex;margin-right:4px}
         .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 15px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer}
-        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
-        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(252,221,9,.4)}
+        .lang-pill .lg-code{color:#FCDD09}
         .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
         .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
         .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
         .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
         .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
-        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
         .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
-        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
+        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
         .user-avatar-wrap{position:relative}
-        .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
+        .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
         .user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
         .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#1e293b;border-radius:12px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .3s cubic-bezier(.34,1.56,.64,1),transform .3s cubic-bezier(.34,1.56,.64,1),visibility .3s;z-index:1001}
         .user-avatar-wrap.open .user-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
         .user-dropdown-header{padding:16px;display:flex;align-items:center;gap:10px}
-        .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+        .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
         .user-dropdown-name{color:#f1f5f9;font-size:13px;font-weight:600}
         .user-dropdown-role{color:#94a3b8;font-size:11px}
         .user-dropdown-divider{height:1px;background:rgba(255,255,255,.08)}
@@ -246,16 +306,16 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
         .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:12px 18px 8px;color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
-        .user-dropdown-lang-title i{color:#2dd4bf;font-size:11px}
+        .user-dropdown-lang-title i{color:#FCDD09;font-size:11px}
         .user-dropdown-lang{padding:2px 8px 12px}
         .user-dropdown-lang a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:600;transition:background .15s,color .15s}
         .user-dropdown-lang a:hover{background:rgba(255,255,255,.07);color:#fff}
         .user-dropdown-lang a .lg-badge{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;letter-spacing:.5px}
         .user-dropdown-lang a .lg-radio{width:16px;height:16px;margin-left:auto;border-radius:50%;border:2px solid rgba(255,255,255,.28);position:relative;flex-shrink:0;transition:border-color .2s}
-        .user-dropdown-lang a.active{background:rgba(13,148,136,.22);color:#5eead4}
-        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 4px 10px rgba(13,148,136,.45)}
-        .user-dropdown-lang a.active .lg-radio{border-color:#2dd4bf}
-        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#2dd4bf}
+        .user-dropdown-lang a.active{background:rgba(7,137,48,.22);color:#FDE68A}
+        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#078930,#0da344);color:#fff;box-shadow:0 4px 10px rgba(7,137,48,.45)}
+        .user-dropdown-lang a.active .lg-radio{border-color:#FCDD09}
+        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#FCDD09}
 
         /* NOTIFICATION BELL */
         .bell-wrap{position:relative}
@@ -273,8 +333,8 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         .notif-list{max-height:340px;overflow-y:auto}
         .notif-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none;transition:background .15s}
         .notif-item:hover{background:rgba(255,255,255,.05)}
-        .notif-item.unread{background:rgba(13,148,136,.08)}
-        .notif-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+        .notif-item.unread{background:rgba(7,137,48,.08)}
+        .notif-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
         .notif-icon.type-listing{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
         .notif-icon.type-rejection{background:linear-gradient(135deg,#ef4444,#f87171)}
         .notif-text{flex:1;min-width:0}
@@ -284,27 +344,27 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         .notif-empty{padding:32px 16px;text-align:center;color:#94a3b8;font-size:13px}
         .notif-empty i{font-size:26px;color:#475569;display:block;margin-bottom:8px}
         .notif-footer{padding:10px 16px;border-top:1px solid rgba(255,255,255,.08)}
-        .notif-footer button{width:100%;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.3);color:#2dd4bf;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
-        .notif-footer button:hover{background:rgba(13,148,136,.25)}
+        .notif-footer button{width:100%;background:rgba(7,137,48,.12);border:1px solid rgba(7,137,48,.3);color:#FCDD09;padding:9px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+        .notif-footer button:hover{background:rgba(7,137,48,.25)}
 
         /* SEARCH */
-        .search-section{position:relative;background:linear-gradient(150deg,#0b2e2b 0%,#115e59 52%,#0d9488 100%);border-bottom:1px solid #082f2c;padding:46px 32px 76px;overflow:hidden}
-        .search-section::before{content:'';position:absolute;top:-180px;right:-120px;width:520px;height:520px;background:radial-gradient(circle,rgba(45,212,191,.22),transparent 62%);pointer-events:none}
-        .search-section::after{content:'';position:absolute;bottom:-200px;left:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(45,212,191,.16),transparent 62%);pointer-events:none}
+        .search-section{position:relative;background:linear-gradient(150deg,#03170d 0%,#044d21 52%,#078930 100%);border-bottom:1px solid #04200f;padding:46px 32px 76px;overflow:hidden}
+        .search-section::before{content:'';position:absolute;top:-180px;right:-120px;width:520px;height:520px;background:radial-gradient(circle,rgba(252,221,9,.22),transparent 62%);pointer-events:none}
+        .search-section::after{content:'';position:absolute;bottom:-200px;left:-140px;width:560px;height:560px;background:radial-gradient(circle,rgba(252,221,9,.16),transparent 62%);pointer-events:none}
         .search-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
         .search-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px}
         .search-title-text{min-width:0}
-        .search-eyebrow{display:inline-flex;align-items:center;gap:7px;color:#5eead4;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin-bottom:10px}
+        .search-eyebrow{display:inline-flex;align-items:center;gap:7px;color:#FDE68A;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin-bottom:10px}
         .search-eyebrow i{font-size:12px}
         .search-title h1{font-size:30px;font-weight:800;color:#ffffff;letter-spacing:-.6px;line-height:1.12}
         .search-title p{color:rgba(255,255,255,.72);font-size:14px;margin-top:8px;line-height:1.65;max-width:560px}
         .search-title .count{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);color:#fff;padding:9px 18px;border-radius:50px;font-size:12.5px;font-weight:700;border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(8px)}
-        .search-title .count i{color:#5eead4;font-size:12px}
+        .search-title .count i{color:#FDE68A;font-size:12px}
         .search-form{display:flex;flex-wrap:wrap;align-items:stretch;background:#fff;border:1px solid #eef2f6;border-radius:20px;padding:10px;box-shadow:0 30px 60px -30px rgba(2,42,38,.55)}
         .search-field{flex:1 1 165px;min-width:165px;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8px 16px 10px}
         .search-field+.search-field{border-left:1px solid #eef2f6}
         .sf-label{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#94a3b8}
-        .sf-label i{color:#0d9488;font-size:11px}
+        .sf-label i{color:#078930;font-size:11px}
         .sf-control{display:flex;align-items:center;gap:9px}
         .sf-control>i{color:#94a3b8;font-size:13px;flex-shrink:0;pointer-events:none}
         .sf-control select,.sf-control input{width:100%;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:#0f172a;outline:none;appearance:none;padding:0}
@@ -312,17 +372,17 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         .sf-control input{cursor:text}
         .sf-control input::placeholder{color:#9aa7b5;font-weight:500}
         .sf-chev{color:#94a3b8;font-size:10px;flex-shrink:0;pointer-events:none}
-        .search-form .btn-search{display:inline-flex;align-items:center;gap:8px;padding:0 26px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 6px 18px rgba(13,148,136,.35)}
-        .search-form .btn-search:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(13,148,136,.45)}
+        .search-form .btn-search{display:inline-flex;align-items:center;gap:8px;padding:0 26px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 6px 18px rgba(7,137,48,.35)}
+        .search-form .btn-search:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(7,137,48,.45)}
         .search-form .btn-search:active{transform:translateY(0)}
         .search-form .btn-reset{width:50px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:#f8fafc;color:#64748b;border:1.5px solid #e8eef4;border-radius:14px;text-decoration:none;font-size:13px;transition:all .2s}
-        .search-form .btn-reset:hover{border-color:#0d9488;color:#0d9488;background:#f0fdfa}
+        .search-form .btn-reset:hover{border-color:#078930;color:#078930;background:#FEFCE8}
         .search-quick{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:18px}
         .search-quick .sq-label{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.8);font-size:13px;font-weight:700;letter-spacing:.3px;margin-right:2px}
-        .search-quick .sq-label i{color:#5eead4;font-size:11px}
+        .search-quick .sq-label i{color:#FDE68A;font-size:11px}
         .search-quick a{color:rgba(255,255,255,.85);text-decoration:none;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.26);padding:7px 16px;border-radius:50px;font-size:12.5px;font-weight:600;backdrop-filter:blur(6px);transition:all .2s}
         .search-quick a:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55);color:#fff}
-        .search-quick a.active{background:#fff;color:#0d9488;border-color:#fff;font-weight:700}
+        .search-quick a.active{background:#fff;color:#078930;border-color:#fff;font-weight:700}
 
         /* GRID */
         .listings{max-width:1200px;margin:0 auto;padding:28px 32px 48px;flex:1;width:100%}
@@ -342,26 +402,27 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         .badge-rented{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
         .card-category{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.94);color:#0f172a;padding:5px 11px;border-radius:50px;font-size:10.5px;font-weight:700;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.12)}
         .card-photos-count{position:absolute;bottom:12px;right:12px;background:rgba(15,23,42,.78);color:#fff;padding:5px 11px;border-radius:50px;font-size:10.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(8px);z-index:2}
-        .card-photos-count i{color:#2dd4bf;font-size:10px}
+        .card-photos-count i{color:#FCDD09;font-size:10px}
         .card-body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
-        .card-price{font-size:21px;font-weight:800;color:#0d9488;letter-spacing:-.3px;margin-bottom:5px}
+        .card-price{font-size:21px;font-weight:800;color:#078930;letter-spacing:-.3px;margin-bottom:5px}
         .card-price-cur{font-size:12px;font-weight:600;color:#94a3b8;letter-spacing:0}
-        .card-location{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b;margin-bottom:10px}
-        .card-location i{color:#0d9488;font-size:12px;flex-shrink:0}
+        .card-location{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b;margin-bottom:10px;flex-wrap:wrap}
+        .card-location i{color:#078930;font-size:12px;flex-shrink:0}
+        .card-region-city{display:inline-flex;align-items:center;gap:5px;background:#FEFCE8;color:#05642a;border:1px solid #FDE68A;border-radius:50px;padding:2px 10px;font-size:11.5px;font-weight:600}
         .card-desc{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .card-amenities{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
         .card-amenity{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;color:#475569;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:500}
-        .card-amenity i{color:#0d9488;font-size:10px}
+        .card-amenity i{color:#078930;font-size:10px}
         .card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:12px;border-top:1px solid #eef2f6}
         .card-owner{font-size:12px;color:#64748b;display:flex;align-items:center;gap:7px;font-weight:500}
-        .owner-dot{width:7px;height:7px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 0 3px rgba(45,212,191,.18);flex-shrink:0}
+        .owner-dot{width:7px;height:7px;border-radius:50%;background:#FCDD09;box-shadow:0 0 0 3px rgba(252,221,9,.18);flex-shrink:0}
         .card-view{color:#cbd5e1;font-size:15px;transition:color .2s,transform .25s cubic-bezier(.34,1.56,.64,1)}
-        .card:hover .card-view{color:#0d9488;transform:translateX(2px)}
+        .card:hover .card-view{color:#078930;transform:translateX(2px)}
 
         /* THUMBNAILS */
         .card-thumbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 0;background:#fff}
         .card-thumb{width:50px;height:50px;object-fit:cover;border-radius:9px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:#f1f5f9}
-        .card-thumb:hover{border-color:#0d9488;transform:scale(1.08)}
+        .card-thumb:hover{border-color:#078930;transform:scale(1.08)}
 
         /* LIGHTBOX */
         .lb-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.92);backdrop-filter:blur(4px);z-index:10000;align-items:center;justify-content:center;padding:24px}
@@ -381,9 +442,9 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
 
         .load-more-wrap{text-align:center;padding:44px 0 8px}
         .load-more-wrap[hidden]{display:none}
-        .load-more-wrap .btn-search{display:inline-flex;align-items:center;gap:8px;padding:13px 34px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(13,148,136,.3)}
-        .load-more-wrap .btn-search:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(13,148,136,.4)}
-        .load-more-spinner{font-size:24px;color:#0d9488}
+        .load-more-wrap .btn-search{display:inline-flex;align-items:center;gap:8px;padding:13px 34px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(7,137,48,.3)}
+        .load-more-wrap .btn-search:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(7,137,48,.4)}
+        .load-more-spinner{font-size:24px;color:#078930}
 
         @media(max-width:900px){
             .search-form .btn-reset{display:none}
@@ -415,8 +476,8 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
     <?php include(__DIR__ . '/pending_invite_notice.php'); ?>
     <nav class="navbar">
         <a href="Home.php" class="nav-brand">
-            <div class="nav-brand-icon">AR</div>
-            <div class="nav-brand-text">Adama<span>Rent</span></div>
+            <div class="nav-brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+            <div class="nav-brand-text">Ethio<span>Rent</span></div>
         </a>
         <div class="nav-right">
             <?php if(isset($_SESSION['user_id'])): ?>
@@ -498,7 +559,7 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
                 <div class="search-field">
                     <label class="sf-label" for="f-cat"><i class="fas fa-tag"></i> <?php echo t('lbl_category'); ?></label>
                     <div class="sf-control">
-                        <select id="f-cat" name="cat">
+                        <select id="f-cat" name="cat" onchange="this.form.submit()">
                             <option value=""><?php echo t('all_categories'); ?></option>
                             <optgroup label="<?php echo t('residential'); ?>">
                                 <option value="Single Home" <?php if(isset($_GET['cat']) && $_GET['cat']=='Single Home') echo 'selected'; ?>><?php echo t('single_home'); ?></option>
@@ -515,6 +576,40 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
                     </div>
                 </div>
                 <div class="search-field">
+                    <label class="sf-label" for="f-region"><i class="fas fa-map"></i> <?php echo t('lbl_region'); ?></label>
+                    <div class="sf-control">
+                        <select id="f-region" name="region">
+                            <option value=""><?php echo t('all_regions'); ?></option>
+                            <?php foreach($filterRegions as $regionName => $regionCities): ?>
+                                <option value="<?php echo htmlspecialchars($regionName); ?>" <?php if($selRegion === $regionName) echo 'selected'; ?>><?php echo htmlspecialchars($regionName); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <i class="fas fa-chevron-down sf-chev"></i>
+                    </div>
+                </div>
+                <div class="search-field">
+                    <label class="sf-label" for="f-city"><i class="fas fa-city"></i> <?php echo t('lbl_city'); ?></label>
+                    <div class="sf-control">
+                        <select id="f-city" name="city">
+                            <option value=""><?php echo t('all_cities'); ?></option>
+                            <?php if($selRegion === ''): ?>
+                                <?php foreach($cityGroups as $groupName => $groupCities): if(empty($groupCities)) continue; ?>
+                                <optgroup label="<?php echo htmlspecialchars($groupName); ?>">
+                                    <?php foreach($groupCities as $cityName): ?>
+                                    <option value="<?php echo htmlspecialchars($cityName); ?>" <?php if($selCity === $cityName) echo 'selected'; ?>><?php echo htmlspecialchars($cityName); ?></option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php foreach($cityGroups[$selRegion] ?? [] as $cityName): ?>
+                                    <option value="<?php echo htmlspecialchars($cityName); ?>" <?php if($selCity === $cityName) echo 'selected'; ?>><?php echo htmlspecialchars($cityName); ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                        <i class="fas fa-chevron-down sf-chev"></i>
+                    </div>
+                </div>
+                <div class="search-field">
                     <label class="sf-label" for="f-loc"><i class="fas fa-map-location-dot"></i> <?php echo t('lbl_location'); ?></label>
                     <div class="sf-control">
                         <input id="f-loc" type="text" name="kb" placeholder="<?php echo t('search_kebele'); ?>" value="<?php echo isset($_GET['kb']) ? htmlspecialchars($_GET['kb']) : ''; ?>">
@@ -524,17 +619,6 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
                     <label class="sf-label" for="f-price"><i class="fas fa-coins"></i> <?php echo t('lbl_price'); ?></label>
                     <div class="sf-control">
                         <input id="f-price" type="number" name="max_pr" placeholder="<?php echo t('max_price'); ?>" value="<?php echo isset($_GET['max_pr']) ? htmlspecialchars($_GET['max_pr']) : ''; ?>">
-                    </div>
-                </div>
-                <div class="search-field">
-                    <label class="sf-label" for="f-sort"><i class="fas fa-arrow-down-wide-short"></i> <?php echo t('lbl_sort'); ?></label>
-                    <div class="sf-control">
-                        <select id="f-sort" name="sort">
-                            <option value="newest" <?php if(isset($_GET['sort']) && $_GET['sort']=='newest') echo 'selected'; ?>><?php echo t('newest_first'); ?></option>
-                            <option value="price_low" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_low') echo 'selected'; ?>><?php echo t('price_low'); ?></option>
-                            <option value="price_high" <?php if(isset($_GET['sort']) && $_GET['sort']=='price_high') echo 'selected'; ?>><?php echo t('price_high'); ?></option>
-                        </select>
-                        <i class="fas fa-chevron-down sf-chev"></i>
                     </div>
                 </div>
                 <button type="submit" class="btn-search"><i class="fas fa-search"></i><span><?php echo t('search_btn'); ?></span></button>
@@ -596,7 +680,21 @@ $total_filtered = (int)mysqli_fetch_row(mysqli_stmt_get_result($count_stmt))[0];
         <button class="lb-nav lb-next" id="lbNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
     </div>
 
+    <?php echo locations_cascade_js('f-region', 'f-city', t('all_cities'), $filterRegions, true); ?>
+
     <script>
+    (function(){
+        var regionSel = document.getElementById('f-region');
+        var citySel = document.getElementById('f-city');
+        var form = document.querySelector('.search-form');
+        if(!regionSel || !citySel || !form) return;
+        // Registered after the cascade so the City options are rebuilt before
+        // the form is submitted, otherwise a stale city would be sent.
+        cascadeRegionCity('f-region', 'f-city', <?php echo json_encode(t('all_cities')); ?>);
+        function submit(){ form.submit(); }
+        regionSel.addEventListener('change', submit);
+        citySel.addEventListener('change', submit);
+    })();
     document.querySelectorAll('.card').forEach(function(card){
         card.addEventListener('click', function(e){
             if(e.target.closest('a')) return;

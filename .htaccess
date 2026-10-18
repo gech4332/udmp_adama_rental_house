@@ -16,7 +16,7 @@ Options -Indexes
     <FilesMatch "^\.">
         Require all denied
     </FilesMatch>
-    <FilesMatch "^(config_secrets|config_secrets\.example|db|session_config|mail_helper|security)\.php$">
+    <FilesMatch "^(config_secrets|config_secrets\.example|db|session_config|mail_helper|security|payments)\.php$">
         Require all denied
     </FilesMatch>
     <FilesMatch "^(setup|installed\.lock)">
@@ -35,7 +35,7 @@ Options -Indexes
         Order allow,deny
         Deny from all
     </FilesMatch>
-    <FilesMatch "^(config_secrets|config_secrets\.example|db|session_config|mail_helper|security)\.php$">
+    <FilesMatch "^(config_secrets|config_secrets\.example|db|session_config|mail_helper|security|payments)\.php$">
         Order allow,deny
         Deny from all
     </FilesMatch>

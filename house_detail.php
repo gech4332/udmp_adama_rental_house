@@ -3,7 +3,9 @@ include('includes/session_config.php');
 session_start();
 include('includes/db.php');
 include('includes/lang.php');
+include('includes/locations.php');
 include('includes/security.php');
+include_once('includes/payments.php');
 if(!isset($_SESSION['csrf_token'])) csrf_token();
 
 function dTimeAgo($datetime){
@@ -27,6 +29,15 @@ if($id > 0){
 }
 
 $notFound = !$house;
+$hasCoords = $house && $house['latitude'] !== null && $house['longitude'] !== null && $house['latitude'] !== '' && $house['longitude'] !== '';
+$mapHref = '';
+if($house){
+    if(!empty($house['map_link'])){
+        $mapHref = $house['map_link'];
+    } elseif($hasCoords){
+        $mapHref = 'https://www.google.com/maps?q=' . (float)$house['latitude'] . ',' . (float)$house['longitude'];
+    }
+}
 $photos = [];
 if($house){
     if(!empty($house['image'])) $photos[] = $house['image'];
@@ -64,6 +75,17 @@ if(isset($_SESSION['user_id']) && $id > 0){
         elseif($crow['status'] === 'pending') $callState = 'wait';
     }
 }
+
+// Owner contact details (name, phone, exact map/coordinates, house number) are
+// revealed ONLY to the tenant of an accepted request whose fee payment is
+// verified. Enforced server-side; nothing sensitive is emitted otherwise.
+$viewerId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$revealContact = ($house && $viewerId > 0) ? payment_contact_revealed($conn, $id, $viewerId) : false;
+if(!$revealContact){
+    $ownerPhone = '';
+    $hasCoords = false;
+    $mapHref = '';
+}
 $amenities = [];
 if($house){
     $astmt = mysqli_prepare($conn, "SELECT a.id, a.name, a.icon FROM house_amenities ha JOIN amenities a ON ha.amenity_id = a.id WHERE ha.house_id = ? ORDER BY a.sort_order ASC");
@@ -85,50 +107,54 @@ $rentHref  = isset($_SESSION['user_id'])
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $notFound ? htmlspecialchars(t('hd_notfound_title')) : htmlspecialchars(t('hd_title_kebele')) . htmlspecialchars($house['kebele']) . ' - AdamaRent'; ?></title>
+    <title><?php echo $notFound ? htmlspecialchars(t('hd_notfound_title')) : htmlspecialchars(t('hd_title_kebele')) . htmlspecialchars($house['kebele']) . ' - EthioRent'; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <?php echo locations_map_assets(); ?>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         html{scroll-behavior:smooth}
         body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
+        .hd-map{height:340px;border-radius:12px;overflow:hidden;border:1.5px solid #e5e7eb;margin-top:12px;z-index:0}
+        .hd-map .leaflet-control-attribution{font-size:9px}
+        .hd-map-note{margin-top:10px;font-size:12px;color:#64748b;font-weight:500}
 
         /* NAVBAR */
         .navbar{background:#0f172a;padding:14px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.15)}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#0d9488,#14b8a6);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}
+        .nav-brand-icon{width:36px;height:36px;background:#078930;border-radius:9px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;color:#fff;font-weight:900;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.45)}
         .nav-brand-text{color:#fff;font-size:18px;font-weight:800}
-        .nav-brand-text span{color:#2dd4bf}
+        .nav-brand-text span{color:#FCDD09}
         .nav-right{display:flex;align-items:center;gap:6px}
         .nav-right a{position:relative;color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .25s cubic-bezier(.4,0,.2,1),color .25s}
-        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#2dd4bf,#14b8a6);transition:width .3s cubic-bezier(.4,0,.2,1)}
+        .nav-right a::after{content:'';position:absolute;left:14px;bottom:5px;width:0;height:2px;border-radius:2px;background:linear-gradient(90deg,#FCDD09,#0da344);transition:width .3s cubic-bezier(.4,0,.2,1)}
         .nav-right a:hover{color:#fff;background:rgba(255,255,255,.1)}
         .nav-right a:hover::after{width:calc(100% - 28px)}
         .nav-right a i{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
         .nav-right a:hover i{transform:translateX(3px)}
-        .nav-right .btn-accent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;font-weight:600}
-        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(13,148,136,.4);transform:translateY(-1px)}
+        .nav-right .btn-accent{background:linear-gradient(135deg,#078930,#0da344);color:#fff;font-weight:600}
+        .nav-right .btn-accent:hover{box-shadow:0 4px 15px rgba(7,137,48,.4);transform:translateY(-1px)}
         .nav-right .btn-accent:hover i{transform:rotate(90deg) scale(1.15)}
         .lang-drop{position:relative;display:inline-flex}
         .lang-pill{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:8px 14px;font-weight:600;font-size:13px;text-decoration:none;transition:all .2s;cursor:pointer;font-family:'Inter',sans-serif}
-        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(45,212,191,.4)}
-        .lang-pill .lg-code{color:#2dd4bf}
+        .lang-pill:hover{background:rgba(255,255,255,.16);border-color:rgba(252,221,9,.4)}
+        .lang-pill .lg-code{color:#FCDD09}
         .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
         .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
         .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
         .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
         .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
-        .lang-menu a.active{background:rgba(13,148,136,.16);color:#2dd4bf}
+        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
         .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
-        .lang-menu a.active .lg-badge{background:rgba(13,148,136,.3);color:#5eead4}
-        .lang-menu a .lg-check{margin-left:auto;color:#2dd4bf;font-size:12px}
+        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
+        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
         .user-avatar-wrap{position:relative}
-        .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
+        .user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:all .2s}
         .user-avatar:hover{border-color:rgba(255,255,255,.5);transform:scale(1.05)}
         .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:230px;background:#1e293b;border-radius:12px;border:1px solid rgba(255,255,255,.1);box-shadow:0 20px 40px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;z-index:1001}
         .user-avatar-wrap:hover .user-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
         .user-dropdown-header{padding:16px;display:flex;align-items:center;gap:10px}
-        .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+        .user-avatar-sm{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
         .user-dropdown-name{color:#f1f5f9;font-size:13px;font-weight:600}
         .user-dropdown-role{color:#94a3b8;font-size:11px}
         .user-dropdown-divider{height:1px;background:rgba(255,255,255,.08)}
@@ -137,16 +163,16 @@ $rentHref  = isset($_SESSION['user_id'])
         .user-dropdown a.logout{color:#f87171;border-top:1px solid rgba(255,255,255,.08)}
         .user-dropdown a.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5}
         .user-dropdown-lang-title{display:flex;align-items:center;gap:8px;padding:12px 18px 8px;color:#94a3b8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
-        .user-dropdown-lang-title i{color:#2dd4bf;font-size:11px}
+        .user-dropdown-lang-title i{color:#FCDD09;font-size:11px}
         .user-dropdown-lang{padding:2px 8px 12px}
         .user-dropdown-lang a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:600;transition:background .15s,color .15s}
         .user-dropdown-lang a:hover{background:rgba(255,255,255,.07);color:#fff}
         .user-dropdown-lang a .lg-badge{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;letter-spacing:.5px}
         .user-dropdown-lang a .lg-radio{width:16px;height:16px;margin-left:auto;border-radius:50%;border:2px solid rgba(255,255,255,.28);position:relative;flex-shrink:0;transition:border-color .2s}
-        .user-dropdown-lang a.active{background:rgba(13,148,136,.22);color:#5eead4}
-        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;box-shadow:0 4px 10px rgba(13,148,136,.45)}
-        .user-dropdown-lang a.active .lg-radio{border-color:#2dd4bf}
-        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#2dd4bf}
+        .user-dropdown-lang a.active{background:rgba(7,137,48,.22);color:#FDE68A}
+        .user-dropdown-lang a.active .lg-badge{background:linear-gradient(135deg,#078930,#0da344);color:#fff;box-shadow:0 4px 10px rgba(7,137,48,.45)}
+        .user-dropdown-lang a.active .lg-radio{border-color:#FCDD09}
+        .user-dropdown-lang a.active .lg-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#FCDD09}
 
         /* LAYOUT */
         .page{max-width:1150px;margin:0 auto;width:100%;padding:20px 24px 60px;flex:1}
@@ -155,8 +181,8 @@ $rentHref  = isset($_SESSION['user_id'])
         .notfound i{font-size:54px;color:#94a3b8;margin-bottom:18px;display:block}
         .notfound h1{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:10px}
         .notfound p{color:#64748b;font-size:14px;line-height:1.7;margin-bottom:24px}
-        .notfound a{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border-radius:11px;text-decoration:none;font-weight:700;font-size:14px;transition:all .3s}
-        .notfound a:hover{box-shadow:0 6px 20px rgba(13,148,136,.4);transform:translateY(-1px)}
+        .notfound a{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border-radius:11px;text-decoration:none;font-weight:700;font-size:14px;transition:all .3s}
+        .notfound a:hover{box-shadow:0 6px 20px rgba(7,137,48,.4);transform:translateY(-1px)}
 
         .layout{display:grid;grid-template-columns:620px 1fr;gap:24px;align-items:start}
 
@@ -172,7 +198,7 @@ $rentHref  = isset($_SESSION['user_id'])
         .g-thumbs{display:flex;gap:10px;padding:12px;overflow-x:auto}
         .g-thumbs img{width:86px;height:64px;object-fit:cover;border-radius:9px;border:2px solid transparent;cursor:pointer;transition:all .2s;flex-shrink:0}
         .g-thumbs img:hover{transform:translateY(-2px)}
-        .g-thumbs img.on{border-color:#0d9488;box-shadow:0 3px 10px rgba(13,148,136,.3)}
+        .g-thumbs img.on{border-color:#078930;box-shadow:0 3px 10px rgba(7,137,48,.3)}
 
         /* INFO PANEL */
         .info{background:#fff;border-radius:18px;border:1px solid #f1f5f9;padding:28px;box-shadow:0 2px 14px rgba(0,0,0,.04)}
@@ -181,10 +207,10 @@ $rentHref  = isset($_SESSION['user_id'])
         .chip-avail{background:rgba(16,185,129,.12);color:#059669}
         .chip-rented{background:rgba(239,68,68,.12);color:#dc2626}
         .chip-cat{background:#f1f5f9;color:#475569}
-        .info-price{font-size:34px;font-weight:800;color:#0d9488;letter-spacing:-1px;margin-bottom:2px}
+        .info-price{font-size:34px;font-weight:800;color:#078930;letter-spacing:-1px;margin-bottom:2px}
         .info-price span{font-size:15px;font-weight:500;color:#94a3b8;letter-spacing:0}
         .info-loc{display:flex;align-items:center;gap:8px;color:#64748b;font-size:14px;margin-bottom:22px}
-        .info-loc i{color:#0d9488}
+        .info-loc i{color:#078930}
         .info-title{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid #f1f5f9}
         .info-desc{font-size:14px;color:#475569;line-height:1.75;margin-bottom:22px;white-space:pre-line}
 
@@ -194,32 +220,34 @@ $rentHref  = isset($_SESSION['user_id'])
         .fact .v{font-size:14px;color:#0f172a;font-weight:700;margin-top:3px;word-break:break-word}
 
         .detail-amenities{display:flex;flex-wrap:wrap;gap:8px}
-        .detail-amenity{display:inline-flex;align-items:center;gap:7px;background:#f0fdfa;border:1px solid #ccfbf1;color:#0f766e;padding:7px 13px;border-radius:9px;font-size:12px;font-weight:600}
-        .detail-amenity i{color:#0d9488;font-size:12px}
+        .detail-amenity{display:inline-flex;align-items:center;gap:7px;background:#FEFCE8;border:1px solid #FDE68A;color:#05642a;padding:7px 13px;border-radius:9px;font-size:12px;font-weight:600}
+        .detail-amenity i{color:#078930;font-size:12px}
         .amenity-card{background:#fff;border-radius:18px;border:1px solid #f1f5f9;padding:24px;box-shadow:0 2px 14px rgba(0,0,0,.04)}
 
         .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
         .btn-action{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px;border-radius:11px;font-size:14px;font-weight:700;text-decoration:none;transition:all .25s;border:none;cursor:pointer;font-family:inherit}
-        .btn-rent{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;grid-column:1/-1}
-        .btn-rent:hover{box-shadow:0 6px 20px rgba(13,148,136,.45);transform:translateY(-1px)}
-        .btn-call{background:rgba(13,148,136,.1);color:#0d9488}
-        .btn-call:hover{background:#0d9488;color:#fff}
+        .btn-rent{background:linear-gradient(135deg,#078930,#0da344);color:#fff;grid-column:1/-1}
+        .btn-rent:hover{box-shadow:0 6px 20px rgba(7,137,48,.45);transform:translateY(-1px)}
+        .btn-call{background:rgba(7,137,48,.1);color:#078930}
+        .btn-call:hover{background:#078930;color:#fff}
         .btn-map{background:rgba(59,130,246,.1);color:#3b82f6}
         .btn-map:hover{background:#3b82f6;color:#fff}
         .rented-note{grid-column:1/-1;background:#f8faf9;border:1px dashed #e2e8f0;color:#94a3b8;border-radius:11px;padding:14px;text-align:center;font-size:13px;font-weight:600}
-        .rented-note.rented-ok{background:#f0fdfa;border:1px solid #ccfbf1;color:#0f766e}
+        .rented-note.rented-ok{background:#FEFCE8;border:1px solid #FDE68A;color:#05642a}
         .btn-rent:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none}
 
         /* OWNER CARD */
         .owner{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid #f1f5f9;border-radius:12px;padding:14px}
-        .owner-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+        .owner-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#078930,#0da344);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
         .owner-name{font-size:14px;font-weight:700;color:#0f172a}
         .owner-sub{font-size:12px;color:#94a3b8;margin-top:2px}
+        .privacy-note{display:flex;align-items:flex-start;gap:9px;background:#FEFCE8;border:1px solid #FDE68A;color:#7c5e00;border-radius:11px;padding:11px 14px;font-size:12.5px;line-height:1.55;margin-bottom:14px}
+        .privacy-note i{color:#d97706;margin-top:2px}
 
         /* SUMMARY CARD */
         .summary{background:#fff;border-radius:18px;border:1px solid #f1f5f9;padding:24px;box-shadow:0 2px 14px rgba(0,0,0,.04)}
         .summary h3{font-size:15px;font-weight:800;color:#0f172a;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-        .summary h3 i{color:#0d9488}
+        .summary h3 i{color:#078930}
         .summary ul{list-style:none}
         .summary li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #f8fafc;font-size:13px}
         .summary li:last-child{border-bottom:none}
@@ -241,8 +269,8 @@ $rentHref  = isset($_SESSION['user_id'])
     <?php include(__DIR__ . '/pending_invite_notice.php'); ?>
     <nav class="navbar">
         <a href="Home.php" class="nav-brand">
-            <div class="nav-brand-icon">AR</div>
-            <div class="nav-brand-text">Adama<span>Rent</span></div>
+            <div class="nav-brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+            <div class="nav-brand-text">Ethio<span>Rent</span></div>
         </a>
         <div class="nav-right">
             <?php if(isset($_SESSION['user_id'])): ?>
@@ -313,7 +341,12 @@ $rentHref  = isset($_SESSION['user_id'])
                     <span class="chip chip-cat"><?php echo htmlspecialchars($house['category']); ?></span>
                 </div>
                 <div class="info-price"><?php echo number_format((int)$house['amount']); ?> <span><?php echo t('etb_month'); ?></span></div>
-                <div class="info-loc"><i class="fas fa-location-dot"></i> <?php echo t('ph_kebele'); ?> <?php echo htmlspecialchars($house['kebele']); ?><?php echo !empty($house['street']) ? ', ' . htmlspecialchars($house['street']) : ''; ?></div>
+                <div class="info-loc"><i class="fas fa-location-dot"></i> <?php echo t('ph_kebele'); ?> <?php echo htmlspecialchars($house['kebele']); ?><?php echo !empty($house['street']) ? ', ' . htmlspecialchars($house['street']) : ''; ?><?php
+                    $rcDetail = [];
+                    if(!empty($house['region']))  $rcDetail[] = htmlspecialchars($house['region']);
+                    if(!empty($house['city']))    $rcDetail[] = htmlspecialchars($house['city']);
+                    echo $rcDetail ? ' &middot; ' . implode(', ', $rcDetail) : '';
+                ?></div>
 
                 <?php if(!empty($house['description'])): ?>
                     <div class="info-title"><?php echo t('hd_about'); ?></div>
@@ -324,14 +357,20 @@ $rentHref  = isset($_SESSION['user_id'])
                 <div class="facts">
                     <div class="fact"><div class="k"><?php echo t('ph_kebele'); ?></div><div class="v"><?php echo htmlspecialchars($house['kebele']); ?></div></div>
                     <div class="fact"><div class="k"><?php echo t('hd_street'); ?></div><div class="v"><?php echo htmlspecialchars($house['street']); ?></div></div>
-                    <?php if(!empty($house['house_number'])): ?>
+                    <?php if($revealContact && !empty($house['house_number'])): ?>
                         <div class="fact"><div class="k"><?php echo t('hd_house_no'); ?></div><div class="v"><?php echo htmlspecialchars($house['house_number']); ?></div></div>
+                    <?php endif; ?>
+                    <?php if(!empty($house['region'])): ?>
+                        <div class="fact"><div class="k"><?php echo t('ph_region'); ?></div><div class="v"><?php echo htmlspecialchars($house['region']); ?></div></div>
+                    <?php endif; ?>
+                    <?php if(!empty($house['city'])): ?>
+                        <div class="fact"><div class="k"><?php echo t('ph_city'); ?></div><div class="v"><?php echo htmlspecialchars($house['city']); ?></div></div>
                     <?php endif; ?>
                     <div class="fact"><div class="k"><?php echo t('ph_category'); ?></div><div class="v"><?php echo htmlspecialchars($house['category']); ?></div></div>
                 </div>
 
                 <div class="actions">
-                    <?php if($callState === 'call'): ?>
+                    <?php if($callState === 'call' && $revealContact): ?>
                         <a href="tel:<?php echo htmlspecialchars($ownerPhone); ?>" id="callOwnerBtn" class="btn-action btn-call" data-phone="<?php echo htmlspecialchars($ownerPhone); ?>"><i class="fas fa-phone"></i> <?php echo t('hd_call_owner'); ?></a>
                         <div class="rented-note rented-ok"><i class="fas fa-check-circle"></i> <?php echo t('hd_accepted_note'); ?></div>
                     <?php elseif($isAvail): ?>
@@ -339,15 +378,19 @@ $rentHref  = isset($_SESSION['user_id'])
                     <?php else: ?>
                         <div class="rented-note"><i class="fas fa-lock"></i> <?php echo t('hd_rented_note'); ?></div>
                     <?php endif; ?>
-                    <?php if(!empty($house['map_link'])): ?>
-                        <a href="<?php echo htmlspecialchars($house['map_link']); ?>" target="_blank" rel="noopener" class="btn-action btn-map"><i class="fas fa-map-location-dot"></i> <?php echo t('hd_view_map'); ?></a>
+                    <?php if($mapHref !== ''): ?>
+                        <a href="<?php echo htmlspecialchars($mapHref); ?>" target="_blank" rel="noopener" class="btn-action btn-map"><i class="fas fa-map-location-dot"></i> <?php echo t('hd_view_map'); ?></a>
                     <?php endif; ?>
                 </div>
 
+                <?php if(!$revealContact): ?>
+                    <div class="privacy-note"><i class="fas fa-shield-halved"></i> <?php echo t('hd_privacy_note'); ?></div>
+                <?php endif; ?>
+
                 <div class="owner">
-                    <div class="owner-av"><?php echo htmlspecialchars(strtoupper(substr($house['full_name'] ?? 'O', 0, 1))); ?></div>
+                    <div class="owner-av"><?php echo htmlspecialchars(strtoupper(substr($revealContact ? ($house['full_name'] ?? 'O') : 'O', 0, 1))); ?></div>
                     <div>
-                        <div class="owner-name"><?php echo htmlspecialchars($house['full_name'] ?? t('hd_property_owner')); ?></div>
+                        <div class="owner-name"><?php echo htmlspecialchars($revealContact ? ($house['full_name'] ?? t('hd_property_owner')) : t('hd_property_owner')); ?></div>
                         <div class="owner-sub"><i class="fas fa-clock" style="margin-right:4px"></i><?php echo t('hd_listed'); ?><?php echo dTimeAgo($house['created_at']); ?></div>
                     </div>
                 </div>
@@ -362,6 +405,16 @@ $rentHref  = isset($_SESSION['user_id'])
                             <span class="detail-amenity"><i class="<?php echo htmlspecialchars($a['icon']); ?>"></i> <?php echo htmlspecialchars($a['name']); ?></span>
                         <?php endforeach; ?>
                     </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if($hasCoords): ?>
+            <div class="gallery">
+                <div class="amenity-card">
+                    <div class="info-title"><i class="fas fa-map-location-dot" style="margin-right:6px;color:#078930"></i><?php echo t('hd_location_map'); ?></div>
+                    <div id="hdMap" class="hd-map"></div>
+                    <div class="hd-map-note"><i class="fas fa-circle-info"></i> <?php echo t('hd_map_note'); ?></div>
                 </div>
             </div>
             <?php endif; ?>
@@ -514,6 +567,21 @@ $rentHref  = isset($_SESSION['user_id'])
                 }
             });
         }
+        <?php if($hasCoords): ?>
+        (function(){
+            var el = document.getElementById('hdMap');
+            if(!el || typeof L === 'undefined') return;
+            var lat = <?php echo json_encode((float)$house['latitude']); ?>;
+            var lng = <?php echo json_encode((float)$house['longitude']); ?>;
+            var map = L.map(el, { scrollWheelZoom: false }).setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+            L.marker([lat, lng]).addTo(map);
+            setTimeout(function(){ map.invalidateSize(); }, 200);
+        })();
+        <?php endif; ?>
     </script>
     <?php include(__DIR__ . '/includes/popup.php'); ?>
 </body>

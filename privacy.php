@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy - AdamaRent</title>
+<title>Privacy Policy - EthioRent</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
@@ -12,7 +12,7 @@
 body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh;display:flex;flex-direction:column}
 .page-wrap{max-width:800px;margin:0 auto;padding:60px 24px;flex:1}
 .back-link{display:inline-flex;align-items:center;gap:6px;color:#64748b;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:24px;transition:color .2s}
-.back-link:hover{color:#0d9488}
+.back-link:hover{color:#078930}
 h1{font-size:32px;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.5px}
 .updated{font-size:13px;color:#94a3b8;margin-bottom:32px}
 h2{font-size:18px;font-weight:700;color:#0f172a;margin:28px 0 10px}
@@ -59,6 +59,6 @@ li{margin-bottom:6px}
     <h2>7. Contact Us</h2>
     <p>If you have any questions about this Privacy Policy, please contact us at getahun930@gmail.com.</p>
 </div>
-<div class="footer">&copy; <?php echo date("Y"); ?> AdamaRent. All rights reserved.</div>
+<div class="footer">&copy; <?php echo date("Y"); ?> EthioRent. All rights reserved.</div>
 </body>
 </html>
