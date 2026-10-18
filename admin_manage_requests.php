@@ -5,7 +5,7 @@ include('includes/db.php');
 include('includes/security.php');
 
 if(!admin_meets_level(1)){
-    header('Location: login.php');
+    header('Location: admin_login.php');
     exit();
 }
 

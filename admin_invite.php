@@ -6,7 +6,7 @@ include('includes/security.php');
 
 // Only super admin can invite
 if(!admin_meets_level(2)){
-    header("Location: login.php");
+    header("Location: admin_login.php");
     exit();
 }
 

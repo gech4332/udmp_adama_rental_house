@@ -2,10 +2,13 @@
 include('includes/session_config.php');
 session_start();
 
-// 1. Clear all session variables
+// 1. Determine if this was an administrator session
+$was_admin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] >= 1;
+
+// 2. Clear all session variables
 $_SESSION = array();
 
-// 2. Kill the session cookie in the browser
+// 3. Kill the session cookie in the browser
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -14,10 +17,14 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// 3. Destroy the session on the server
+// 4. Destroy the session on the server
 session_destroy();
 
-// 4. Force a hard redirect to the home page
+// 5. Redirect — administrators to the dedicated admin login, everyone else to Home
+if ($was_admin) {
+    header("Location: admin_login.php");
+    exit();
+}
 header("Location: Home.php");
 exit();
 ?>

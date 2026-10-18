@@ -1,0 +1,358 @@
+<?php
+include('includes/session_config.php');
+session_start();
+include('includes/db.php');
+include('includes/mail_helper.php');
+include('includes/security.php');
+include('includes/lang.php');
+
+function has_admin(): bool {
+    global $conn;
+    $r = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE is_admin >= 1");
+    return $r && (int)(mysqli_fetch_row($r)[0] ?? 0) > 0;
+}
+
+function setup_key_valid(string $submitted): bool {
+    global $conn;
+    $r = mysqli_query($conn, "SELECT config_value FROM app_config WHERE config_key='admin_setup_key'");
+    if (!$r) return false;
+    $row = mysqli_fetch_assoc($r);
+    $key = $row['config_value'] ?? '';
+    return $key !== '' && hash_equals($key, $submitted);
+}
+
+$google_enabled = defined('GOOGLE_CLIENT_ID') && GOOGLE_CLIENT_ID !== '';
+
+if(isset($_POST['register'])){
+    csrf_validate();
+    $name  = trim($_POST['full_name']);
+    $email_raw = trim($_POST['email']);
+    $password_raw = $_POST['password'];
+    $setup_key = trim($_POST['setup_key'] ?? '');
+
+    // Server-side input validation
+    if (mb_strlen($name) < 2) {
+        $error = "Please enter your full name (at least 2 characters).";
+    } elseif (strlen($password_raw) < 6) {
+        $error = "Password must be at least 6 characters.";
+    } elseif (!validate_email_before_send($email_raw)['ok']) {
+        $error = "That email address is not valid or its domain can't receive mail. Please double-check it and try again.";
+    } else {
+        // Check duplicate email using prepared statement
+        $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE email=?");
+        mysqli_stmt_bind_param($stmt, "s", $email_raw);
+        mysqli_stmt_execute($stmt);
+        $check_email = mysqli_stmt_get_result($stmt);
+
+        if ($check_email && mysqli_num_rows($check_email) > 0) {
+            // Anti-enumeration: respond identically to a successful sign-up so
+            // the server never reveals whether the email is already registered.
+            $_SESSION['verify_pending_email'] = $email_raw;
+            header("Location: verify_pending.php?email=" . urlencode($email_raw));
+            exit();
+        } elseif ($setup_key !== '') {
+            // Admin bootstrap — use a transaction to prevent TOCTOU race condition
+            mysqli_begin_transaction($conn);
+            try {
+                // Lock the users table to prevent concurrent admin creation
+                mysqli_query($conn, "LOCK TABLES users WRITE, app_config WRITE");
+
+                if (has_admin()) {
+                    mysqli_query($conn, "UNLOCK TABLES");
+                    mysqli_rollback($conn);
+                    $error = "An admin account already exists. The setup key is no longer valid.";
+                } elseif (!setup_key_valid($setup_key)) {
+                    mysqli_query($conn, "UNLOCK TABLES");
+                    mysqli_rollback($conn);
+                    $error = "Invalid admin setup key. Please check and try again.";
+                } else {
+                    $pass = password_hash($password_raw, PASSWORD_DEFAULT);
+                    $stmt2 = mysqli_prepare($conn, "INSERT INTO users (full_name, email, password, is_admin, status, email_verified) VALUES (?, ?, ?, 2, 1, 1)");
+                    mysqli_stmt_bind_param($stmt2, "sss", $name, $email_raw, $pass);
+
+                    if (mysqli_stmt_execute($stmt2)) {
+                        mysqli_query($conn, "DELETE FROM app_config WHERE config_key='admin_setup_key'");
+                        mysqli_query($conn, "UNLOCK TABLES");
+                        mysqli_commit($conn);
+                        header("Location: admin_login.php?setup=admin");
+                        exit();
+                    } else {
+                        mysqli_query($conn, "UNLOCK TABLES");
+                        mysqli_rollback($conn);
+                        $error = "Registration failed. Please try again.";
+                    }
+                }
+            } catch (Exception $e) {
+                mysqli_query($conn, "UNLOCK TABLES");
+                mysqli_rollback($conn);
+                $error = "Registration failed. Please try again.";
+            }
+        } else {
+            // Regular landlord registration
+            $pass = password_hash($password_raw, PASSWORD_DEFAULT);
+            $token = bin2hex(random_bytes(32));
+            $expires = date('Y-m-d H:i:s', time() + 86400); // 24h
+
+            $stmt3 = mysqli_prepare($conn, "INSERT INTO users (full_name, email, password, email_verified, verify_token, verify_expires) VALUES (?, ?, ?, 0, ?, ?)");
+            mysqli_stmt_bind_param($stmt3, "sssss", $name, $email_raw, $pass, $token, $expires);
+
+            if (mysqli_stmt_execute($stmt3)) {
+                $_SESSION['verify_pending_email'] = $email_raw;
+                $mailResult = send_verification_email($email_raw, $name, $token);
+                $loc = 'verify_pending.php?email=' . urlencode($email_raw);
+                if ($mailResult['ok'] === false && $mailResult['info'] !== 'dev') {
+                    $loc .= '&resend=failed';
+                    if ($mailResult['info'] === 'brevo ip not authorized') {
+                        $loc .= '&why=ip_auth';
+                    }
+                }
+                header("Location: $loc");
+                exit();
+            } else {
+                $error = "Registration failed. Please try again.";
+            }
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - EthioRent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root{--brand:#078930;--brand2:#0da344;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#eef2f7}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:var(--bg)}
+
+        /* LEFT BRAND PANEL */
+        .auth-left{flex:1.15;position:relative;display:flex;flex-direction:column;justify-content:center;padding:56px 64px 48px;color:#fff;overflow:hidden;background:#0b1420}
+        .auth-left-bg{position:absolute;inset:0;background:url('images/IMG_7172.JPG') center/cover no-repeat;transform:scale(1.08)}
+        .auth-left-overlay{position:absolute;inset:0;background:linear-gradient(165deg,rgba(8,15,27,.94) 0%,rgba(11,20,32,.82) 42%,rgba(7,137,48,.4) 100%)}
+        .auth-left::before{content:'';position:absolute;top:-180px;right:-140px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.18),transparent 62%);pointer-events:none}
+        .auth-left::after{content:'';position:absolute;bottom:-200px;left:-160px;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(252,221,9,.14),transparent 62%);pointer-events:none}
+        .auth-brand{position:relative;z-index:2;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:auto}
+        .auth-brand .brand-icon{width:42px;height:42px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:0 6px 20px rgba(7,137,48,.5)}
+        .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc}
+        .auth-brand .brand-name span{color:#FCDD09}
+        .auth-left-content{position:relative;z-index:2;max-width:460px;flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
+        .eyebrow{display:inline-flex;align-items:center;gap:9px;background:rgba(252,221,9,.12);border:1px solid rgba(252,221,9,.3);color:#FDE68A;padding:7px 15px;border-radius:50px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:24px}
+        .eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#FDE68A;box-shadow:0 0 10px rgba(94,234,212,.9)}
+        .auth-left-content h2{font-size:clamp(28px,2.7vw,38px);font-weight:800;line-height:1.15;letter-spacing:-.9px;margin-bottom:18px;color:#f8fafc}
+        .auth-left-content h2 span{color:#FCDD09}
+        .auth-left-content>p{color:rgba(255,255,255,.62);font-size:15px;line-height:1.8;margin-bottom:36px}
+        .auth-left .features{display:grid;gap:14px}
+        .auth-left .features li{list-style:none;display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;backdrop-filter:blur(8px);transition:all .25s}
+        .auth-left .features li:hover{background:rgba(255,255,255,.09);border-color:rgba(252,221,9,.35);transform:translateX(4px)}
+        .auth-left .features li>i{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#FDE68A;background:rgba(7,137,48,.22);border:1px solid rgba(252,221,9,.25);border-radius:11px;font-size:17px}
+        .auth-left .features li strong{display:block;font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:3px}
+        .auth-left .features li small{font-size:12.5px;color:rgba(255,255,255,.58);line-height:1.55}
+        .auth-stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:26px;border-top:1px solid rgba(255,255,255,.14)}
+        .auth-stats .stat{display:flex;flex-direction:column;gap:10px}
+        .auth-stats .stat-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(7,137,48,.2);border:1px solid rgba(252,221,9,.26);color:#FDE68A;font-size:15px}
+        .auth-stats .stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);line-height:1.35}
+
+        /* RIGHT FORM PANEL */
+        .auth-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
+        .auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:40px 40px 36px;box-shadow:0 20px 50px rgba(15,23,42,.08)}
+        .auth-card .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:28px;transition:color .2s}
+        .auth-card .back-link:hover{color:var(--brand)}
+        .auth-card h1{font-size:26px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.5px}
+        .auth-card .subtitle{color:var(--muted);font-size:14px;margin-bottom:30px;line-height:1.6}
+        .error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+        .error-msg i{font-size:16px}
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:7px;text-transform:uppercase;letter-spacing:.4px}
+        .input-wrapper{position:relative}
+        .input-wrapper>i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px;pointer-events:none;transition:color .2s}
+        .input-wrapper .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:transparent;color:#94a3b8;cursor:pointer;border-radius:8px;font-size:15px;transition:all .2s}
+        .input-wrapper .pw-toggle:hover{color:var(--brand);background:rgba(7,137,48,.08)}
+        .form-group input{width:100%;padding:13px 44px;border:1.5px solid var(--line);border-radius:12px;font-size:14.5px;font-family:inherit;background:#f8fafc;color:#0f172a;transition:all .22s}
+        .form-group input::placeholder{color:#a8b3c0}
+        .form-group input:focus{outline:none;border-color:var(--brand);background:#fff;box-shadow:0 0 0 4px rgba(7,137,48,.12)}
+        .form-group input:-webkit-autofill,.form-group input:-webkit-autofill:hover,.form-group input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fff inset;-webkit-text-fill-color:#0f172a;border-color:var(--line)}
+        .input-wrapper:focus-within>i{color:var(--brand)}
+        @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .auth-card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both}
+        .setup-hint{font-size:12px;color:#94a3b8;margin-top:7px;line-height:1.5}
+        .setup-toggle-row{display:flex;align-items:center;justify-content:center;margin:4px 0 16px}
+        .check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none;line-height:1.5}
+        .check input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;margin:0}
+        .check a{color:var(--brand);font-weight:600;text-decoration:none}
+        .check a:hover{text-decoration:underline}
+        .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;box-shadow:0 6px 18px rgba(7,137,48,.3);display:flex;align-items:center;justify-content:center;gap:9px}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(7,137,48,.4)}
+        .btn-submit:active{transform:translateY(0)}
+        .divider{display:flex;align-items:center;gap:14px;margin:26px 0;color:#94a3b8;font-size:12px;font-weight:500}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
+        .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;cursor:pointer;text-decoration:none;transition:all .2s}
+        .btn-google:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.06)}
+        .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
+        .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
+        .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
+        .auth-footer a.footer-link:hover{background:#FEFCE8;border-color:var(--brand);transform:translateY(-1px);box-shadow:0 6px 16px rgba(7,137,48,.12)}
+        .auth-card .secure-note{margin-top:22px;padding:12px 14px;background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;color:#05642a;font-size:12px;display:flex;align-items:center;gap:8px}
+        .auth-card .secure-note i{font-size:15px}
+        .lang-drop{position:fixed;top:20px;right:24px;z-index:1200}
+        .lang-pill{display:inline-flex;align-items:center;gap:8px;color:#fff;background:#0f172a;border:1px solid rgba(255,255,255,.14);border-radius:50px;padding:9px 16px;font-weight:700;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+        .lang-pill:hover{background:#1e293b;border-color:rgba(252,221,9,.4)}
+        .lang-pill .lg-code{color:#FCDD09}
+        .lang-pill .chev{margin-left:3px;font-size:10px;color:#94a3b8}
+        .lang-menu{position:absolute;top:calc(100% + 10px);right:0;min-width:200px;background:#1e293b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:6px;box-shadow:0 20px 40px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .22s cubic-bezier(.34,1.56,.64,1);z-index:1201}
+        .lang-drop.open .lang-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .lang-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:600;transition:background .15s}
+        .lang-menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+        .lang-menu a.active{background:rgba(7,137,48,.16);color:#FCDD09}
+        .lang-menu a .lg-badge{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+        .lang-menu a.active .lg-badge{background:rgba(7,137,48,.3);color:#FDE68A}
+        .lang-menu a .lg-check{margin-left:auto;color:#FCDD09;font-size:12px}
+        .mobile-brand{display:none;text-align:center;margin-bottom:30px}
+        .mobile-brand .logo{width:54px;height:54px;background:#078930;border-radius:14px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:22px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 14px;box-shadow:0 6px 18px rgba(7,137,48,.4)}
+        .mobile-brand h3{font-size:20px;font-weight:800;color:var(--ink)}
+        @media(max-width:1024px){
+            .auth-left{display:none}
+            .mobile-brand{display:block}
+        }
+        @media(max-width:768px){
+            body{flex-direction:column;background:#f1f5f9}
+            .auth-right{padding:24px 16px}
+            .auth-card{padding:32px 24px;border-radius:16px}
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-left">
+    <div class="auth-left-bg"></div>
+    <div class="auth-left-overlay"></div>
+    <div class="auth-brand">
+        <div class="brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+        <div class="brand-name">Ethio<span>Rent</span></div>
+    </div>
+    <div class="auth-left-content">
+        <div class="eyebrow">ADMIN</div>
+        <h2>Create Admin <span>Account</span></h2>
+        <p>Set up a separate administrator account for the EthioRent admin portal.</p>
+        <ul class="features">
+            <li><i class="fa-solid fa-user-shield"></i><span><strong>Restricted Access</strong><small>Only authorized administrators</small></span></li>
+            <li><i class="fa-solid fa-chart-pie"></i><span><strong>Admin Dashboard</strong><small>Manage users, listings &amp; requests</small></span></li>
+            <li><i class="fa-solid fa-key"></i><span><strong>Requires Setup Key</strong><small>Use a valid admin setup key</small></span></li>
+        </ul>
+    </div>
+    <div class="auth-stats">
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-shield-halved"></i></span>
+            <span class="stat-label"><?php echo t('stat_verified'); ?></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-handshake"></i></span>
+            <span class="stat-label"><?php echo t('stat_direct'); ?></span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon"><i class="fas fa-circle-check"></i></span>
+            <span class="stat-label"><?php echo t('stat_free'); ?></span>
+        </div>
+    </div>
+</div>
+    <div class="auth-right">
+        <div class="auth-card">
+            <div class="mobile-brand">
+                <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+                <h3>EthioRent</h3>
+            </div>
+            <a href="Home.php" class="back-link"><i class="fas fa-arrow-left"></i> <?php echo t('back_home'); ?></a>
+            <h1>Create Admin Account</h1>
+            <p class="subtitle">Create a separate administrator account</p>
+
+            <?php if(isset($error)): ?>
+                <div class="error-msg"><i class="fas fa-circle-exclamation"></i> <?php echo tout($error); ?></div>
+            <?php endif; ?>
+
+            <form method="POST">
+                <?php echo csrf_field(); ?>
+                <div class="form-group">
+                    <label><?php echo t('full_name'); ?></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="full_name" placeholder="<?php echo t('full_name_ph'); ?>" required autocomplete="name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><?php echo t('email_address'); ?></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" name="email" placeholder="<?php echo t('email_ph'); ?>" required autocomplete="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><?php echo t('password'); ?></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" id="password" placeholder="<?php echo t('pw_placeholder_signup'); ?>" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password"><i class="fas fa-eye" id="pwIcon"></i></button>
+                    </div>
+                </div>
+                <div class="form-group" id="setupKeyGroup" style="display:none">
+                    <label><?php echo t('admin_setup_key'); ?></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="text" name="setup_key" placeholder="<?php echo t('admin_key_ph'); ?>">
+                    </div>
+                    <div class="setup-hint"><?php echo t('admin_key_hint'); ?></div>
+                </div>
+                <div class="setup-toggle-row">
+                    <label class="check">
+                        <input type="checkbox" id="setupKeyToggle"> <?php echo t('im_admin'); ?>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="check">
+                        <input type="checkbox" name="agree_terms" required>
+                        <?php echo t('agree_terms'); ?><a href="terms.php" target="_blank"><?php echo t('terms_service'); ?></a><?php echo t('agree_terms2'); ?><a href="privacy.php" target="_blank"><?php echo t('privacy_policy'); ?></a><?php echo t('agree_terms_suffix'); ?>
+                    </label>
+                </div>
+                <button type="submit" name="register" class="btn-submit"><i class="fas fa-user-plus"></i> <?php echo t('reg_btn'); ?></button>
+            </form>
+
+            <?php if($google_enabled): ?>
+                <div class="divider"><?php echo t('or_continue'); ?></div>
+                <a href="google_admin_login.php" class="btn-google">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.2 29.5 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.2 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.2-5.6l-6.6-5.6C29.5 34.4 26.9 36 24 36c-5.2 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1c.3 1.2.4 2.5.4 3.9s-.2 2.7-.4 3.9c-1.3 5.6-5.4 10.5-11 12.7l6.6 5.6C43.2 42.2 48 36 48 24c0-1.3-.1-2.7-.4-3.9L43.6 20.1z"/></svg>
+                    <?php echo t('continue_google'); ?>
+                </a>
+            <?php endif; ?>
+
+            <div class="auth-footer">
+                <p><?php echo t('has_account'); ?></p>
+                <a href="admin_login.php" class="footer-link"><i class="fas fa-right-to-bracket"></i> Sign in</a>
+            </div>
+            <div class="secure-note"><i class="fas fa-lock"></i> <?php echo t('secure_reg_note'); ?></div>
+        </div>
+    </div>
+    <script>
+    document.getElementById('setupKeyToggle').addEventListener('change', function(){
+        document.getElementById('setupKeyGroup').style.display = this.checked ? 'block' : 'none';
+    });
+    function togglePassword(){
+        var pw = document.getElementById('password');
+        var icon = document.getElementById('pwIcon');
+        var show = pw.type === 'password';
+        pw.type = show ? 'text' : 'password';
+        icon.classList.toggle('fa-eye-slash', show);
+        icon.classList.toggle('fa-eye', !show);
+    }
+    function toggleLangMenu(btn){
+        var drop = btn.closest('.lang-drop');
+        var isOpen = drop.classList.contains('open');
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+        if(!isOpen) drop.classList.add('open');
+    }
+    document.addEventListener('click', function(e){
+        if(e.target.closest('.lang-drop')) return;
+        document.querySelectorAll('.lang-drop.open').forEach(function(d){ d.classList.remove('open'); });
+    });
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ include_once('includes/ads.php');
 
 // Only authenticated administrators may manage advertisements.
 if(!admin_meets_level(1)){
-    header("Location: login.php");
+    header("Location: admin_login.php");
     exit();
 }
 

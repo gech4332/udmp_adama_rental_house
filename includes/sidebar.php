@@ -137,6 +137,9 @@ body.sidebar-collapsed .main{margin-left:72px;width:calc(100% - 72px)}
     </a>
 
     <div class="sidebar-footer">
+            <a href="index.php" class="nav-link" data-no-ajax="1" title="Go to user site">
+            <i class="fas fa-house-user"></i> <span>User Site</span>
+        </a>
         <a href="logout.php" data-no-ajax="1"><i class="fas fa-right-from-bracket"></i> <span>Sign Out</span></a>
     </div>
 </aside>

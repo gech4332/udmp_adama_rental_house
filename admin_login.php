@@ -4,6 +4,12 @@ session_start();
 include('includes/db.php');
 include('includes/security.php');
 
+// Already signed in as an administrator? Skip the login form entirely.
+if (admin_meets_level(1)) {
+    header("Location: admin_panel.php");
+    exit();
+}
+
 if(isset($_POST['login'])){
     csrf_validate();
     $email = trim($_POST['email']);
@@ -131,6 +137,9 @@ if(isset($_POST['login'])){
                 </div>
                 <button type="submit" name="login" class="btn-submit"><i class="fas fa-right-to-bracket"></i> Sign In</button>
             </form>
+            <p class="subtitle" style="margin-top:20px;text-align:center">
+                <a href="admin_register.php" style="color:#078930;font-weight:700;text-decoration:none"><i class="fas fa-user-plus"></i> Create an admin account</a>
+            </p>
         </div>
     </div>
 </body>

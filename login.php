@@ -8,6 +8,7 @@ include('includes/lang.php');
 
 $verification_warning = false;
 $verification_email = '';
+$admin_portal = false;
 
 if(isset($_POST['login'])){
     csrf_validate();
@@ -31,6 +32,13 @@ if(isset($_POST['login'])){
                 header("Location: verify_pending.php?email=" . urlencode($user['email']));
                 exit();
             } else {
+            // Admin accounts are hidden from this user login page. Send
+            // administrators to the dedicated Admin Portal instead of signing
+            // them in here, so admin login is never available on the user side.
+            if((int)$user['is_admin'] >= 1){
+                $error = "This is an administrator account. Administrators sign in through the Admin Portal.";
+                $admin_portal = true;
+            } else {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['full_name'];
             
@@ -46,20 +54,16 @@ if(isset($_POST['login'])){
                 exit();
             }
 
-            if($user['is_admin'] >= 1){
-                $_SESSION['is_admin'] = (int)$user['is_admin'];
-                header("Location: admin_panel.php");
+            // If a redirect target was requested (e.g. rent flow), go there
+            $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
+            $safe_redirect = preg_replace('/[^a-zA-Z0-9_?&=.\-]/', '', $redirect);
+            if(!empty($safe_redirect) && (strpos($safe_redirect, 'rent_request.php') !== false || strpos($safe_redirect, 'house_detail.php') !== false)){
+                header("Location: " . $safe_redirect);
             } else {
-                // If a redirect target was requested (e.g. rent flow), go there
-                $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '';
-                $safe_redirect = preg_replace('/[^a-zA-Z0-9_?&=.\-]/', '', $redirect);
-                if(!empty($safe_redirect) && (strpos($safe_redirect, 'rent_request.php') !== false || strpos($safe_redirect, 'house_detail.php') !== false)){
-                    header("Location: " . $safe_redirect);
-                } else {
-                    header("Location: index.php");
-                }
+                header("Location: index.php");
             }
             exit();
+            }
             }
         } else {
             record_login_failure($email);
@@ -243,6 +247,11 @@ if(isset($_GET['google'])){
 
             <?php if(isset($error)): ?>
                 <div class="error-msg"><i class="fas fa-circle-exclamation"></i> <?php echo tout($error); ?></div>
+            <?php endif; ?>
+            <?php if(!empty($admin_portal)): ?>
+                <p class="subtitle" style="margin-top:10px">
+                    <a href="admin_login.php" style="color:#078930;font-weight:700;text-decoration:none"><i class="fas fa-shield-halved"></i> Go to the Admin Portal</a>
+                </p>
             <?php endif; ?>
 
             <?php if(isset($_GET['resend']) && $_GET['resend'] === 'already'): ?>
