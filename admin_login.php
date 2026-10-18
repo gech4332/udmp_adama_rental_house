@@ -67,8 +67,6 @@ if(isset($_POST['login'])){
         .auth-left .features li i{color:#FCDD09;font-size:16px}
         .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
         .auth-card{width:100%;max-width:400px}
-        .auth-card .back-link{display:inline-flex;align-items:center;gap:6px;color:#64748b;text-decoration:none;font-size:13px;font-weight:500;margin-bottom:24px;transition:color .2s}
-        .auth-card .back-link:hover{color:#078930}
         .auth-card h1{font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-.5px}
         .auth-card .subtitle{color:#64748b;font-size:15px;margin-bottom:32px}
         .error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
@@ -111,7 +109,6 @@ if(isset($_POST['login'])){
                 <div class="logo"><i class="fas fa-shield-halved"></i></div>
                 <h3>Admin Portal</h3>
             </div>
-            <a href="Home.php" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
             <h1>Admin Login</h1>
             <p class="subtitle">Sign in with your admin credentials</p>
 

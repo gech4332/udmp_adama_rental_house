@@ -21,7 +21,6 @@ function setup_key_valid(string $submitted): bool {
     return $key !== '' && hash_equals($key, $submitted);
 }
 
-$google_enabled = defined('GOOGLE_CLIENT_ID') && GOOGLE_CLIENT_ID !== '';
 
 if(isset($_POST['register'])){
     csrf_validate();
@@ -161,8 +160,6 @@ if(isset($_POST['register'])){
         /* RIGHT FORM PANEL */
         .auth-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 40px}
         .auth-card{width:100%;max-width:440px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:40px 40px 36px;box-shadow:0 20px 50px rgba(15,23,42,.08)}
-        .auth-card .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:28px;transition:color .2s}
-        .auth-card .back-link:hover{color:var(--brand)}
         .auth-card h1{font-size:26px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.5px}
         .auth-card .subtitle{color:var(--muted);font-size:14px;margin-bottom:30px;line-height:1.6}
         .error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:20px;display:flex;align-items:center;gap:10px}
@@ -189,10 +186,6 @@ if(isset($_POST['register'])){
         .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#078930,#0da344);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;box-shadow:0 6px 18px rgba(7,137,48,.3);display:flex;align-items:center;justify-content:center;gap:9px}
         .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(7,137,48,.4)}
         .btn-submit:active{transform:translateY(0)}
-        .divider{display:flex;align-items:center;gap:14px;margin:26px 0;color:#94a3b8;font-size:12px;font-weight:500}
-        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line)}
-        .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;color:#0f172a;cursor:pointer;text-decoration:none;transition:all .2s}
-        .btn-google:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.06)}
         .auth-footer{text-align:center;margin-top:28px;width:100%;max-width:440px}
         .auth-footer p{color:var(--muted);font-size:14px;margin-bottom:12px}
         .auth-footer a.footer-link{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;background:#fff;border:1.5px solid var(--line);border-radius:12px;color:var(--brand);text-decoration:none;font-size:14px;font-weight:700;font-family:inherit;transition:all .2s}
@@ -265,7 +258,6 @@ if(isset($_POST['register'])){
                 <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
                 <h3>EthioRent</h3>
             </div>
-            <a href="Home.php" class="back-link"><i class="fas fa-arrow-left"></i> <?php echo t('back_home'); ?></a>
             <h1>Create Admin Account</h1>
             <p class="subtitle">Create a separate administrator account</p>
 
@@ -320,14 +312,6 @@ if(isset($_POST['register'])){
                 </div>
                 <button type="submit" name="register" class="btn-submit"><i class="fas fa-user-plus"></i> <?php echo t('reg_btn'); ?></button>
             </form>
-
-            <?php if($google_enabled): ?>
-                <div class="divider"><?php echo t('or_continue'); ?></div>
-                <a href="google_admin_login.php" class="btn-google">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.2 29.5 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.2 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.2-5.6l-6.6-5.6C29.5 34.4 26.9 36 24 36c-5.2 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1c.3 1.2.4 2.5.4 3.9s-.2 2.7-.4 3.9c-1.3 5.6-5.4 10.5-11 12.7l6.6 5.6C43.2 42.2 48 36 48 24c0-1.3-.1-2.7-.4-3.9L43.6 20.1z"/></svg>
-                    <?php echo t('continue_google'); ?>
-                </a>
-            <?php endif; ?>
 
             <div class="auth-footer">
                 <p><?php echo t('has_account'); ?></p>
