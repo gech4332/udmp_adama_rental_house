@@ -1,6 +1,25 @@
 DirectoryIndex Home.php
 Options -Indexes
 
+# ── Dedicated admin namespace (URL alias — no files are moved) ────────
+#   http://localhost/udmp_adama_rental_house/admin/            -> admin dashboard
+#   http://localhost/udmp_adama_rental_house/admin/<file>      -> that file in the root
+# This is ONLY a URL convenience. Every target PHP file still enforces
+# authorization server-side (admin_meets_level() in includes/security.php),
+# so this path is not a security mechanism on its own. The original flat
+# URLs (e.g. /admin_panel.php) keep working unchanged.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # /admin  or  /admin/   ->  the admin dashboard
+    RewriteRule ^admin/?$ admin_panel.php [L,QSA]
+
+    # /admin/<anything>     ->  the matching file in the project root.
+    # Relative redirects (Location: login.php etc.) and includes keep
+    # working because they resolve inside the /admin/ namespace too.
+    RewriteRule ^admin/(.+)$ $1 [L,QSA]
+</IfModule>
+
 # ── Security Headers ──────────────────────────────────────────────────
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
