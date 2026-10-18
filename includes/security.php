@@ -14,14 +14,55 @@ function csrf_field(){
     return '<input type="hidden" name="csrf_token" value="' . csrf_token() . '">';
 }
 
-// Validate a POSTed CSRF token. On failure prints a message and dies.
+// Validate a POSTed CSRF token. On failure: mint a fresh token and show a
+// friendly recovery page (or JSON for AJAX callers) instead of a dead end.
 function csrf_validate(){
     $sess_token = $_SESSION['csrf_token'] ?? '';
     $post_token = (string)($_POST['csrf_token'] ?? '');
-    if (empty($sess_token) || empty($post_token) || !hash_equals($sess_token, $post_token)) {
-        http_response_code(403);
-        die("Invalid or expired form token. Please go back, reload the page, and try again.");
+    if (!empty($sess_token) && !empty($post_token) && hash_equals($sess_token, $post_token)) {
+        return;
     }
+
+    // Stale token (form restored from cache/back-button, session refreshed,
+    // logged out in another tab, ...). Mint a fresh one so the retry works.
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
+    // AJAX callers parse the body as JSON and show data.message in a toast.
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+        strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'type'    => 'error',
+            'title'   => 'Session expired',
+            'message' => 'This page was out of date. It has been refreshed - please try again.',
+        ]);
+        exit();
+    }
+
+    // Browser form post: send the user back to a fresh copy of the form.
+    $back = $_SERVER['REQUEST_URI'] ?? '/';
+    if (!is_string($back) || $back === '' || $back[0] !== '/' || strpos($back, '//') === 0) {
+        $back = '/';
+    }
+    $back = htmlspecialchars($back, ENT_QUOTES, 'UTF-8');
+
+    http_response_code(403);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+       . '<meta name="viewport" content="width=device-width,initial-scale=1">'
+       . '<title>Form expired</title><style>'
+       . 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f6f8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}'
+       . '.card{background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:34px 30px;max-width:420px;text-align:center}'
+       . 'h1{font-size:20px;color:#1b1f24;margin:0 0 10px}p{color:#5b6470;font-size:14.5px;line-height:1.55;margin:0 0 20px}'
+       . 'a.btn{display:inline-block;background:#078930;color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 22px;border-radius:9px}'
+       . 'a.btn:hover{background:#066d26}</style></head><body><div class="card">'
+       . '<h1>Form expired</h1>'
+       . '<p>This page was out of date or you were signed in again in another tab. '
+       . 'Nothing was lost - reload the form and try once more.</p>'
+       . '<a class="btn" href="' . $back . '">Reload the page</a>'
+       . '</div></body></html>';
+    exit();
 }
 
 // ── Brute-force / credential-stuffing protection ───────────────────────

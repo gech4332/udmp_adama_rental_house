@@ -25,6 +25,13 @@ Options -Indexes
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Dynamic pages must never be replayed from cache with a stale form or
+    # CSRF token (back button / bfcache after a login or logout).
+    <FilesMatch "\.php$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+    </FilesMatch>
 </IfModule>
 
 # Guard sensitive/config files from direct web access (server-side include() still works).
