@@ -409,7 +409,7 @@ $page_title = (isset($_GET['cat']) && isset($cat_labels[$_GET['cat']]))
         .card-location{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b;margin-bottom:10px;flex-wrap:wrap}
         .card-location i{color:#078930;font-size:12px;flex-shrink:0}
         .card-region-city{display:inline-flex;align-items:center;gap:5px;background:#FEFCE8;color:#05642a;border:1px solid #FDE68A;border-radius:50px;padding:2px 10px;font-size:11.5px;font-weight:600}
-        .card-desc{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .card-desc{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .card-amenities{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
         .card-amenity{display:inline-flex;align-items:center;gap:5px;background:#f1f5f9;color:#475569;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:500}
         .card-amenity i{color:#078930;font-size:10px}

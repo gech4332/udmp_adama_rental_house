@@ -58,7 +58,7 @@ $msg = isset($_GET['msg'], $flash[$_GET['msg']]) ? $flash[$_GET['msg']] : null;
         .req-img .no-img{width:220px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#94a3b8;font-size:13px;font-weight:500}
         .req-img .no-img i{font-size:26px;color:#cbd5e1}
         .req-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:4px 0}
-        .req-body h3{font-size:16px;font-weight:700;color:#0f172a;line-height:1.5;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .req-body h3{font-size:16px;font-weight:700;color:#0f172a;line-height:1.5;margin:0 0 12px;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .req-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0}
         .req-meta span{display:inline-flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #eef2f7;color:#475569;font-size:13px;font-weight:500;padding:7px 13px;border-radius:9px}
         .req-meta span i{color:#078930;font-size:12px}

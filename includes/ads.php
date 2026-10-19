@@ -506,7 +506,7 @@ function ads_render_home($conn){
     .ad-media .ad-flag-video i{color:#fff;font-size:10px}
     .ad-body{padding:16px 18px 18px;display:flex;flex-direction:column;flex:1}
     .ad-body h3{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:6px;letter-spacing:-.2px}
-    .ad-body p{font-size:13.5px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .ad-body p{font-size:13.5px;color:#64748b;line-height:1.6;margin-bottom:12px;display:-webkit-box;line-clamp:3;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
     .ad-cta{margin-top:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#078930;text-decoration:none;align-self:flex-start}
     .ad-cta i{font-size:11px;transition:transform .25s}
     .ad-card:hover .ad-cta i{transform:translateX(3px)}

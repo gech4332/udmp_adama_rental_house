@@ -4,9 +4,9 @@
     #site-footer::after{content:'';position:absolute;bottom:-160px;right:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.18),transparent 62%);pointer-events:none}
     .sf-grid{max-width:1180px;margin:0 auto;padding:64px 32px 48px;display:grid;grid-template-columns:1.8fr 1fr 1fr 1.3fr;gap:48px;position:relative;z-index:1}
     .sf-brand .sf-logo{display:inline-flex;align-items:center;gap:11px;text-decoration:none;margin-bottom:20px}
-    .sf-logo .sf-logo-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0d9488,#14b8a6);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;box-shadow:0 6px 16px rgba(13,148,136,.4)}
-    .sf-logo .sf-logo-text{font-size:20px;font-weight:800;color:#f1f5f9;letter-spacing:-.4px}
-    .sf-logo .sf-logo-text span{color:#2dd4bf}
+    .sf-logo .sf-logo-icon{position:relative;overflow:hidden;width:40px;height:40px;background:#078930;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px;text-shadow:0 1px 3px rgba(0,0,0,.45);flex-shrink:0}
+    .sf-logo .sf-logo-text{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px}
+    .sf-logo .sf-logo-text span{color:#FCDD09}
     .sf-brand>p{font-size:13.5px;line-height:1.85;color:rgba(255,255,255,.62);max-width:320px;margin-bottom:24px}
     #site-footer .sf-social{display:flex;gap:10px;flex-wrap:wrap}
     #site-footer .sf-social a{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:15px;border:1px solid rgba(255,255,255,.1);transition:all .25s;}
@@ -43,7 +43,7 @@
     <div class="sf-grid" id="contact">
         <div class="sf-brand">
             <a href="index.php" class="sf-logo">
-                <span class="sf-logo-icon">ER</span>
+                <span class="sf-logo-icon">ER<?php include(__DIR__ . '/logo_mark.php'); ?></span>
                 <span class="sf-logo-text">Ethio<span>Rent</span></span>
             </a>
             <p><?php echo t('footer_tagline'); ?></p>
