@@ -1,4 +1,3 @@
-git status
 <?php
 include('includes/db.php');
 include('includes/session_config.php');

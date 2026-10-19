@@ -131,8 +131,11 @@ if(isset($_POST['register'])){
         .auth-left{flex:1;background:linear-gradient(135deg,#0f172a 0%,#052e16 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;color:#fff;position:relative;overflow:hidden}
         .auth-left::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(7,137,48,.15);top:-80px;right:-80px}
         .auth-left::after{content:'';position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(7,137,48,.1);bottom:-40px;left:-40px}
-        .auth-left-content{position:relative;z-index:2;text-align:center;max-width:400px}
-        .auth-left-content .logo{width:60px;height:60px;background:#078930;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 24px}
+        .auth-left-content{position:relative;z-index:2;text-align:center;max-width:400px;flex:1;display:flex;flex-direction:column;justify-content:center}
+        .auth-brand{position:relative;z-index:2;display:inline-flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:auto}
+        .auth-brand .brand-icon{width:42px;height:42px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;z-index:0;overflow:hidden;font-weight:900;font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.45);box-shadow:0 6px 20px rgba(7,137,48,.5)}
+        .auth-brand .brand-name{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc}
+        .auth-brand .brand-name span{color:#FCDD09}
         .auth-left-content h2{font-size:28px;font-weight:800;margin-bottom:12px}
         .auth-left-content p{color:rgba(255,255,255,.7);font-size:15px;line-height:1.7}
         .auth-left .features{margin-top:40px;text-align:left}
@@ -160,7 +163,7 @@ if(isset($_POST['register'])){
         .btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,#05642a,#078930);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s;margin-top:8px}
         .btn-submit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(7,137,48,.4)}
         .mobile-brand{display:none;text-align:center;margin-bottom:32px}
-        .mobile-brand .logo{width:48px;height:48px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 12px}
+        .mobile-brand .logo{width:48px;height:48px;background:#078930;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto 12px;position:relative;z-index:0;overflow:hidden}
         .mobile-brand h3{font-size:18px;font-weight:800;color:#0f172a}
         @media(max-width:768px){
             body{flex-direction:column}
@@ -172,8 +175,11 @@ if(isset($_POST['register'])){
 </head>
 <body>
     <div class="auth-left">
+        <div class="auth-brand">
+            <div class="brand-icon">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+            <div class="brand-name">Ethio<span>Rent</span></div>
+        </div>
         <div class="auth-left-content">
-            <div class="logo"><i class="fas fa-shield-halved"></i></div>
             <h2>Admin Portal</h2>
             <p>Secure access to the EthioRent administration console. Manage users, listings, and approvals.</p>
             <ul class="features">
@@ -186,8 +192,8 @@ if(isset($_POST['register'])){
     <div class="auth-right">
         <div class="auth-card">
             <div class="mobile-brand">
-                <div class="logo"><i class="fas fa-shield-halved"></i></div>
-                <h3>Admin Portal</h3>
+                <div class="logo">ER<?php include(__DIR__ . '/includes/logo_mark.php'); ?></div>
+                <h3>EthioRent</h3>
             </div>
             <h1>Create Admin Account</h1>
             <p class="subtitle">Create a separate administrator account</p>

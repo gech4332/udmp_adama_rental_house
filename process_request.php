@@ -31,7 +31,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             break;
 
         case 'approve_house':
-            $stmt = mysqli_prepare($conn, "UPDATE houses SET status = 1 WHERE id = ?");
+            $stmt = mysqli_prepare($conn, "UPDATE houses SET status = 'Available', is_approved = 1 WHERE id = ?");
             mysqli_stmt_bind_param($stmt, "i", $id);
             mysqli_stmt_execute($stmt);
             header("Location: admin_manage_houses.php?msg=posted");
